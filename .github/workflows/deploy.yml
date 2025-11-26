@@ -33,7 +33,7 @@ jobs:
         run: dotnet build -c Release --no-restore
       
       - name: Publish
-        run: dotnet publish -c Release --no-build -o ./publish /p:BlazorWebAssemblyBasePath=/MLVScanWeb
+        run: dotnet publish -c Release --no-build -o ./publish -p:BlazorWebAssemblyBasePath=/MLVScanWeb/
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
