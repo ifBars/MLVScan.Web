@@ -1,5 +1,7 @@
 ﻿@page "/"
 @inject MLVScan.Services.WebScanService Scanner
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <PageTitle>MLVScan - Static Analysis</PageTitle>
 
@@ -24,8 +26,9 @@
             </p>
             
             <div class="upload-area">
-                <label class="dropzone @(isScanning ? "scanning" : "")">
-                    <InputFile OnChange="HandleFileSelected" accept=".dll,.exe,.netmodule,.il" />
+                <label class="dropzone @(isScanning ? "scanning" : "") @(isDragOver ? "drag-over" : "")" 
+                       @ref="dropzoneRef">
+                    <InputFile @ref="fileInput" OnChange="HandleFileSelected" accept=".dll,.exe,.netmodule,.il" />
                     <div class="dropzone-content">
                         @if (isScanning)
                         {
@@ -388,12 +391,16 @@
 @code {
     private ScanResult? result;
     private bool isScanning;
+    private bool isDragOver = false;
     private string? error;
     private string? lastFileName;
     private string viewMode = "table";
     private string searchQuery = "";
     private Severity? selectedSeverity = null;
     private HashSet<ScanFinding> expandedFindings = new();
+    private InputFile? fileInput;
+    private ElementReference dropzoneRef;
+    private IJSObjectReference? jsModule;
 
     private int GetSeverityCount(Severity severity) =>
         result?.Findings.Count(f => f.Severity == severity) ?? 0;
@@ -645,6 +652,64 @@
         finally
         {
             isScanning = false;
+        }
+    }
+
+    [JSInvokable]
+    public void SetDragOver(bool dragOver)
+    {
+        isDragOver = dragOver;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnFileDropped(byte[] fileData, string fileName, string contentType)
+    {
+        if (isScanning)
+            return;
+
+        try
+        {
+            // Create a stream from the file data
+            var stream = new MemoryStream(fileData);
+            stream.Position = 0;
+            
+            // Create a BrowserFile from the stream
+            var browserFile = new BrowserFile(fileName, contentType, fileData.LongLength, stream);
+            
+            await HandleFileSelected(new InputFileChangeEventArgs(new[] { browserFile }, 0));
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to process dropped file: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await EnsureJsModuleLoaded();
+            if (jsModule != null)
+            {
+                await jsModule.InvokeVoidAsync("initializeDropzone", dropzoneRef, DotNetObjectReference.Create(this));
+            }
+        }
+    }
+
+    private async Task EnsureJsModuleLoaded()
+    {
+        if (jsModule == null)
+        {
+            jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/fileDrop.js");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (jsModule != null)
+        {
+            await jsModule.DisposeAsync();
         }
     }
 }
