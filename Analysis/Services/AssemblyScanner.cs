@@ -70,7 +70,7 @@ namespace MLVScan.Services
             {
                 findings.Add(new ScanFinding(
                     virtualPath ?? "Assembly scanning",
-                    "Warning: Some parts of the assembly could not be scanned. This doesn't necessarily mean the mod is malicious.",
+                    "Warning: Some parts of the assembly could not be scanned. Please ensure this is a valid MelonLoader mod. This doesn't necessarily mean the mod is malicious.",
                     Severity.Low));
             }
 

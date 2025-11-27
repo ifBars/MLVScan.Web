@@ -333,6 +333,71 @@ h6 {
     animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 
+.safety-notice {
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    animation: fadeInUp 0.6s ease-out 0.25s both;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.safety-notice:hover {
+    background: rgba(46, 204, 113, 0.15);
+    border-color: rgba(46, 204, 113, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.15);
+}
+
+.safety-notice-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(46, 204, 113, 0.2);
+    border-radius: 12px;
+    color: var(--success);
+}
+
+.safety-notice-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.safety-notice-content {
+    flex: 1;
+}
+
+.safety-notice-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.safety-notice-text {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.safety-notice-text strong {
+    color: var(--success);
+    font-weight: 600;
+}
+
 .upload-area {
     max-width: 700px;
     margin: 0 auto 3rem;
@@ -1360,5 +1425,80 @@ h6 {
 
     .dropzone {
         padding: 1.5rem 1rem;
+    }
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(26, 29, 45, 0.95);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: bounce 2s infinite;
+}
+
+.scroll-indicator:hover {
+    background: rgba(34, 37, 58, 0.95);
+    transform: translateX(-50%) translateY(-4px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-indicator svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text-primary);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.scroll-indicator span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-8px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@media (max-width: 768px) {
+    .scroll-indicator {
+        bottom: 1.5rem;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .scroll-indicator svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .scroll-indicator span {
+        font-size: 0.75rem;
     }
 }

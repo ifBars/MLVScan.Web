@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject MLVScan.Services.WebScanService Scanner
+@inject IJSRuntime JSRuntime
 
 <PageTitle>MLVScan - Static Analysis</PageTitle>
 
@@ -11,17 +12,30 @@
             <div class="gradient-orb orb-3"></div>
         </div>
         <div class="hero-content">
-            <div class="hero-badge">
-                <span>Security Analysis Tool</span>
-            </div>
             <h1 class="hero-title">
                 <span class="title-main">MLVScan</span>
                 <span class="title-accent">Static Analysis</span>
             </h1>
             <p class="hero-subtitle">
-                Protect your system with advanced static analysis. 
-                Detect suspicious patterns, malware, and security threats without running it on your system.
+                Detect suspicious patterns/malware in MelonLoader mods without running it on your system.
             </p>
+            
+            <div class="safety-notice">
+                <div class="safety-notice-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="M9 12l2 2 4-4" />
+                    </svg>
+                </div>
+                <div class="safety-notice-content">
+                    <h3 class="safety-notice-title">Your Files Are Safe</h3>
+                    <p class="safety-notice-text">
+                        Uploaded files are <strong>never executed or run</strong> - we only scan them to check for suspicious patterns. 
+                        Think of it like scanning a document to highlight problematic words, without ever 'opening' or 'running' the document itself. 
+                        This all happens directly within your web browser, which acts as a secure, isolated space, ensuring your system stays safe.
+                    </p>
+                </div>
+            </div>
             
             <div class="upload-area">
                 <label class="dropzone @(isScanning ? "scanning" : "")">
@@ -71,6 +85,16 @@
                 }
             </div>
         </div>
+        
+        @if (result is not null && showScrollIndicator)
+        {
+            <div class="scroll-indicator" @onclick="ScrollToResults">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+                <span>View Results</span>
+            </div>
+        }
     </section>
 
     @if (result is not null)
@@ -395,6 +419,7 @@
     private Severity? selectedSeverity = null;
     private HashSet<ScanFinding> expandedFindings = new();
     private InputFile? fileInput;
+    private bool showScrollIndicator = false;
 
     private int GetSeverityCount(Severity severity) =>
         result?.Findings.Count(f => f.Severity == severity) ?? 0;
@@ -623,6 +648,7 @@
     {
         error = null;
         result = null;
+        showScrollIndicator = false;
 
         var file = args.File;
         if (file is null)
@@ -638,6 +664,10 @@
             isScanning = true;
             StateHasChanged();
             result = await Scanner.ScanAsync(file);
+            
+            // After scan completes, check if results are in viewport
+            await Task.Delay(100); // Small delay to ensure DOM is updated
+            await CheckAndScrollToResults();
         }
         catch (Exception ex)
         {
@@ -646,6 +676,87 @@
         finally
         {
             isScanning = false;
+        }
+    }
+
+    private async Task CheckAndScrollToResults()
+    {
+        if (result is null) return;
+
+        try
+        {
+            // Small delay to ensure DOM is fully updated
+            await Task.Delay(150);
+            
+            var isInViewport = await JSRuntime.InvokeAsync<bool>("isElementInViewport", "results");
+            
+            if (!isInViewport)
+            {
+                // Try smooth scroll first
+                await JSRuntime.InvokeVoidAsync("scrollToResults", "results");
+                
+                // Wait for smooth scroll animation to complete
+                await Task.Delay(800);
+                
+                // Check again if results are now in viewport
+                var isStillNotInView = await JSRuntime.InvokeAsync<bool>("isElementInViewport", "results");
+                var scrollPosition = await JSRuntime.InvokeAsync<double>("getScrollPosition");
+                
+                // Show indicator if still not in view or if user is at the very top
+                if (isStillNotInView || scrollPosition < 50)
+                {
+                    showScrollIndicator = true;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // If JS interop fails, just show the indicator
+            showScrollIndicator = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ScrollToResults()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToResults", "results");
+            showScrollIndicator = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Ignore errors
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Set up scroll listener to hide indicator when user scrolls
+                await JSRuntime.InvokeVoidAsync("eval", @"
+                    window.addEventListener('scroll', function() {
+                        if (window.scrollY > 100) {
+                            const indicator = document.querySelector('.scroll-indicator');
+                            if (indicator) {
+                                indicator.style.opacity = '0';
+                                setTimeout(() => {
+                                    if (indicator) indicator.style.display = 'none';
+                                }, 300);
+                            }
+                        }
+                    });
+                ");
+            }
+            catch (Exception)
+            {
+                // Ignore errors
+            }
         }
     }
 
