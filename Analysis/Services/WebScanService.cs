@@ -1,20 +1,25 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Components.Forms;
+using MLVScan;
 using MLVScan.Models;
+using MLVScan.Services;
 
-namespace MLVScan.Services
+namespace MLVScanWeb.Services
 {
+    /// <summary>
+    /// Web-specific scan service that wraps the Core AssemblyScanner
+    /// for handling file uploads in the Blazor WebAssembly context.
+    /// </summary>
     public class WebScanService
     {
         private readonly AssemblyScanner _scanner;
-        private readonly ScanConfig _config;
         private readonly HashSet<string> _ignoredHashes;
 
         public WebScanService()
         {
-            _config = new ScanConfig();
-            var rules = RuleFactory.CreateRules();
-            _scanner = new AssemblyScanner(rules, _config);
+            var config = new ScanConfig();
+            var rules = RuleFactory.CreateDefaultRules();
+            _scanner = new AssemblyScanner(rules, config);
             
             // Known safe mods that trigger false positives
             _ignoredHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
