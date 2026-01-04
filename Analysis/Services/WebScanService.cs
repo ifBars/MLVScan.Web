@@ -4,7 +4,7 @@ using MLVScan;
 using MLVScan.Models;
 using MLVScan.Services;
 
-namespace MLVScanWeb.Services
+namespace MLVScan.Web.Services
 {
     /// <summary>
     /// Web-specific scan service that wraps the Core AssemblyScanner
