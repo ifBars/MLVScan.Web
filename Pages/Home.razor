@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @inject MLVScanWeb.Services.WebScanService Scanner
 @inject IJSRuntime JSRuntime
 
@@ -253,6 +253,7 @@
                                         var isExpanded = expandedFindings.Contains(finding);
                                         var ruleInfo = GetRuleInfo(finding);
                                         var extractedUrls = ExtractUrls(finding);
+                                        var combinationSignals = IsCombinationFinding(finding) ? GetCombinationSignals(finding.Description) : new List<string>();
                                         <tr class="finding-row @(isExpanded ? "expanded" : "")">
                                             <td class="severity-col">
                                                 <span class="badge @GetSeverityClass(finding.Severity)">@finding.Severity</span>
@@ -265,6 +266,18 @@
                                             <td class="description-col">
                                                 <div class="finding-desc">
                                                     <div class="finding-desc-main">@finding.Description</div>
+                                                    @if (combinationSignals.Any())
+                                                    {
+                                                        <div class="combination-signals">
+                                                            <div class="combination-label">Detected signals:</div>
+                                                            <div class="combination-badges">
+                                                                @foreach (var signal in combinationSignals)
+                                                                {
+                                                                    <span class="signal-badge">@signal</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
                                                     @if (extractedUrls.Any())
                                                     {
                                                         <div class="extracted-urls">
@@ -351,6 +364,7 @@
                             {
                                 var ruleInfo = GetRuleInfo(finding);
                                 var extractedUrls = ExtractUrls(finding);
+                                var combinationSignals = IsCombinationFinding(finding) ? GetCombinationSignals(finding.Description) : new List<string>();
                                 <div class="finding-card">
                                     <div class="finding-card-header">
                                         <span class="badge @GetSeverityClass(finding.Severity)">@finding.Severity</span>
@@ -364,6 +378,18 @@
                                         </div>
                                     }
                                     <p class="description">@finding.Description</p>
+                                    @if (combinationSignals.Any())
+                                    {
+                                        <div class="combination-signals-card">
+                                            <div class="combination-label">Detected signals:</div>
+                                            <div class="combination-badges">
+                                                @foreach (var signal in combinationSignals)
+                                                {
+                                                    <span class="signal-badge">@signal</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
                                     @if (extractedUrls.Any())
                                     {
                                         <div class="extracted-urls-card">
@@ -458,6 +484,26 @@
         return findings.OrderByDescending(f => f.Severity).ThenBy(f => f.Location).ToList();
     }
 
+    private List<string> GetCombinationSignals(string description)
+    {
+        var signals = new List<string>();
+
+        var match = System.Text.RegularExpressions.Regex.Match(description, @"Multiple suspicious patterns detected \((.+)\)");
+        if (match.Success)
+        {
+            var signalsText = match.Groups[1].Value;
+            signals = signalsText.Split(new[] { " + " }, StringSplitOptions.None).ToList();
+        }
+
+        return signals;
+    }
+
+    private bool IsCombinationFinding(ScanFinding finding)
+    {
+        return finding.Description != null &&
+               finding.Description.Contains("Multiple suspicious patterns detected");
+    }
+
     private void ToggleFinding(ScanFinding finding)
     {
         if (expandedFindings.Contains(finding))
@@ -506,6 +552,15 @@
         // Extract rule name from description patterns - check most specific first
         string ruleName = "Unknown Rule";
         string explanation = "";
+
+        // Multi-signal combination findings - check first
+        if (description.Contains("multiple suspicious patterns detected"))
+        {
+            var signals = GetCombinationSignals(finding.Description);
+            ruleName = "Multi-Pattern Combination";
+            explanation = $"This method combines multiple suspicious behaviors: {string.Join(", ", signals)}. These patterns together form a high-risk indicator that suggests coordinated malicious activity. Individual patterns might be legitimate, but their combination is unusual and potentially dangerous.";
+            return (ruleName, explanation);
+        }
 
         // Shell32Rule - "Potential system shell execution detected"
         if (description.Contains("potential system shell execution") || description.Contains("shell execution"))

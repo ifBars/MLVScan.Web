@@ -943,6 +943,47 @@ h6 {
     word-break: break-all;
 }
 
+.combination-signals,
+.combination-signals-card {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(231, 76, 60, 0.08);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 6px;
+}
+
+.combination-signals-card {
+    background: rgba(231, 76, 60, 0.08);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.combination-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #e74c3c;
+    margin-bottom: 0.5rem;
+}
+
+.combination-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.signal-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    background: rgba(231, 76, 60, 0.12);
+    border: 1px solid rgba(231, 76, 60, 0.25);
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #e74c3c;
+    white-space: nowrap;
+}
+
 .code-toggle {
     display: inline-flex;
     align-items: center;
@@ -1319,6 +1360,16 @@ h6 {
 
     .rule-explanation-text {
         font-size: 0.8rem;
+    }
+
+    .combination-signals,
+    .combination-signals-card {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .signal-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
     }
 }
 
