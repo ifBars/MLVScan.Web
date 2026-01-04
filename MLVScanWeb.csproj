@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.11" PrivateAssets="all" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-    <PackageReference Include="MLVScan.Core" Version="1.0.0" />
+    <PackageReference Include="MLVScan.Core" Version="*" />
   </ItemGroup>
 
 </Project>
