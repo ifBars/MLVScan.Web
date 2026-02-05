@@ -10,7 +10,7 @@
 
 *   **100% Client-Side**: Files are analyzed in your browser, **never uploaded** to a server.
 *   **Offline Capable**: Install as a PWA to scan without internet.
-*   **Same Engine**: Uses the exact same 17+ detection rules as the MelonLoader plugin.
+*   **Same Engine**: Uses the exact same 17+ detection rules as the MelonLoader/BepInEx plugin.
 
 ## 🛠️ Run Locally
 
