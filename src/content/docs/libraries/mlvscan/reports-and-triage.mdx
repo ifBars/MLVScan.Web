@@ -1,0 +1,30 @@
+export default function RuntimeReportsAndTriageContent() {
+  return (
+    <>
+      <h2 id="report-locations">Report Locations</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`YourGame/UserData/MLVScan/Reports/
+  ModName_timestamp.report.txt
+  Prompts/ModName.prompt.md
+  IL/ModName_timestamp.il.txt`}</code></pre>
+
+      <h2 id="severity-triage">Severity Triage</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>Critical: do not whitelist without strong external verification.</li>
+        <li>High: inspect behavior and intent, not only isolated API usage.</li>
+        <li>Medium/Low: evaluate in context of complete mod behavior.</li>
+      </ul>
+
+      <h2 id="sample-output">Sample Output</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[MLVScan] SUSPICIOUS MOD: SuspiciousMod.dll
+[MLVScan] [CRITICAL] Process execution detected
+[MLVScan] [HIGH] Obfuscated string pipeline detected`}</code></pre>
+
+      <h2 id="false-positive-handling">False Positive Handling</h2>
+      <ol className="list-decimal list-inside space-y-2 text-gray-300">
+        <li>Capture hash and full report details.</li>
+        <li>Validate expected mod behavior with author/community.</li>
+        <li>Whitelist only the verified hash, not wildcard names.</li>
+      </ol>
+    </>
+  )
+}

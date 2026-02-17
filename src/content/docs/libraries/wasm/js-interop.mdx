@@ -1,0 +1,57 @@
+import { Link } from "react-router-dom"
+
+export default function WasmInteropContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        The MLVScan.WASM library uses the .NET 8 JS interop pattern for direct C# exports, avoiding the overhead of <code>DotNet.invokeMethodAsync</code> and <code>DotNetObjectReference</code>. The <strong className="text-white">@mlvscan/wasm-core</strong> npm package wraps this layer and exposes <code>initScanner</code>, <code>scanAssembly</code>, and status/error APIs; for integration in a web app, use the package as described in <Link to="/docs/libraries/wasm/web-integration" className="text-teal-400 hover:text-teal-300">Web Integration</Link>. This page documents the underlying C# ↔ JS boundary for reference or custom tooling.
+      </p>
+
+      <h2 id="c-sharp-side">C# Side: JSInvokable</h2>
+      <p className="text-gray-300 mb-4">
+        Methods exposed to JavaScript must be public, static, and annotated with <code>[JSExport]</code> (or <code>[JSInvokable]</code> for legacy compat). 
+        They should accept simple types or byte arrays and return strings (JSON).
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
+        <code className="text-sm text-gray-300">{`using System.Runtime.InteropServices.JavaScript;
+
+public static partial class ScannerExports
+{
+    [JSExport]
+    public static string ScanAssembly(byte[] assemblyBytes, string fileName)
+    {
+        // ... invoke core scanner logic ...
+        return JsonSerializer.Serialize(result);
+    }
+
+    [JSExport]
+    public static string GetVersion() => "1.0.0";
+}`}</code>
+      </pre>
+
+      <h2 id="javascript-side">JavaScript Side: Direct Exports</h2>
+      <p className="text-gray-300 mb-4">
+        The npm package loads the runtime and retrieves these exports internally. If you are not using the package, you can access the assembly exports directly after initializing the runtime (e.g. via <code>getAssemblyExports(getConfig().mainAssemblyName)</code>).
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
+        <code className="text-sm text-gray-300">{`// Retrieve exports from the initialized runtime
+const config = getConfig();
+const exports = await getAssemblyExports(config.mainAssemblyName);
+
+// Access the nested namespace
+const wasmExports = exports.MLVScan.WASM.ScannerExports;
+
+// Call methods directly
+const version = wasmExports.GetVersion();
+const result = wasmExports.ScanAssembly(fileBytes, "MyMod.dll");`}</code>
+      </pre>
+
+      <h2 id="performance-considerations">Performance Considerations</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li><strong className="text-white">Coarse-Grained API:</strong> We expose a single <code>ScanAssembly</code> method rather than fine-grained instruction APIs to minimize JS-to-WASM boundary crossings.</li>
+        <li><strong className="text-white">In-Memory Processing:</strong> The scanner operates on byte arrays in memory, avoiding virtual file system overhead where possible.</li>
+        <li><strong className="text-white">JSON Serialization:</strong> While string serialization has overhead, it ensures type safety and schema compliance across the boundary.</li>
+      </ul>
+    </>
+  )
+}

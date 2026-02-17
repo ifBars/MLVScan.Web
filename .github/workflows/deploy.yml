@@ -21,19 +21,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          dotnet-version: '9.0.x'
+          bun-version: latest
       
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Install dependencies
+        run: bun install
       
       - name: Build
-        run: dotnet build -c Release --no-restore
-      
-      - name: Publish
-        run: dotnet publish -c Release --no-build -o ./publish -p:BlazorWebAssemblyBasePath=/MLVScanWeb/
+        run: bun run build
       
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -41,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./publish/wwwroot
+          path: ./dist
 
   deploy:
     environment:
@@ -53,4 +50,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

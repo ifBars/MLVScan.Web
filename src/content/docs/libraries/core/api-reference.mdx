@@ -1,0 +1,38 @@
+export default function CoreApiReferenceContent() {
+  return (
+    <>
+      <h2 id="assemblyscanner">AssemblyScanner</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`public class AssemblyScanner
+{
+    public AssemblyScanner(IEnumerable<IScanRule> rules, ScanConfig config = null);
+    public IEnumerable<ScanFinding> Scan(string filePath);
+    public IEnumerable<ScanFinding> Scan(Stream assemblyStream, string fileName);
+}`}</code></pre>
+
+      <h2 id="rulefactory">RuleFactory</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`public static class RuleFactory
+{
+    public static List<IScanRule> CreateDefaultRules();
+}`}</code></pre>
+
+      <h2 id="scanfinding">ScanFinding</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`public class ScanFinding
+{
+    public string RuleId { get; set; }
+    public string Description { get; set; }
+    public Severity Severity { get; set; }
+    public string Location { get; set; }
+    public bool HasCallChain { get; }
+    public CallChain? CallChain { get; set; }
+}`}</code></pre>
+
+      <h2 id="dataflowanalyzer">DataFlowAnalyzer</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`public class DataFlowAnalyzer
+{
+    public List<DataFlowChain> AnalyzeMethod(MethodDefinition method);
+    public void AnalyzeCrossMethodFlows();
+    public IEnumerable<ScanFinding> BuildDataFlowFindings();
+}`}</code></pre>
+    </>
+  )
+}

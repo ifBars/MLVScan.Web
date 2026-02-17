@@ -1,0 +1,24 @@
+import { Link } from "react-router-dom"
+
+export default function DevCliOverviewContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan.DevCLI brings scanning into local build loops and CI pipelines with actionable developer guidance.
+      </p>
+
+      <h2 id="core-workflow">Core Workflow</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>Scan a built DLL from a local path.</li>
+        <li>Return machine-readable output for CI systems.</li>
+        <li>Control pipeline pass/fail with severity thresholds.</li>
+      </ul>
+
+      <h2 id="next-pages">Next Pages</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/devcli/usage-and-ci" className="block hover:text-teal-300">Usage and CI</Link>
+        <Link to="/docs/libraries/devcli/system-commandline" className="block hover:text-teal-300">System.CommandLine</Link>
+      </div>
+    </>
+  )
+}

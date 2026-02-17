@@ -1,0 +1,72 @@
+import { Link } from "react-router-dom"
+
+export default function RuntimeOverviewContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan runtime packages run before mod execution and enforce policy based on severity and hash trust.
+      </p>
+
+      <h2 id="supported-loaders">Supported Loaders</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>MelonLoader (v0.6+)</li>
+        <li>BepInEx 5.x (Patcher flow)</li>
+        <li>BepInEx 6.x (IL2CPP Plugin flow)</li>
+      </ul>
+
+      <h2 id="configuration">Configuration</h2>
+      <p className="text-gray-300 mb-4">
+        Configuration files are automatically generated on first run. You can customize scanning behavior, severity thresholds, and whitelist settings.
+      </p>
+      
+      <h3 id="melonloader-config">MelonLoader</h3>
+      <p className="text-gray-400 text-sm mb-2">File: <code>UserData/MelonPreferences.cfg</code></p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
+        <code className="text-sm text-gray-300">{`[MLVScan]
+Enabled = true
+ScanLevel = "Detailed"  # "Fast" or "Detailed"
+AutoDisableHighSeverity = true
+LogToConsole = true`}</code>
+      </pre>
+
+      <h3 id="bepinex-config">BepInEx</h3>
+      <p className="text-gray-400 text-sm mb-2">File: <code>BepInEx/config/MLVScan.json</code></p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
+        <code className="text-sm text-gray-300">{`{
+  "Enabled": true,
+  "ScanLevel": "Detailed",
+  "AutoDisableHighSeverity": true,
+  "LogToConsole": true
+}`}</code>
+      </pre>
+
+      <h2 id="logs-and-reports">Logs and Reports</h2>
+      <p className="text-gray-300 mb-4">
+        Scan results are saved locally to your game directory. These JSON reports contain detailed findings for every mod scanned during startup.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h4 className="text-white font-semibold mb-2">MelonLoader</h4>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><strong className="text-gray-300">Reports:</strong> <code>UserData/MLVScan/Reports/</code></li>
+            <li><strong className="text-gray-300">Logs:</strong> <code>MelonLoader/Latest.log</code></li>
+          </ul>
+        </div>
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h4 className="text-white font-semibold mb-2">BepInEx</h4>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><strong className="text-gray-300">Reports:</strong> <code>BepInEx/MLVScan/Reports/</code></li>
+            <li><strong className="text-gray-300">Logs:</strong> <code>BepInEx/LogOutput.log</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="next-pages">Next Pages</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/mlvscan/whitelisting" className="block hover:text-teal-300">Whitelisting</Link>
+        <Link to="/docs/libraries/mlvscan/reports-and-triage" className="block hover:text-teal-300">Reports and Triage</Link>
+      </div>
+    </>
+  )
+}

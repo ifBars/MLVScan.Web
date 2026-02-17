@@ -1,0 +1,126 @@
+export default function LethalLizardFalsePositiveContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-300 mb-6">
+        This advisory addresses a false positive issue in MLVScan.Core 1.1.6 (and MLVScan mod implementation 1.6.2) and earlier versions that incorrectly flagged{' '}
+        <a 
+          href="https://www.nexusmods.com/schedule1/mods/58" 
+          className="text-teal-400 hover:text-teal-300 underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LethalLizard.ModManager
+        </a>{' '}
+        as <strong>Critical</strong> severity for using <code>Process.Start</code>. The mod uses this API for two legitimate purposes: opening the Mods folder in Windows Explorer and restarting the game. This issue was resolved in MLVScan.Core 1.1.7 and MLVScan 1.6.3.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="technical-details" className="text-2xl font-bold text-white mb-4">Technical Details</h2>
+      <p className="text-gray-300 mb-4">
+        LethalLizard.ModManager is a mod manager for Schedule One that provides functionality to browse, install, and manage mods. As part of its feature set, it legitimately uses <code>Process.Start</code> for:
+      </p>
+
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>
+          <strong>Opening folders in Windows Explorer:</strong> Uses{' '}
+          <code>Process.Start("explorer.exe", path)</code> to open the Mods folder when users click the "Open Mods Folder" button
+        </li>
+        <li>
+          <strong>Restarting the game:</strong> Uses the current process restart pattern to reload the game after installing or removing mods
+        </li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Flagged Patterns</h3>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Core's <code>ProcessStartRule</code> detected these as <strong>Critical</strong> severity findings because:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><code>Process.Start</code> can execute arbitrary programs</li>
+        <li>The rule did not distinguish between malicious and legitimate use cases</li>
+        <li>No contextual analysis was performed to recognize safe patterns like bare "explorer.exe" or current process restarts</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Example Code Triggering False Positive</h3>
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code className="text-sm text-gray-300">
+{`// Pattern 1: Opening Mods folder in Explorer (flagged as Critical)
+public void OpenModsFolder() {
+    string modsPath = Path.Combine(Application.dataPath, "Mods");
+    Process.Start("explorer.exe", modsPath); // FLAGGED
+}
+
+// Pattern 2: Restarting current game process (flagged as Critical)
+public void RestartGame() {
+    string exePath = Process.GetCurrentProcess().MainModule.FileName;
+    Process.Start(exePath); // FLAGGED
+    Application.Quit();
+}`}
+        </code>
+      </pre>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="detection" className="text-2xl font-bold text-white mb-4">Detection</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Core 1.1.6 and earlier flagged these patterns as <strong>Critical</strong> severity because:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><code>Process.Start</code> is a high-risk API that can execute any program</li>
+        <li>No contextual suppression logic existed for safe use cases</li>
+        <li>All <code>Process.Start</code> calls were treated equally regardless of arguments</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Root Cause</h3>
+      <p className="text-gray-300 mb-6">
+        The <code>ProcessStartRule</code> lacked contextual analysis to differentiate between malicious and legitimate uses of <code>Process.Start</code>. While the rule correctly identified a potentially dangerous API, it did not account for safe patterns commonly used by legitimate mods.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="resolution" className="text-2xl font-bold text-white mb-4">Resolution</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Core 1.1.7 introduced the <code>ShouldSuppressFinding</code> method in <code>ProcessStartRule</code> that performs contextual IL analysis to detect and suppress safe patterns:
+      </p>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Safe Patterns Now Recognized</h3>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>
+          <strong>Bare "explorer.exe" calls:</strong> Detects <code>Process.Start("explorer.exe", ...)</code> where the executable name is a literal string with no path manipulation
+        </li>
+        <li>
+          <strong>Current process restart:</strong> Recognizes the pattern <code>Process.GetCurrentProcess().MainModule.FileName</code> → <code>Process.Start()</code>
+        </li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Security Not Compromised</h3>
+      <p className="text-gray-300 mb-4">
+        The fix is carefully designed to <strong>only suppress known-safe patterns</strong> while still catching malicious variations:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><strong>Rejects path-based explorer.exe:</strong> <code>"C:\\Windows\\explorer.exe"</code>, <code>"MyMod\\explorer.exe"</code> still flagged</li>
+        <li><strong>Rejects path manipulation:</strong> <code>Path.Combine(..., "explorer.exe")</code>, string concatenation still flagged</li>
+        <li><strong>Rejects other executables:</strong> <code>cmd.exe</code>, <code>powershell.exe</code>, arbitrary .exe files still flagged</li>
+        <li><strong>Rejects modified restart paths:</strong> Restart patterns with string manipulation (e.g., adding arguments) still flagged</li>
+      </ul>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="references" className="text-2xl font-bold text-white mb-4">References</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>
+          <a 
+            href="https://www.nexusmods.com/schedule1/mods/58" 
+            className="text-teal-400 hover:text-teal-300 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LethalLizard.ModManager on Nexus Mods
+          </a>
+        </li>
+        <li>Test coverage: <code>ProcessStartRuleTests.cs</code> (30+ new tests)</li>
+        <li>Integration test: <code>FalsePositiveScanTests.cs</code></li>
+      </ul>
+    </>
+  )
+}

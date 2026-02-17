@@ -1,0 +1,101 @@
+export default function SimpleSingleplayerRespawnFalsePositiveContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-300 mb-6">
+        MLVScan.Core 1.1.5 and earlier incorrectly flagged SimpleSingleplayerRespawn.dll as a <strong>Critical</strong> severity threat. The mod uses dynamic assembly loading for legitimate IL patching functionality. This issue was resolved in MLVScan.Core 1.1.6 and MLVScan 1.6.2.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="technical-details" className="text-2xl font-bold text-white mb-4">Technical Details</h2>
+      <p className="text-gray-300 mb-4">
+        SimpleSingleplayerRespawn.dll uses dynamic assembly loading to inject respawn functionality into singleplayer game modes. This is a legitimate modding pattern that was incorrectly flagged by the previous <code>LoadFromStreamRule</code>.
+      </p>
+
+      <p className="text-gray-300 mb-4">
+        The mod uses the following patterns that were flagged:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Assembly loading from streams for runtime patching</li>
+        <li>Dynamic IL generation and method injection</li>
+        <li>Reflection-based assembly manipulation</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Why It Was Flagged</h3>
+      <p className="text-gray-300 mb-4">
+        The previous <code>LoadFromStreamRule</code> treated all assembly loading from streams as suspicious, without distinguishing between:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Malicious embedded payloads disguised as legitimate code</li>
+        <li>Legitimate runtime patching and IL weaving</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Example Code Pattern</h3>
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code className="text-sm text-gray-300">
+{`// Loading assembly for runtime patching (flagged as Critical)
+byte[] assemblyBytes = File.ReadAllBytes(patchPath);
+Assembly.Load(assemblyBytes); // FLAGGED
+
+// Dynamic method injection (flagged as Critical)
+var method = typeof(Player).GetMethod("Respawn");
+var patch = assembly.GetType("Patch").GetMethod("Prefix");
+Harmony.Patch(method, prefix: new HarmonyMethod(patch));`}
+        </code>
+      </pre>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="detection" className="text-2xl font-bold text-white mb-4">Detection</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Core 1.1.5 and earlier flagged these patterns as <strong>Critical</strong> severity because:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Assembly loading from byte arrays can execute arbitrary code</li>
+        <li>No contextual analysis distinguished patching from payload execution</li>
+        <li>Harmony patching patterns were treated as code injection attacks</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Root Cause</h3>
+      <p className="text-gray-300 mb-6">
+        The <code>LoadFromStreamRule</code> lacked contextual analysis to differentiate between malicious embedded payloads and legitimate runtime patching using libraries like Harmony. While the rule correctly identified a potentially dangerous API, it did not account for safe patterns commonly used by legitimate mods for game modification.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="resolution" className="text-2xl font-bold text-white mb-4">Resolution</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Core 1.1.6 replaced <code>LoadFromStreamRule</code> with <code>AssemblyDynamicLoadRule</code>, which performs comprehensive contextual analysis:
+      </p>
+
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><strong>Overload classification:</strong> Distinguishes Assembly.Load(byte[]) from Assembly.LoadFrom(path)</li>
+        <li><strong>Provenance analysis:</strong> Traces where assembly bytes originate</li>
+        <li><strong>Post-load behavior:</strong> Analyzes what happens after assembly loading</li>
+        <li><strong>Harmony detection:</strong> Recognizes legitimate patching patterns</li>
+        <li><strong>Risk scoring:</strong> Assigns contextual risk scores instead of blanket Critical severity</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Security Not Compromised</h3>
+      <p className="text-gray-300 mb-4">
+        The fix is carefully designed to <strong>maintain detection</strong> of actual threats:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Obfuscated assemblies loaded from resources are still flagged</li>
+        <li>Unknown byte arrays without provenance still trigger investigation</li>
+        <li>AssemblyResolve handler abuse is still detected</li>
+        <li>Post-load reflective invocation of suspicious methods is caught</li>
+      </ul>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="references" className="text-2xl font-bold text-white mb-4">References</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>Fixed in MLVScan.Core commit: <code>39ca223</code></li>
+        <li>New rule: <code>AssemblyDynamicLoadRule</code> (replaced LoadFromStreamRule)</li>
+        <li>Test coverage: Multiple unit tests for assembly loading scenarios</li>
+        <li>Integration test: <code>FalsePositiveScanTests.cs</code></li>
+      </ul>
+    </>
+  )
+}

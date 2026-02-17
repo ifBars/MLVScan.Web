@@ -1,0 +1,266 @@
+export default function PrivacyContent() {
+  return (
+    <>
+      <p className="text-sm text-gray-400 mb-4">
+        <strong className="text-white">Last Updated:</strong> February 16, 2026
+      </p>
+      
+      <p className="text-lg text-gray-300 mb-6">
+        MLVScan is a security ecosystem built on a fundamental principle: <strong className="text-white">your files never leave your device</strong>. We believe in data minimization and transparency across all our tools and libraries.
+      </p>
+
+      <h2 id="what-is-mlvscan">What MLVScan Is</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan is a comprehensive security scanning ecosystem for Unity mod assemblies. It includes multiple components designed for different use cases - from in-game protection to web-based scanning to developer tools.
+      </p>
+
+      <h2 id="ecosystem-components">Ecosystem Components</h2>
+      <p className="text-gray-300 mb-4">
+        The MLVScan ecosystem consists of the following components, all of which operate with the same privacy-first principles:
+      </p>
+
+      <h3 id="mlvscan-web">MLVScan.Web (Web Scanner)</h3>
+      <p className="text-gray-300 mb-4">
+        The browser-based scanner available at our website. It uses WebAssembly technology to analyze mod files entirely within your browser.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Client-side only:</strong> All scanning happens in your browser using WebAssembly</li>
+        <li><strong className="text-white">No uploads:</strong> Files are never sent to any server</li>
+        <li><strong className="text-white">Memory-only:</strong> Files are processed in RAM and never written to disk</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Web" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Web</a></li>
+      </ul>
+
+      <h3 id="mlvscan-runtime">MLVScan (Runtime Scanner / Mod Loader Plugin)</h3>
+      <p className="text-gray-300 mb-4">
+        The in-game security plugin for MelonLoader and BepInEx. It scans mods before they load to protect your game session.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Local filesystem:</strong> Scans mod files on your local drive</li>
+        <li><strong className="text-white">No network access:</strong> Does not communicate with any external servers</li>
+        <li><strong className="text-white">Local reports:</strong> Scan reports are saved to your local machine only</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan</a></li>
+      </ul>
+
+      <h3 id="mlvscan-core">MLVScan.Core</h3>
+      <p className="text-gray-300 mb-4">
+        The cross-platform malware detection engine that powers all MLVScan components. Available as a NuGet package for integration into other projects.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Library only:</strong> Provides scanning APIs for developers</li>
+        <li><strong className="text-white">No telemetry:</strong> The library does not collect any data</li>
+        <li><strong className="text-white">Host-dependent:</strong> Privacy depends on the application using the library</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Core" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Core</a></li>
+        <li><strong className="text-white">NuGet:</strong> <a href="https://www.nuget.org/packages/MLVScan.Core/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">nuget.org/packages/MLVScan.Core</a></li>
+      </ul>
+
+      <h3 id="mlvscan-wasm">MLVScan.WASM</h3>
+      <p className="text-gray-300 mb-4">
+        WebAssembly adapter for MLVScan.Core, enabling browser-based scanning without server dependencies.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Browser runtime:</strong> Runs entirely in the browser</li>
+        <li><strong className="text-white">Zero server dependencies:</strong> Perfect for static hosting like GitHub Pages</li>
+        <li><strong className="text-white">In-memory processing:</strong> Uses Stream API, no file system access</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.WASM" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.WASM</a></li>
+      </ul>
+
+      <h3 id="mlvscan-devcli">MLVScan.DevCLI</h3>
+      <p className="text-gray-300 mb-4">
+        Command-line tool for developers to scan mods during development with remediation guidance.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Local execution:</strong> Runs on your development machine</li>
+        <li><strong className="text-white">No network calls:</strong> Does not transmit scan results or files</li>
+        <li><strong className="text-white">CI/CD ready:</strong> Can be integrated into build pipelines without exposing data</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.DevCLI" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.DevCLI</a></li>
+        <li><strong className="text-white">NuGet:</strong> <a href="https://www.nuget.org/packages/MLVScan.DevCLI/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">nuget.org/packages/MLVScan.DevCLI</a></li>
+      </ul>
+
+      <h3 id="documentation-wikis">Documentation Wikis</h3>
+      <p className="text-gray-300 mb-4">
+        GitHub-hosted wikis for user and developer documentation.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">MLVScan Wiki:</strong> <a href="https://github.com/ifBars/MLVScan/wiki" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/wiki</a></li>
+        <li><strong className="text-white">MLVScan.Core Wiki:</strong> <a href="https://github.com/ifBars/MLVScan.Core/wiki" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Core/wiki</a></li>
+        <li><strong className="text-white">Static content:</strong> Wikis contain only documentation, no tracking or data collection</li>
+      </ul>
+
+      <h2 id="how-it-works">How It Works</h2>
+      <p className="text-gray-300 mb-4">
+        Across all MLVScan components, the process follows the same privacy-preserving pattern:
+      </p>
+      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">File Selection:</strong> You select or the system identifies a file to scan</li>
+        <li><strong className="text-white">Local Processing:</strong> The file is loaded into memory on your device</li>
+        <li><strong className="text-white">Analysis:</strong> MLVScan's scanning engine analyzes the file locally using Mono.Cecil for IL analysis</li>
+        <li><strong className="text-white">Results:</strong> Findings are displayed or saved locally on your device</li>
+      </ol>
+      <p className="text-gray-300 mb-6">
+        <strong className="text-teal-400">Your file is never uploaded to any server.</strong> All analysis happens on your device, whether in a browser, game, or development environment.
+      </p>
+
+      <h2 id="network-connections">Network Connections</h2>
+      <p className="text-gray-300 mb-4">
+        The only network connections MLVScan makes are:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Web Scanner:</strong> When you first visit the MLVScan website, static assets are downloaded from GitHub Pages</li>
+        <li><strong className="text-white">WASM Module Loading:</strong> The scanning engine is downloaded and cached by your browser</li>
+        <li><strong className="text-white">NuGet Installation:</strong> When installing MLVScan.Core or DevCLI via NuGet, packages are downloaded from NuGet.org</li>
+        <li><strong className="text-white">Documentation:</strong> Accessing wiki pages on GitHub</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        During the scanning process itself: <strong className="text-white">no data is sent to any server</strong>, no external API calls are made, and no telemetry is transmitted.
+      </p>
+
+      <h2 id="data-we-do-not-collect">Data We Do NOT Collect</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan does not collect, store, or transmit any of the following across any component:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Your scanned files or assemblies</li>
+        <li>Scan results or findings</li>
+        <li>Your IP address</li>
+        <li>Your browser fingerprints or user agent</li>
+        <li>Usage statistics or analytics</li>
+        <li>Diagnostic data or crash reports</li>
+        <li>Your game or system configuration</li>
+        <li>Any personal information</li>
+      </ul>
+
+      <h2 id="no-cookies">No Cookies</h2>
+      <p className="text-gray-300 mb-6">
+        MLVScan does not use cookies. There are no tracking mechanisms, no session identifiers, and no persistent storage of any kind on our end. The web scanner uses only local browser storage for caching the WASM module, which contains no user data.
+      </p>
+
+      <h2 id="no-analytics">No Analytics</h2>
+      <p className="text-gray-300 mb-4">
+        We do not use any analytics or tracking services in any MLVScan component, including:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Google Analytics</li>
+        <li>Plausible</li>
+        <li>Fathom</li>
+        <li>Hotjar</li>
+        <li>Microsoft Application Insights</li>
+        <li>Sentry or other error tracking</li>
+        <li>Any other analytics or tracking service</li>
+      </ul>
+
+      <h2 id="open-source">Open Source</h2>
+      <p className="text-gray-300 mb-4">
+        All MLVScan components are open source (GPL-3.0). You can review the entire codebase to verify:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>No network calls during scanning</li>
+        <li>No data exfiltration</li>
+        <li>No tracking code</li>
+        <li>Complete transparency in all operations</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        The scanning engine runs locally in all implementations - you can audit it yourself. All repositories are available at <a href="https://github.com/ifBars" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars</a>.
+      </p>
+
+      <h2 id="third-party-services">Third-Party Services</h2>
+      <p className="text-gray-300 mb-4">
+        The third-party services involved in the MLVScan ecosystem are:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">GitHub Pages:</strong> Hosts the static web scanner. GitHub's servers receive standard HTTP requests to deliver website files only. They do not have access to any scanning data.</li>
+        <li><strong className="text-white">NuGet.org:</strong> Hosts the MLVScan.Core and MLVScan.DevCLI packages. Standard NuGet package download traffic only.</li>
+        <li><strong className="text-white">GitHub:</strong> Hosts the repositories and wikis. Standard GitHub access patterns only.</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        These services only receive standard traffic for delivering content. They never receive your scanned files or scan results.
+      </p>
+
+      <h2 id="data-storage-locations">Data Storage Locations</h2>
+      <p className="text-gray-300 mb-4">
+        When using MLVScan components, data is stored in the following locations:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Web Scanner:</strong> No persistent storage. Files exist only in browser memory during the scan.</li>
+        <li><strong className="text-white">Runtime Scanner (MelonLoader):</strong> Reports saved to <code className="bg-gray-800 px-1 rounded">UserData/MLVScan/Reports/</code> in your game directory. Configuration in <code className="bg-gray-800 px-1 rounded">MelonPreferences.cfg</code>.</li>
+        <li><strong className="text-white">Runtime Scanner (BepInEx):</strong> Reports saved to <code className="bg-gray-800 px-1 rounded">BepInEx/MLVScan/Reports/</code> in your game directory. Configuration in <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.json</code>.</li>
+        <li><strong className="text-white">DevCLI:</strong> No persistent storage unless you explicitly redirect output to a file.</li>
+      </ul>
+
+      <h2 id="browser-permissions">Browser Permissions</h2>
+      <p className="text-gray-300 mb-4">
+        The web scanner requires minimal browser permissions:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">File Reading:</strong> Read-only access to files you explicitly select via file input dialogs</li>
+        <li><strong className="text-white">Local Storage:</strong> Used only to cache the WASM scanning module for faster subsequent loads</li>
+        <li><strong className="text-white">Not Requested:</strong> Camera, microphone, location, notifications, clipboard, or any other sensitive permissions</li>
+      </ul>
+
+      <h2 id="data-retention">Data Retention</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Web Scanner:</strong> Files exist in memory only during scanning and are cleared immediately after. The WASM module is cached by your browser according to standard HTTP caching rules. Clear your browser cache to remove it.</li>
+        <li><strong className="text-white">Runtime Scanner:</strong> Reports are saved locally until you manually delete them from the game directory.</li>
+        <li><strong className="text-white">DevCLI:</strong> No data retained unless you redirect output to files.</li>
+      </ul>
+
+      <h2 id="security-measures">Security Measures</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan employs several security measures to protect your data:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Read-Only Operations:</strong> The scanning engine only reads files; it never modifies them</li>
+        <li><strong className="text-white">Memory Isolation:</strong> Each scan operates in isolated memory space and data is cleared when scanning completes</li>
+        <li><strong className="text-white">No Network During Scan:</strong> Once the scanner is loaded, no network connections are made during the scanning process</li>
+        <li><strong className="text-white">Open Source Verification:</strong> All code is publicly auditable to verify security claims</li>
+      </ul>
+
+      <h2 id="user-rights">Your Rights</h2>
+      <p className="text-gray-300 mb-4">
+        Because MLVScan does not collect, store, or process any personal data:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Right to Access:</strong> Not applicable - we have no data about you to provide</li>
+        <li><strong className="text-white">Right to Deletion:</strong> Not applicable - we have no data about you to delete</li>
+        <li><strong className="text-white">Right to Portability:</strong> Not applicable - we have no data about you to transfer</li>
+        <li><strong className="text-white">Right to Object:</strong> Not applicable - we perform no data processing about you</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        Our zero-data architecture means we are inherently compliant with <strong className="text-white">GDPR</strong>, <strong className="text-white">CCPA</strong>, and similar privacy regulations worldwide. No cookie consent banner is needed because we don't use cookies.
+      </p>
+
+      <h2 id="github-privacy">GitHub Pages Hosting</h2>
+      <p className="text-gray-300 mb-4">
+        Our web scanner is hosted on GitHub Pages. While MLVScan itself collects no data, GitHub may log standard web server information when serving pages:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Server Logs:</strong> GitHub may log IP addresses, user agents, and access times for infrastructure purposes</li>
+        <li><strong className="text-white">Beyond Our Control:</strong> This is standard CDN behavior and is handled according to <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">GitHub's Privacy Policy</a></li>
+        <li><strong className="text-white">No Scan Data:</strong> GitHub never receives your uploaded files or scan results - only standard web requests for page assets</li>
+      </ul>
+
+      <h2 id="export-sharing">Export and Sharing of Results</h2>
+      <p className="text-gray-300 mb-6">
+        If you export or share scan reports generated by any MLVScan component, that is your responsibility. We do not facilitate sharing results with third parties. Review reports before sharing to ensure you don't inadvertently leak sensitive information about your system or files.
+      </p>
+
+      <h2 id="children">Children's Privacy</h2>
+      <p className="text-gray-300 mb-6">
+        MLVScan is not designed for or directed at children under 13. We do not knowingly collect information from children. The tool is intended for security-conscious users analyzing game modifications.
+      </p>
+
+      <h2 id="changes">Changes to This Policy</h2>
+      <p className="text-gray-300 mb-6">
+        If we make any changes to this privacy policy, we will update this page. No changes will retroactively expand our data collection practices. Given our privacy-first architecture, it is highly unlikely that this policy will ever need to change to permit data collection.
+      </p>
+
+      <h2 id="contact">Contact</h2>
+      <p className="text-gray-300 mb-4">
+        If you have questions about this privacy policy or any MLVScan component, please:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Open an issue at <a href="https://github.com/ifBars/MLVScan/issues" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/issues</a></li>
+        <li>Join our Discord: <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">discord.gg/UD4K4chKak</a></li>
+      </ul>
+    </>
+  )
+}

@@ -1,0 +1,46 @@
+export default function DevCliSystemCommandLineContent() {
+  return (
+    <>
+      <h2 id="recommended-foundation">Recommended Foundation</h2>
+      <p className="text-gray-300 mb-4">
+        <code>System.CommandLine</code> references point to a stable pattern: define options,
+        read values from parse results, and use async actions when handlers perform I/O.
+      </p>
+
+      <h2 id="sync-pattern">Synchronous Pattern</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var root = new RootCommand("MLVScan developer scanner");
+
+var fileOption = new Option<string>("--file") { Required = true };
+var failOnOption = new Option<string>("--fail-on");
+
+root.Options.Add(fileOption);
+root.Options.Add(failOnOption);
+
+root.SetAction(parseResult =>
+{
+    var file = parseResult.GetValue(fileOption);
+    var failOn = parseResult.GetValue(failOnOption);
+    return RunScan(file, failOn);
+});
+
+return root.Parse(args).Invoke();`}</code></pre>
+
+      <h2 id="async-pattern">Asynchronous Pattern</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`root.SetAction(async (parseResult, cancellationToken) =>
+{
+    var file = parseResult.GetValue(fileOption);
+    await RunScanAsync(file, cancellationToken);
+    return 0;
+});
+
+return await root.Parse(args).InvokeAsync();`}</code></pre>
+
+      <h2 id="why-it-matters">Why It Matters</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300">
+        <li>Predictable cancellation behavior in CI and local shells.</li>
+        <li>Clear command contracts for tool consumers.</li>
+        <li>Easy extension for subcommands without breaking existing scripts.</li>
+      </ul>
+    </>
+  )
+}

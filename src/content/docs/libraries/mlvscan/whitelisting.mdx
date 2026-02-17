@@ -1,0 +1,27 @@
+export default function RuntimeWhitelistingContent() {
+  return (
+    <>
+      <h2 id="why-hash-based">Why Hash-Based</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>SHA256 detects tampering across file renames.</li>
+        <li>Trust is pinned to exact binary content, not filename.</li>
+      </ul>
+
+      <h2 id="workflow">Recommended Workflow</h2>
+      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+        <li>Collect the hash from report output.</li>
+        <li>Verify source and ask community for confirmation.</li>
+        <li>Add hash to <code>WhitelistedHashes</code> only after verification.</li>
+      </ol>
+
+      <h2 id="config-example">Config Example</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[MLVScan]
+WhitelistedHashes = ["3918e145...", "8e6dd194..."]
+DisableThreshold = Medium
+DumpFullIlReports = false`}</code></pre>
+
+      <h2 id="manual-hash">Manual Hash Check</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto"><code>{`Get-FileHash -Algorithm SHA256 "path\\to\\mod.dll"`}</code></pre>
+    </>
+  )
+}

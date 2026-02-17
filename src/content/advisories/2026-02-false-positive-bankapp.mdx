@@ -1,0 +1,146 @@
+export default function BankAppFalsePositiveContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-300 mb-6">
+        BankApp 2.0.3 and earlier were incorrectly flagged by MLVScan as a <strong>High</strong> severity
+        threat. The mod's <code>EnsureIconFileExists</code> coroutine downloads its phone app icon from
+        Imgur on first launch and writes it to <code>UserData/BankApp/</code> — a legitimate one-time
+        asset-caching pattern. The false positive was resolved in BankApp 2.0.4, released February 10th,
+        2026, where the mod author embedded the icon as an embedded resource, eliminating the
+        runtime download entirely.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="technical-details" className="text-2xl font-bold text-white mb-4">Technical Details</h2>
+      <p className="text-gray-300 mb-4">
+        BankApp is a MelonLoader mod for Schedule One that adds a banking phone app UI, allowing
+        players to deposit and withdraw funds and track weekly deposit limits. On first run, it
+        needed to place a PNG icon file into the mod's <code>UserData/BankApp/</code> folder so that
+        the phone home screen could display the app icon.
+      </p>
+
+      <p className="text-gray-300 mb-4">
+        Both flagged patterns appear in the compiler-generated state machine for the
+        <code> EnsureIconFileExists</code> coroutine (<code>&lt;EnsureIconFileExists&gt;d__32.MoveNext</code>):
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>A network call via <code>UnityWebRequest</code> to fetch the icon PNG from <code>https://i.imgur.com/hsVNqRx.png</code></li>
+        <li>A file write via <code>File.WriteAllBytes</code> to persist the downloaded image to <code>UserData/BankApp/</code></li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Why It Was Flagged</h3>
+      <p className="text-gray-300 mb-4">
+        MLVScan's multi-signal detection aggregates suspicious signals across all instructions in a
+        method. When both <code>HasNetworkCall</code> and <code>HasFileWrite</code> are set in the same
+        method, <code>MethodSignals.IsHighRiskCombination()</code> returns <code>true</code>:
+      </p>
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code className="text-sm text-gray-300">
+{`// MethodSignals.cs — triggers a High-risk finding
+// Network + file write = download & execute payload
+if (HasNetworkCall && HasFileWrite)
+    return true;`}
+        </code>
+      </pre>
+      <p className="text-gray-300 mb-4">
+        This combination is a reliable indicator of a download-and-execute payload dropper. The
+        rule correctly identifies a dangerous pattern in isolation, but lacks the context to
+        distinguish between a dropper writing an executable and a mod writing a PNG to its own
+        UserData folder.
+      </p>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Flagged Code Pattern</h3>
+      <p className="text-gray-300 mb-4">
+        The following reconstructed C# represents the logic inside the coroutine that triggered
+        both signals:
+      </p>
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code className="text-sm text-gray-300">
+{`// EnsureIconFileExists coroutine (pre-fix)
+private IEnumerator EnsureIconFileExists() {
+    string iconPath = Path.Combine("UserData", "BankApp", "icon.png");
+    if (!File.Exists(iconPath)) {
+        // Network call — triggers HasNetworkCall signal
+        var request = UnityWebRequest.Get("https://i.imgur.com/hsVNqRx.png"); // FLAGGED
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success) {
+            // File write — triggers HasFileWrite signal
+            File.WriteAllBytes(iconPath, request.downloadHandler.data); // FLAGGED
+        }
+    }
+}`}
+        </code>
+      </pre>
+      <p className="text-gray-300 mb-6">
+        Because C# <code>async</code>/<code>IEnumerator</code> methods are compiled into state machine
+        classes, this code appears in the <code>MoveNext()</code> method of the generated
+        <code> &lt;EnsureIconFileExists&gt;d__32</code> type — which is the location reported in the
+        scan finding.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="detection" className="text-2xl font-bold text-white mb-4">Detection</h2>
+      <p className="text-gray-300 mb-4">
+        BankApp 2.0.3 and earlier produced the following finding when scanned:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><strong>Location:</strong> <code>BankApp.Core/&lt;EnsureIconFileExists&gt;d__32.MoveNext</code></li>
+        <li><strong>Severity:</strong> High</li>
+        <li><strong>Description:</strong> High risk: Multiple suspicious patterns detected (network call + file write)</li>
+        <li><strong>Signal count:</strong> 2 suspicious signals</li>
+      </ul>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Root Cause</h3>
+      <p className="text-gray-300 mb-6">
+        The <code>IsHighRiskCombination()</code> check in <code>MethodSignals</code> treats any
+        co-occurrence of a network download and a file write as a high-risk dropper pattern. This
+        is a sound heuristic for malware — but it does not account for benign uses such as
+        downloading a static image asset on first launch. Additionally, the write target
+        (<code>UserData/BankApp/</code>) and the source URL (an Imgur image CDN) were not evaluated
+        as contextual signals to reduce the severity of the finding.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="resolution" className="text-2xl font-bold text-white mb-4">Resolution</h2>
+
+      <h3 className="text-lg font-semibold text-white mb-3">Mod Author Fix — BankApp 2.0.4 (February 10, 2026)</h3>
+      <p className="text-gray-300 mb-4">
+        The mod author released BankApp 2.0.4 on{' '}
+        <a
+          href="https://www.nexusmods.com/schedule1/mods/678?tab=posts"
+          className="text-teal-400 hover:text-teal-300 underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Nexus Mods
+        </a>{' '}
+        with the icon PNG compiled in as a .NET embedded resource in the DLL itself. This eliminates
+        both the network call and the file write entirely — the coroutine was replaced with a
+        simple <code>Assembly.GetManifestResourceStream</code> call. BankApp 2.0.4 and later produce
+        zero findings in MLVScan.
+      </p>
+
+      <hr className="border-gray-800 my-8" />
+
+      <h2 id="references" className="text-2xl font-bold text-white mb-4">References</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>
+          <a
+            href="https://www.nexusmods.com/schedule1/mods/678?tab=posts"
+            className="text-teal-400 hover:text-teal-300 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            BankApp 2.0.4 release post on Nexus Mods
+          </a>
+        </li>
+        <li>Triggering rule: <code>MethodSignals.IsHighRiskCombination()</code> — network call + file write combination</li>
+        <li>Flagged method: <code>BankApp.Core/&lt;EnsureIconFileExists&gt;d__32.MoveNext</code></li>
+      </ul>
+    </>
+  )
+}

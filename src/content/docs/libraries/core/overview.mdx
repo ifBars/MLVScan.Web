@@ -1,0 +1,27 @@
+import { Link } from "react-router-dom"
+
+export default function CoreOverviewContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan.Core is the shared detection engine used by runtime mods, the web scanner, and DevCLI.
+        It provides static IL analysis via Mono.Cecil, rule execution, and structured output.
+      </p>
+
+      <h2 id="what-you-get">What You Get</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>Rule-based detections grouped by severity.</li>
+        <li>Call-chain consolidation for traceable entry-point paths.</li>
+        <li>Data-flow tracking for multi-step attack patterns.</li>
+        <li>Schema-friendly DTO output across all MLVScan surfaces.</li>
+      </ul>
+
+      <h2 id="next-pages">Next Pages</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/core/getting-started" className="block hover:text-teal-300">Getting Started</Link>
+        <Link to="/docs/libraries/core/advanced-analysis" className="block hover:text-teal-300">Advanced Analysis</Link>
+        <Link to="/docs/libraries/core/api-reference" className="block hover:text-teal-300">API Reference</Link>
+      </div>
+    </>
+  )
+}

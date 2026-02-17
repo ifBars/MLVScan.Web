@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "names": ["Colorful.dll", "ScheduleOne-Backpack.dll"],
+    "stolen_mod": "JustEnoughDrugs",
+    "stolen_mod_link": "https://www.nexusmods.com/schedule1/mods/693",
+    "date": "2025-4-17",
+    "type": "RAT",
+    "source": "NexusMods",
+    "severity": "Critical",
+    "description": "Drops a RAT (Remote Access Tool) on the system.",
+    "techniques": ["Raw Bytes", "Assembly Loading"],
+    "hash": "85f81d5038422172490908b6ad6ec4003474bcef8642ac5ede4f8ae64c63bd8b",
+    "vt_link": "https://www.virustotal.com/gui/file/85f81d5038422172490908b6ad6ec4003474bcef8642ac5ede4f8ae64c63bd8b",
+    "triggered_rules": ["LoadFromStream usage"]
+  },
+  {
+    "id": 2,
+    "names": ["BlackMarket.dll", "GoldenBricks.dll", "ManorModPlus.dll"],
+    "stolen_mod": "GoldenBricks",
+    "stolen_mod_link": "https://www.nexusmods.com/schedule1/mods/704",
+    "date": "2025-5-12",
+    "type": "RAT", 
+    "source": "NexusMods",
+    "severity": "Critical",
+    "description": "Drops a RAT (Remote Access Tool) on the system.",
+    "techniques": ["Shell Execution", "Embedded Assembly"],
+    "hash": "04bc23539b04fb96c563f1be22ca0133d31ef4cad57db7fb387d84cdd6944205",
+    "vt_link": "https://www.virustotal.com/gui/file/04bc23539b04fb96c563f1be22ca0133d31ef4cad57db7fb387d84cdd6944205",
+    "triggered_rules": ["Shell32 API usage"]
+  },
+  {
+    "id": 3,
+    "names": ["VisualOverhaulWeatherEffects.dll", "GoldenBricks.dll"],
+    "stolen_mod": "GoldenBricks",
+    "stolen_mod_link": "https://www.nexusmods.com/schedule1/mods/704",
+    "date": "2025-5-13",
+    "type": "RAT", 
+    "source": "NexusMods",
+    "severity": "Critical",
+    "description": "Drops a RAT (Remote Access Tool) on the system.",
+    "techniques": ["Shell Execution", "Embedded Assembly"],
+    "hash": "4a9022fe083139537fc4a7cc0eb7b245a01473f93c9e8f0d0fc438816eedc4a1",
+    "vt_link": "https://www.virustotal.com/gui/file/4a9022fe083139537fc4a7cc0eb7b245a01473f93c9e8f0d0fc438816eedc4a1",
+    "triggered_rules": ["Shell32 API usage"]
+  },
+  {
+    "id": 4,
+    "names": ["Prostitution.dll", "NastyMod.dll"],
+    "stolen_mod": "NastyMod",
+    "stolen_mod_link": "https://www.nexusmods.com/schedule1/mods/86",
+    "date": "2025-5-15",
+    "type": "RAT", 
+    "source": "NexusMods",
+    "severity": "Critical",
+    "description": "Drops a RAT (Remote Access Tool) on the system.",
+    "techniques": ["Dll Import", "Embedded Assembly"],
+    "hash": "27a7ac1f0c12bb13599707ecf2db383bf5e5d0eef9df845be5c2a1bb06ca27d8",
+    "vt_link": "https://www.virustotal.com/gui/file/27a7ac1f0c12bb13599707ecf2db383bf5e5d0eef9df845be5c2a1bb06ca27d8/community",
+    "triggered_rules": ["Dll Import usage"]
+  }
+] 

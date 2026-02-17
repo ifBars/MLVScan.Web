@@ -1,0 +1,54 @@
+import { Link } from "react-router-dom"
+
+export default function WasmOverviewContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan.WASM is a thin, browser-compatible layer over MLVScan.Core. It allows the full scanning engine to run inside a web browser using WebAssembly, enabling zero-trust, client-side-only analysis of game mods. The runtime is consumed via the <strong className="text-white">@mlvscan/wasm-core</strong> npm package, which handles loading the .NET WASM runtime, initializing the scanner, and exposing a small API with error handling and optional mock fallback.
+      </p>
+
+      <h2 id="core-capabilities">Core Capabilities</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li><strong className="text-white">Privacy-First:</strong> Files are processed in-memory and never leave the user's device.</li>
+        <li><strong className="text-white">Full Engine Parity:</strong> Runs the exact same IL analysis rules as the CLI and Runtime scanners.</li>
+        <li><strong className="text-white">Framework Agnostic:</strong> Designed to be consumed by React, Vue, Svelte, or vanilla JS via the .NET 8 JS interop model.</li>
+      </ul>
+
+      <h2 id="architecture">Architecture</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
+        <code>{`┌─────────────────────┐
+│   React Web App     │
+│  (MLVScan.Web v2)   │
+└──────────┬──────────┘
+           │
+           │ @mlvscan/wasm-core
+           │ initScanner / scanAssembly
+           ▼
+┌─────────────────────┐
+│   dotnet.js         │
+│  (WASM Runtime)     │
+└──────────┬──────────┘
+           │
+           │ Interop (Unmarshalled)
+           ▼
+┌─────────────────────┐
+│   MLVScan.WASM      │
+│  (C# Logic)         │
+└──────────┬──────────┘
+           │
+           │ In-Memory Stream
+           ▼
+┌─────────────────────┐
+│   MLVScan.Core      │
+│  (Mono.Cecil)       │
+└─────────────────────┘`}</code>
+      </pre>
+
+      <h2 id="next-pages">Next Pages</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/wasm/web-integration" className="block hover:text-teal-300">Web Integration (React/Vite)</Link>
+        <Link to="/docs/libraries/wasm/js-interop" className="block hover:text-teal-300">JS Interop Details</Link>
+      </div>
+    </>
+  )
+}

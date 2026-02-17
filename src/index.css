@@ -1,0 +1,299 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to sure everything still looks
+  correct.
+*/
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/*
+  ---
+  Re-adding the original customizations using standard CSS variables 
+  that are mapped in the @theme block above.
+  ---
+*/
+
+:root {
+  /* Default to dark to match MLVScan-site vibe */
+  --background: 222.2 30% 6%;
+  --foreground: 210 30% 98%;
+
+  --card: 222.2 25% 8%;
+  --card-foreground: 210 30% 98%;
+
+  --popover: 222.2 25% 8%;
+  --popover-foreground: 210 30% 98%;
+
+  /* MLVScan Brand Colors - Teal/Cyan (from logo) */
+  --primary: 173 80% 44%;
+  /* #16e0bd roughly - teal */
+  --primary-foreground: 222.2 30% 6%;
+
+  --secondary: 217.2 25% 15%;
+  --secondary-foreground: 210 30% 98%;
+
+  --muted: 217.2 25% 15%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 217.2 25% 15%;
+  --accent-foreground: 210 30% 98%;
+
+  --destructive: 0 62% 35%;
+  --destructive-foreground: 210 30% 98%;
+
+  --border: 217.2 25% 20%;
+  --input: 217.2 25% 20%;
+  --ring: 173 80% 44%;
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Dark mode overrides if any, but default is dark based on above */
+}
+
+/* Base styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full hover:bg-primary/50;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary-foreground;
+  }
+}
+
+/* Components and Utilities */
+@layer components {
+
+  /* MLVScan Custom Components */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-300 via-emerald-300 to-cyan-300;
+  }
+
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl;
+  }
+
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.1);
+  }
+
+  .mesh-background {
+    background-image:
+      radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+  }
+
+  /* Fade mesh in from top so section transition isn’t jarring */
+  .features-mesh {
+    opacity: 0.18;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 25%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%);
+  }
+
+  .scan-button {
+    @apply relative overflow-hidden transition-transform duration-200;
+    background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+  }
+
+  .scan-button::before {
+    content: '';
+    @apply absolute inset-0 bg-white/20;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+  }
+
+  .scan-button:hover::before {
+    transform: translateX(100%);
+  }
+
+  .finding-card {
+    @apply relative overflow-hidden transition-all duration-300;
+    @apply hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5;
+  }
+
+  .finding-card::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-1;
+  }
+
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(45, 212, 191, 0.3) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: 0 0;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  @keyframes gridMove {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 48px 48px;
+    }
+  }
+
+  .hero-glow {
+    background: radial-gradient(circle at top left, rgba(45, 212, 191, 0.2), transparent 55%),
+      radial-gradient(circle at 20% 40%, rgba(14, 116, 144, 0.25), transparent 60%);
+  }
+
+  /* Navbar glass effect */
+  .navbar-glass {
+    @apply bg-background/80 backdrop-blur-xl border-b border-white/10;
+  }
+
+  /* Smooth navbar slide animation */
+  .navbar-slide {
+    transition: transform 200ms ease-out,
+                opacity 200ms ease-out,
+                box-shadow 200ms ease-out,
+                background-color 200ms ease-out;
+  }
+
+  .navbar-visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .navbar-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: animateIn 0.5s ease-out forwards;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-display {
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

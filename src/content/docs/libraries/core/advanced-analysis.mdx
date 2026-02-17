@@ -1,0 +1,30 @@
+export default function CoreAdvancedAnalysisContent() {
+  return (
+    <>
+      <h2 id="call-graph-analysis">Call Graph Analysis</h2>
+      <p className="text-gray-300 mb-4">
+        Call graph mode collapses declaration + call-site noise into one actionable finding rooted at an entry point.
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[ENTRY] ModEntry.OnInitializeMelon: calls InternalHelper
+  -> [CALL] InternalHelper.Execute:42
+    -> [DECL] NativeBridge.ShellExecuteA`}</code></pre>
+
+      <h2 id="data-flow-analysis">Data Flow Analysis</h2>
+      <p className="text-gray-300 mb-4">
+        Data flow tracks source, transform, and sink operations to identify behavioral chains instead of isolated opcodes.
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[SOURCE] WebClient.DownloadData
+  -> [TRANSFORM] Convert.FromBase64String
+  -> [SINK] File.WriteAllBytes
+  -> [SINK] Process.Start`}</code></pre>
+
+      <h2 id="config-depth">Depth and Performance</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var config = new ScanConfig
+{
+    EnableCrossMethodAnalysis = true,
+    MaxCallChainDepth = 5,
+    EnableReturnValueTracking = true
+};`}</code></pre>
+    </>
+  )
+}

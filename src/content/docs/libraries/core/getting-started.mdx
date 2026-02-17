@@ -1,0 +1,39 @@
+export default function CoreGettingStartedContent() {
+  return (
+    <>
+      <h2 id="installation">Installation</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`dotnet add package MLVScan.Core`}</code></pre>
+
+      <h2 id="minimal-scan">Minimal Scan</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`using MLVScan.Services;
+
+var rules = RuleFactory.CreateDefaultRules();
+var scanner = new AssemblyScanner(rules);
+var findings = scanner.Scan("MyMod.dll");
+
+foreach (var finding in findings)
+{
+    Console.WriteLine($"[{finding.Severity}] {finding.Description}");
+}`}</code></pre>
+
+      <h2 id="stream-mode">Stream Mode</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`using var stream = File.OpenRead("MyMod.dll");
+var findings = scanner.Scan(stream, "MyMod.dll");`}</code></pre>
+
+      <h2 id="mono-cecil-notes">Mono.Cecil Best Practices</h2>
+      <p className="text-gray-300 mb-3">
+        When scanning assemblies with external references, it is recommended to use explicit <code>ReaderParameters</code> and resolver directories.
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var resolver = new DefaultAssemblyResolver();
+resolver.AddSearchDirectory(@"C:\\Game\\Managed");
+
+var readerParams = new ReaderParameters
+{
+    AssemblyResolver = resolver,
+    ReadSymbols = false
+};
+
+using var assembly = AssemblyDefinition.ReadAssembly("MyMod.dll", readerParams);`}</code></pre>
+    </>
+  )
+}
