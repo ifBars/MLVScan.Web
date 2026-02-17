@@ -150,7 +150,7 @@ const Footer = () => {
             <div className="flex items-center space-x-6 text-sm text-gray-500">
               <Link to="/docs/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link to="/docs/terms" className="hover:text-white transition-colors">Terms</Link>
-              <a href="https://github.com/ifBars/MLVScan/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">License</a>
+              <a href="https://github.com/ifBars/MLVScan/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">License</a>
             </div>
           </div>
         </div>
