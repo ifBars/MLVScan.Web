@@ -1,0 +1,178 @@
+export default function TermsContent() {
+  return (
+    <>
+      <p className="text-sm text-gray-400 mb-4">
+        <strong className="text-white">Last Updated:</strong> February 16, 2026
+      </p>
+
+      <p className="text-lg text-gray-300 mb-6">
+        These Terms of Service ("Terms") govern your use of the MLVScan ecosystem and its components. By using any MLVScan tool, you agree to these Terms.
+      </p>
+
+      <h2 id="acceptance-of-terms">Acceptance of Terms</h2>
+      <p className="text-gray-300 mb-6">
+        By accessing, downloading, or using any MLVScan component, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree, you must not use MLVScan.
+      </p>
+
+      <h2 id="what-is-mlvscan">What MLVScan Is</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan is a security scanning ecosystem for Unity mod assemblies. It includes multiple open-source components designed to help users analyze and identify potentially malicious code in game modifications.
+      </p>
+
+      <h2 id="permitted-use">Permitted Use</h2>
+      <p className="text-gray-300 mb-4">
+        You may use MLVScan for the following purposes:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Scanning game modifications and assemblies for security analysis</li>
+        <li>Educational purposes to understand how mod security scanning works</li>
+        <li>Integration into your own projects under the terms of the GPL-3.0 license</li>
+        <li>Security research on files you own or have permission to analyze</li>
+      </ul>
+
+      <h2 id="prohibited-use">Prohibited Use</h2>
+      <p className="text-gray-300 mb-4">
+        You may not use MLVScan for:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Scanning files you do not have legal rights to analyze</li>
+        <li>Reverse engineering proprietary software in violation of its license</li>
+        <li>Removing or bypassing security protections on copyrighted material</li>
+        <li>Creating derivative works that violate the GPL-3.0 license terms</li>
+        <li>Any illegal activities or purposes</li>
+      </ul>
+
+      <h2 id="ecosystem-components">Ecosystem Components</h2>
+      <p className="text-gray-300 mb-4">
+        The MLVScan ecosystem includes the following components, all subject to these Terms:
+      </p>
+
+      <h3 id="mlvscan-web">MLVScan.Web (Web Scanner)</h3>
+      <p className="text-gray-300 mb-4">
+        The browser-based scanner available on our website. Use is subject to these Terms and the GPL-3.0 license.
+      </p>
+
+      <h3 id="mlvscan-runtime">MLVScan (Runtime Scanner)</h3>
+      <p className="text-gray-300 mb-4">
+        The in-game security plugin for MelonLoader and BepInEx. Use in game environments is at your own risk.
+      </p>
+
+      <h3 id="mlvscan-core">MLVScan.Core</h3>
+      <p className="text-gray-300 mb-4">
+        The cross-platform detection engine. Integration into your projects requires compliance with the GPL-3.0 license.
+      </p>
+
+      <h3 id="mlvscan-wasm">MLVScan.WASM</h3>
+      <p className="text-gray-300 mb-4">
+        WebAssembly adapter for browser-based scanning. Use is subject to these Terms and GPL-3.0.
+      </p>
+
+      <h3 id="mlvscan-devcli">MLVScan.DevCLI</h3>
+      <p className="text-gray-300 mb-4">
+        Command-line tool for developers. Use in CI/CD pipelines and development workflows is permitted under these Terms.
+      </p>
+
+      <h2 id="license">License</h2>
+      <p className="text-gray-300 mb-4">
+        All MLVScan components are licensed under the GNU General Public License v3.0 (GPL-3.0). This means:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>You may use, modify, and distribute the software</li>
+        <li>Any derivative works must also be licensed under GPL-3.0</li>
+        <li>Source code must be made available for distributed versions</li>
+        <li>The software is provided without warranty</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        The full license text is available at <a href="https://github.com/ifBars/MLVScan/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/blob/main/LICENSE</a>
+      </p>
+
+      <h2 id="disclaimer-of-warranty">Disclaimer of Warranty</h2>
+      <p className="text-gray-300 mb-6">
+        MLVScan is provided "as is" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+      </p>
+
+      <h2 id="limitation-of-liability">Limitation of Liability</h2>
+      <p className="text-gray-300 mb-6">
+        To the maximum extent permitted by law, in no event shall MLVScan or its contributors be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Your use or inability to use MLVScan</li>
+        <li>Any false positives or false negatives in scan results</li>
+        <li>Any modification, suspension, or discontinuance of MLVScan</li>
+        <li>Any malware or security threats not detected by the scanner</li>
+        <li>Any damage to your game installation or system</li>
+      </ul>
+
+      <h2 id="no-guarantees">No Guarantees</h2>
+      <p className="text-gray-300 mb-6">
+        MLVScan is a security tool, but it does not guarantee detection of all malicious code. New threats emerge constantly, and no scanner can provide 100% protection. You are responsible for:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Making informed decisions about which mods to use</li>
+        <li>Verifying scan results through additional means when necessary</li>
+        <li>Backing up your game and system before using mods</li>
+        <li>Understanding that all mods carry inherent risks</li>
+      </ul>
+
+      <h2 id="indemnification">Indemnification</h2>
+      <p className="text-gray-300 mb-6">
+        You agree to defend, indemnify, and hold harmless MLVScan and its contributors from and against any and all claims, damages, obligations, losses, liabilities, costs, and expenses arising from your use of MLVScan, your violation of these Terms, or your violation of any rights of a third party.
+      </p>
+
+      <h2 id="open-source">Open Source</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan is open source software. You are encouraged to:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Review the source code before use</li>
+        <li>Report issues and contribute improvements</li>
+        <li>Build and run from source if you prefer</li>
+        <li>Verify the integrity of downloaded releases</li>
+      </ul>
+
+      <h2 id="third-party-services">Third-Party Services</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan may interact with third-party services:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">GitHub Pages:</strong> Hosts the web scanner. Subject to GitHub's Terms of Service.</li>
+        <li><strong className="text-white">NuGet.org:</strong> Hosts packages. Subject to NuGet's terms.</li>
+        <li><strong className="text-white">Nexus Mods/Thunderstore:</strong> Distribution platforms with their own terms.</li>
+      </ul>
+
+      <h2 id="modification-of-terms">Modification of Terms</h2>
+      <p className="text-gray-300 mb-6">
+        We reserve the right to modify these Terms at any time. Changes will be effective immediately upon posting. Your continued use of MLVScan after any changes indicates your acceptance of the modified Terms.
+      </p>
+
+      <h2 id="termination">Termination</h2>
+      <p className="text-gray-300 mb-6">
+        We may terminate or suspend your access to MLVScan at any time, without prior notice or liability, for any reason, including if you breach these Terms. Upon termination, your right to use MLVScan will immediately cease.
+      </p>
+
+      <h2 id="governing-law">Governing Law</h2>
+      <p className="text-gray-300 mb-6">
+        These Terms shall be governed by and construed in accordance with the laws applicable to open source software distributed under the GPL-3.0 license, without regard to conflict of law provisions.
+      </p>
+
+      <h2 id="severability">Severability</h2>
+      <p className="text-gray-300 mb-6">
+        If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that the Terms will otherwise remain in full force and effect.
+      </p>
+
+      <h2 id="entire-agreement">Entire Agreement</h2>
+      <p className="text-gray-300 mb-6">
+        These Terms constitute the entire agreement between you and MLVScan regarding the use of the software and supersede any prior agreements.
+      </p>
+
+      <h2 id="contact">Contact</h2>
+      <p className="text-gray-300 mb-4">
+        If you have questions about these Terms, please:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Open an issue at <a href="https://github.com/ifBars/MLVScan/issues" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/issues</a></li>
+        <li>Join our Discord: <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">discord.gg/UD4K4chKak</a></li>
+      </ul>
+    </>
+  )
+}

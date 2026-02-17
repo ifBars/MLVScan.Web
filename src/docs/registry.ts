@@ -238,6 +238,19 @@ const docs: DocMeta[] = [
       github: 'https://github.com/ifBars/MLVScan',
     },
   },
+  {
+    id: 'terms',
+    title: 'Terms of Service',
+    description: 'MLVScan terms of service and usage conditions',
+    slug: 'terms',
+    contentPath: 'terms.mdx',
+    section: 'getting-started',
+    status: 'stable',
+    keywords: ['terms', 'tos', 'license', 'gpl-3.0', 'conditions'],
+    links: {
+      github: 'https://github.com/ifBars/MLVScan',
+    },
+  },
 ]
 
 const libraryTitles: Record<NonNullable<DocMeta['library']>, string> = {
