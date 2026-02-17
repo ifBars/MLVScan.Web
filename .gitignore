@@ -39,3 +39,8 @@ AGENTS.md
 
 # Blazor WASM build artifacts (old v1)
 public/_framework/
+
+# Package manager lock files (using Bun)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
