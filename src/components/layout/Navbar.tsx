@@ -32,7 +32,6 @@ const Navbar = () => {
   }, [isDocs])
 
   const navLinks = [
-    { name: "Features", href: "/#features", external: false },
     { name: "Scan", href: "/scan", external: false },
     { name: "Docs", href: "/docs", external: false },
     { name: "Advisories", href: "/advisories", external: false },
