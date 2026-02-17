@@ -15,3 +15,6 @@ export type {
   DataFlowNode,
   DeveloperGuidance
 } from '@mlvscan/wasm-core'
+
+// Local types
+export type ScanStatus = "idle" | "uploading" | "scanning" | "complete" | "error"

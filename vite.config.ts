@@ -75,7 +75,6 @@ export default defineConfig({
         {
           src: frameworkGlob,
           dest: '_framework',
-          structured: true,
         },
       ],
     }),
