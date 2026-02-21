@@ -1,0 +1,38 @@
+name: Update @mlvscan/wasm-core
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write   # Read + write for pushing commits
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Update @mlvscan/wasm-core
+        run: bun update @mlvscan/wasm-core
+
+      - name: Commit and push if updated
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet bun.lock package.json 2>/dev/null; then
+            echo "No updates available"
+          else
+            git add bun.lock package.json
+            git commit -m "chore(deps): update @mlvscan/wasm-core"
+            git push
+          fi
