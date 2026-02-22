@@ -1,3 +1,5 @@
+# Updates @mlvscan/wasm-core and pushes; deploy triggers on that push.
+# Requires REPO_PAT secret: a PAT with repo scope (GITHUB_TOKEN pushes don't trigger other workflows).
 name: Update @mlvscan/wasm-core
 
 on:
@@ -15,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_PAT }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
