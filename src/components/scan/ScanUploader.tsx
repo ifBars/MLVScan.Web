@@ -18,6 +18,7 @@ const ScanUploader = () => {
   const handleFile = useCallback(async (selectedFile: File) => {
     if (!selectedFile.name.toLowerCase().endsWith(".dll") &&
       !selectedFile.name.toLowerCase().endsWith(".exe") &&
+      !selectedFile.name.toLowerCase().endsWith(".di") &&
       !selectedFile.name.toLowerCase().endsWith(".netmodule")) {
       setError("Please upload a .NET assembly (.dll, .exe, or .netmodule)")
       return
@@ -121,7 +122,7 @@ const ScanUploader = () => {
               >
                 <input
                   type="file"
-                  accept=".dll,.exe,.netmodule"
+                  accept=".dll,.exe,.di,.netmodule"
                   onChange={handleInputChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />

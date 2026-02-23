@@ -228,7 +228,7 @@ const docs: DocMeta[] = [
   {
     id: 'privacy',
     title: 'Privacy Policy',
-    description: 'MLVScan privacy policy - your files never leave your device',
+    description: 'MLVScan privacy policy - data minimization and optional reporting',
     slug: 'privacy',
     contentPath: 'privacy.mdx',
     section: 'getting-started',
@@ -237,6 +237,16 @@ const docs: DocMeta[] = [
     links: {
       github: 'https://github.com/ifBars/MLVScan',
     },
+  },
+  {
+    id: 'automated-reporting-data-handling',
+    title: 'Automated Reporting & Data Handling',
+    description: 'What data the runtime may send, when, and how to disable',
+    slug: 'automated-reporting-data-handling',
+    contentPath: 'automated-reporting-data-handling.mdx',
+    section: 'getting-started',
+    status: 'stable',
+    keywords: ['automated reporting', 'report upload', 'data handling', 'privacy', 'opt-in', 'api'],
   },
   {
     id: 'terms',

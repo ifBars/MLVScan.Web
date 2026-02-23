@@ -129,7 +129,7 @@ const TrustSection = () => {
                         <Shield className="w-8 h-8 text-teal-400 mb-4" aria-hidden="true" />
                         <h3 className="text-xl font-bold mb-2">Privacy Policy</h3>
                         <p className="text-sm text-muted-foreground mb-6 flex-grow">
-                            We believe in data minimization. MLVScan runs entirely on your local machine. We do not upload your files, scan results, or personal data to any cloud servers.
+                            We believe in data minimization. The web scanner and DevCLI run entirely locally. The runtime plugin offers optional report upload (off by default) to help fix false positives. See our full policy for details.
                         </p>
                         <Button variant="link" className="p-0 h-auto text-teal-400 group self-start cursor-pointer" asChild>
                             <Link to="/docs/privacy">

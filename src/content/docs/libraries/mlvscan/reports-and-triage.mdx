@@ -24,7 +24,13 @@ export default function RuntimeReportsAndTriageContent() {
         <li>Capture hash and full report details.</li>
         <li>Validate expected mod behavior with author/community.</li>
         <li>Whitelist only the verified hash, not wildcard names.</li>
+        <li>Optionally enable report upload to send submissions to the MLVScan API—this helps improve detection rules. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a>.</li>
       </ol>
+
+      <h2 id="automated-reporting">Optional Report Upload</h2>
+      <p className="text-gray-300 mb-4">
+        You can enable report upload in the runtime plugin to send scan reports and assemblies to the MLVScan API. This helps reduce false positives. The feature is off by default and requires explicit consent. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a> for what data is sent and how to enable or disable it.
+      </p>
     </>
   )
 }

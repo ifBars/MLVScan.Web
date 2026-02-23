@@ -1,0 +1,80 @@
+export default function AutomatedReportingDataHandlingContent() {
+  return (
+    <>
+      <p className="text-sm text-gray-400 mb-4">
+        <strong className="text-white">Last Updated:</strong> February 22, 2026
+      </p>
+
+      <p className="text-lg text-gray-300 mb-6">
+        The <strong className="text-white">MLVScan runtime plugin</strong> (MelonLoader and BepInEx) offers an <strong className="text-white">optional</strong> feature to send scan reports and assemblies to the MLVScan API. This helps improve detection rules and reduce false positives. <strong className="text-teal-400">This feature is off by default and requires your explicit consent.</strong>
+      </p>
+
+      <h2 id="what-data">What Data May Be Sent (When Enabled)</h2>
+      <p className="text-gray-300 mb-4">
+        If you enable report upload, the following data may be sent to the MLVScan API:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Assembly file bytes:</strong> The detected mod DLL/plugin file (for deep analysis and false positive verification)</li>
+        <li><strong className="text-white">Mod filename:</strong> Basename only (e.g. <code className="bg-gray-800 px-1 rounded">MyMod.dll</code>), not full paths</li>
+        <li><strong className="text-white">Finding summary:</strong> Rule IDs, severities, descriptions, and locations (paths are redacted before sending)</li>
+        <li><strong className="text-white">Loader metadata:</strong> Mod loader type (MelonLoader/BepInEx), plugin version</li>
+        <li><strong className="text-white">Consent metadata:</strong> Consent version and timestamp</li>
+      </ul>
+
+      <h2 id="when-data-sent">When Is Data Sent?</h2>
+      <p className="text-gray-300 mb-4">
+        Data is sent <strong className="text-white">only</strong> when:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>MLVScan has detected <strong className="text-white">actionable findings</strong> (suspicious or disabled mods)</li>
+        <li>You have <strong className="text-white">explicitly enabled</strong> report upload in configuration</li>
+        <li>You have seen the first-run consent message (shown once when detections occur)</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        <strong className="text-teal-400">No data is sent on clean scans or when report upload is disabled.</strong> Local reports are always generated regardless of upload settings.
+      </p>
+
+      <h2 id="how-to-disable">How to Disable or Opt Out</h2>
+      <p className="text-gray-300 mb-4">
+        Report upload is <strong className="text-white">disabled by default</strong>. To ensure it stays off:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">MelonLoader:</strong> In <code className="bg-gray-800 px-1 rounded">MelonPreferences.cfg</code>, leave <code className="bg-gray-800 px-1 rounded">EnableReportUpload = false</code> (default)</li>
+        <li><strong className="text-white">BepInEx:</strong> In <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.json</code>, leave <code className="bg-gray-800 px-1 rounded">"EnableReportUpload": false</code> (default)</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        If you previously enabled it, set the value to <code className="bg-gray-800 px-1 rounded">false</code> and save. No further uploads will occur.
+      </p>
+
+      <h2 id="how-to-enable">How to Enable (Opt In)</h2>
+      <p className="text-gray-300 mb-4">
+        If you want to help improve MLVScan by contributing reports:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">MelonLoader:</strong> Set <code className="bg-gray-800 px-1 rounded">EnableReportUpload = true</code> in <code className="bg-gray-800 px-1 rounded">[MLVScan]</code> in MelonPreferences.cfg</li>
+        <li><strong className="text-white">BepInEx:</strong> Set <code className="bg-gray-800 px-1 rounded">"EnableReportUpload": true</code> in BepInEx/config/MLVScan.json</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        The first time MLVScan detects a suspicious mod, it will show a one-time message explaining the feature. Your choice is persisted and you will not be prompted again.
+      </p>
+
+      <h2 id="web-scanner">Web Scanner and Other Components</h2>
+      <p className="text-gray-300 mb-6">
+        <strong className="text-white">The web-based MLVScan scanner never uploads your files.</strong> All scanning happens in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API. Only the optional runtime report upload feature (when explicitly enabled) sends data to the MLVScan API.
+      </p>
+
+      <h2 id="api-retention">API Data Handling and Retention</h2>
+      <p className="text-gray-300 mb-4">
+        Submissions sent to the MLVScan API are:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Stored for triage and false positive analysis</li>
+        <li>Used to improve detection rules and reduce false positives</li>
+        <li>Subject to the MLVScan API privacy and retention policy</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        For full details on data storage, retention, and third-party services, see the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a>.
+      </p>
+    </>
+  )
+}

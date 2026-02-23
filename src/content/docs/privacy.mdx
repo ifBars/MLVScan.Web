@@ -2,11 +2,11 @@ export default function PrivacyContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> February 16, 2026
+        <strong className="text-white">Last Updated:</strong> February 22, 2026
       </p>
       
       <p className="text-lg text-gray-300 mb-6">
-        MLVScan is a security ecosystem built on a fundamental principle: <strong className="text-white">your files never leave your device</strong>. We believe in data minimization and transparency across all our tools and libraries.
+        MLVScan is a security ecosystem built on data minimization and transparency. <strong className="text-white">The web scanner, DevCLI, and MLVScan.Core run entirely locally—your files never leave your device.</strong> The runtime plugin (MelonLoader/BepInEx) offers an <strong className="text-white">optional</strong> report upload feature that is <strong className="text-white">off by default</strong> and requires your explicit consent. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a> for details.
       </p>
 
       <h2 id="what-is-mlvscan">What MLVScan Is</h2>
@@ -36,8 +36,8 @@ export default function PrivacyContent() {
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Local filesystem:</strong> Scans mod files on your local drive</li>
-        <li><strong className="text-white">No network access:</strong> Does not communicate with any external servers</li>
-        <li><strong className="text-white">Local reports:</strong> Scan reports are saved to your local machine only</li>
+        <li><strong className="text-white">Local reports:</strong> Scan reports are always saved locally</li>
+        <li><strong className="text-white">Optional report upload:</strong> You may enable sending reports to the MLVScan API to help fix false positives. This is <strong className="text-teal-400">off by default</strong> and requires explicit consent. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a>.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan</a></li>
       </ul>
 
@@ -102,24 +102,25 @@ export default function PrivacyContent() {
 
       <h2 id="network-connections">Network Connections</h2>
       <p className="text-gray-300 mb-4">
-        The only network connections MLVScan makes are:
+        MLVScan makes the following network connections:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Web Scanner:</strong> When you first visit the MLVScan website, static assets are downloaded from GitHub Pages</li>
         <li><strong className="text-white">WASM Module Loading:</strong> The scanning engine is downloaded and cached by your browser</li>
         <li><strong className="text-white">NuGet Installation:</strong> When installing MLVScan.Core or DevCLI via NuGet, packages are downloaded from NuGet.org</li>
         <li><strong className="text-white">Documentation:</strong> Accessing wiki pages on GitHub</li>
+        <li><strong className="text-white">Runtime Report Upload (optional):</strong> If you enable report upload in the runtime plugin, it may send assemblies and metadata to the MLVScan API. This is off by default.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        During the scanning process itself: <strong className="text-white">no data is sent to any server</strong>, no external API calls are made, and no telemetry is transmitted.
+        During web or DevCLI scanning: <strong className="text-white">no data is sent to any server</strong>. Runtime scanning does not make network calls unless you have explicitly enabled report upload.
       </p>
 
-      <h2 id="data-we-do-not-collect">Data We Do NOT Collect</h2>
+      <h2 id="data-we-do-not-collect">Data We Do NOT Collect (Default Behavior)</h2>
       <p className="text-gray-300 mb-4">
-        MLVScan does not collect, store, or transmit any of the following across any component:
+        By default, MLVScan does not collect, store, or transmit any of the following:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Your scanned files or assemblies</li>
+        <li>Your scanned files or assemblies (unless you opt in to runtime report upload)</li>
         <li>Scan results or findings</li>
         <li>Your IP address</li>
         <li>Your browser fingerprints or user agent</li>
@@ -128,6 +129,9 @@ export default function PrivacyContent() {
         <li>Your game or system configuration</li>
         <li>Any personal information</li>
       </ul>
+      <p className="text-gray-300 mb-6">
+        If you enable the optional runtime report upload, assemblies and metadata may be sent to the MLVScan API. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a>.
+      </p>
 
       <h2 id="no-cookies">No Cookies</h2>
       <p className="text-gray-300 mb-6">
@@ -170,9 +174,10 @@ export default function PrivacyContent() {
         <li><strong className="text-white">GitHub Pages:</strong> Hosts the static web scanner. GitHub's servers receive standard HTTP requests to deliver website files only. They do not have access to any scanning data.</li>
         <li><strong className="text-white">NuGet.org:</strong> Hosts the MLVScan.Core and MLVScan.DevCLI packages. Standard NuGet package download traffic only.</li>
         <li><strong className="text-white">GitHub:</strong> Hosts the repositories and wikis. Standard GitHub access patterns only.</li>
+        <li><strong className="text-white">MLVScan API (optional):</strong> If you enable report upload in the runtime plugin, assemblies and metadata are sent to the MLVScan API for triage and false positive analysis. This is off by default.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        These services only receive standard traffic for delivering content. They never receive your scanned files or scan results.
+        GitHub, GitHub Pages, and NuGet receive only standard traffic for delivering content. The MLVScan API receives data only when you opt in to runtime report upload.
       </p>
 
       <h2 id="data-storage-locations">Data Storage Locations</h2>

@@ -1,4 +1,4 @@
-
+import { Link } from "react-router-dom"
 import {
     Accordion,
     AccordionContent,
@@ -18,7 +18,7 @@ const FAQ = () => {
                             Does MLVScan upload my mods?
                         </AccordionTrigger>
                         <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-4">
-                            No. MLVScan runs entirely on your local machine using WebAssembly. Your files never leave your computer.
+                            The <strong>web scanner</strong> runs entirely in your browser—your files never leave your computer. The <strong>runtime plugin</strong> (MelonLoader/BepInEx) can optionally send reports to help fix false positives, but this is <strong>off by default</strong> and requires your explicit consent. See our <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting</Link> docs.
                         </AccordionContent>
                     </AccordionItem>
 
@@ -45,7 +45,7 @@ const FAQ = () => {
                             What if I find a false positive?
                         </AccordionTrigger>
                         <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-4">
-                            Please report it on our GitHub Issues page. We update our detection rules regularly to improve accuracy.
+                            Report it on our GitHub Issues page, or enable the optional report upload in the runtime plugin to send reports to the API—this helps us improve detection rules. We update rules regularly to reduce false positives.
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
