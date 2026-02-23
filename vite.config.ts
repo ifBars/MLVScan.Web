@@ -22,11 +22,7 @@ function serveWasmFrameworkPlugin() {
           next()
           return
         }
-        // Support both /_framework and /{base}/_framework (when base is set)
-        const appBase = '/' // must match base in defineConfig below
-        const normalized = appBase !== '/' && pathname.startsWith(appBase + '/')
-          ? pathname.slice(appBase.length)
-          : pathname
+        const normalized = pathname
         if (!normalized.startsWith('/_framework/') && normalized !== '/_framework') {
           next()
           return
