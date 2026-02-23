@@ -12,15 +12,13 @@ import {
   type ScannerStatus,
 } from '@mlvscan/wasm-core'
 
-const getBaseUrl = () => {
-  // _framework is served at the app base (from Vite's base config), not relative to
-  // the current route. Use BASE_URL; never use window.location.pathname (that would
-  // wrongly use /scan/ when on /scan, causing 404 for /scan/_framework/dotnet.js).
+const getBaseUrl = (): string => {
+  // _framework is always at the site root. Use absolute URL to avoid resolution
+  // relative to current route (e.g. /scan) which would 404 for /scan/_framework/dotnet.js.
+  if (typeof window === 'undefined') return '/'
   const base = import.meta.env.BASE_URL
-  if (base && base !== '/') {
-    return base.endsWith('/') ? base : `${base}/`
-  }
-  return '/'
+  const path = base && base !== '/' ? (base.endsWith('/') ? base : `${base}/`) : '/'
+  return new URL(path, window.location.origin).href
 }
 
 export const initScanner = async () => {

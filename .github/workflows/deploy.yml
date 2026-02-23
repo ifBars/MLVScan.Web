@@ -69,6 +69,6 @@ jobs:
           # On pushes to main this deploys to production; PRs get a preview URL.
           command: >
             pages deploy dist
-            --project-name=mlvscan
+            --project-name=mlvscan-web
             --branch=${{ github.head_ref || github.ref_name }}
             --commit-hash=${{ github.sha }}
