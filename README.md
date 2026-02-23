@@ -66,25 +66,5 @@ The WASM core is automatically bundled and available at runtime. For development
 *   **Architecture**: See [MLVScan Wiki](https://github.com/ifBars/MLVScan/wiki/Architecture).
 *   **WASM Package**: [MLVScan.Core WASM npm](https://www.npmjs.com/package/@mlvscan/wasm-core).
 
-## 🧪 Testing
-
-Run tests:
-
-```bash
-npm run test
-```
-
-Interactive test UI:
-
-```bash
-npm run test:ui
-```
-
-## 📝 Linting
-
-```bash
-npm run lint
-```
-
 ---
 *Licensed under GPL-3.0*
