@@ -6,11 +6,5 @@
 
   "observability": {
     "enabled": true
-  },
-
-  "env": {
-    "preview": {
-      "name": "mlvscan-web-preview"
-    }
   }
 }
