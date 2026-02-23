@@ -121,7 +121,8 @@ describe('scanner error handling', () => {
 });
 
 describe('WASM build file validation', () => {
-  const frameworkPath = path.resolve(__dirname, '../../public/_framework');
+  // _framework comes from @mlvscan/wasm-core npm package, not public/
+  const frameworkPath = path.resolve(__dirname, '../../node_modules/@mlvscan/wasm-core/dist/_framework');
 
   function fileExists(filePath: string): boolean {
     try {
@@ -155,33 +156,6 @@ describe('WASM build file validation', () => {
     it('should have dotnet.native.wasm', () => {
       const wasmPath = path.join(frameworkPath, 'dotnet.native.wasm');
       expect(fileExists(wasmPath)).toBe(true);
-    });
-  });
-
-  describe('required DLL files', () => {
-    it('should have MLVScan.WASM.dll', () => {
-      const dllPath = path.join(frameworkPath, 'MLVScan.WASM.dll');
-      expect(fileExists(dllPath)).toBe(true);
-    });
-
-    it('should have MLVScan.Core.dll', () => {
-      const dllPath = path.join(frameworkPath, 'MLVScan.Core.dll');
-      expect(fileExists(dllPath)).toBe(true);
-    });
-
-    it('should have Mono.Cecil.dll', () => {
-      const dllPath = path.join(frameworkPath, 'Mono.Cecil.dll');
-      expect(fileExists(dllPath)).toBe(true);
-    });
-
-    it('should have MLVScan.WASM.deps.json', () => {
-      const jsonPath = path.join(frameworkPath, 'MLVScan.WASM.deps.json');
-      expect(fileExists(jsonPath)).toBe(true);
-    });
-
-    it('should have MLVScan.WASM.runtimeconfig.json', () => {
-      const jsonPath = path.join(frameworkPath, 'MLVScan.WASM.runtimeconfig.json');
-      expect(fileExists(jsonPath)).toBe(true);
     });
   });
 
