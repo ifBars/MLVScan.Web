@@ -13,7 +13,7 @@ const AccordionItemContext = React.createContext<string | null>(null)
 const Accordion = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { type?: "single" | "multiple"; collapsible?: boolean }
->(({ className, type = "single", collapsible = true, ...props }, ref) => {
+>(({ className, type: _type = "single", collapsible: _collapsible = true, ...props }, ref) => {
     const [activeItem, setActiveItem] = React.useState<string | null>(null)
 
     const toggleItem = (value: string) => {

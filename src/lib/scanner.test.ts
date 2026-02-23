@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { scanAssembly, initScanner, isScannerReady, getScannerVersion, getSchemaVersion } from './scanner';
 import type { ScanResult } from '@/types/mlvscan';

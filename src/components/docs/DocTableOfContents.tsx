@@ -37,9 +37,9 @@ export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
   useEffect(() => {
     if (!contentRef.current) return
 
-    // Initial extraction
+    // Defer initial setState to avoid synchronous setState in effect (cascading renders)
     const initialHeadings = extractHeadings()
-    setHeadings(initialHeadings)
+    queueMicrotask(() => setHeadings(initialHeadings))
 
     // Watch for DOM changes
     const observer = new MutationObserver(() => {

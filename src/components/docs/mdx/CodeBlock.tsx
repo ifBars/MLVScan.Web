@@ -1,4 +1,5 @@
 import { Copy, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
 interface CodeBlockProps {
@@ -6,7 +7,7 @@ interface CodeBlockProps {
   className?: string
 }
 
-export const CodeBlock = ({ children, className: _className }: CodeBlockProps) => {
+export const CodeBlock = ({ children, className }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -26,7 +27,7 @@ export const CodeBlock = ({ children, className: _className }: CodeBlockProps) =
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
-      <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+      <pre className={cn('bg-gray-800 rounded-lg p-4 overflow-x-auto', className)}>
         <code className="text-sm text-gray-300 font-mono">{children}</code>
       </pre>
     </div>

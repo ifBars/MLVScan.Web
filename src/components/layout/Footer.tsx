@@ -92,7 +92,7 @@ const Footer = () => {
             <ul className="space-y-2">
               {links.resources.map((link) => (
                 <li key={link.name}>
-                  {(link as any).internal ? (
+                  {link.internal ? (
                     <Link
                       to={link.href}
                       className="text-sm text-gray-400 hover:text-white transition-colors"

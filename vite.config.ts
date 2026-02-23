@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import mdx from '@mdx-js/rollup'
 import path from 'path'
 import fs from 'node:fs'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 // Resolve _framework from @mlvscan/wasm-core (npm package; same path in node_modules)
@@ -14,8 +15,8 @@ const frameworkDir = path.join(wasmCoreDist, '_framework')
 function serveWasmFrameworkPlugin() {
   return {
     name: 'serve-wasm-framework',
-    configureServer(server: { middlewares: { use: (handler: (req: any, res: any, next: () => void) => void) => void } }) {
-      server.middlewares.use((req: { url?: string; method?: string }, res: any, next: () => void) => {
+    configureServer(server: { middlewares: { use: (handler: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void } }) {
+      server.middlewares.use((req: IncomingMessage & { url?: string; method?: string }, res: ServerResponse, next: () => void) => {
         const url = req.url ?? ''
         const pathname = url.replace(/\?.*$/, '')
         if (req.method !== 'GET' && req.method !== 'HEAD') {

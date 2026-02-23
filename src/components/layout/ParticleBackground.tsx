@@ -1,5 +1,47 @@
 import { useEffect, useRef } from "react"
 
+const PARTICLE_COLORS = [
+  "rgba(45, 212, 191, 0.4)",
+  "rgba(6, 182, 212, 0.4)",
+  "rgba(34, 197, 94, 0.4)",
+  "rgba(255, 255, 255, 0.2)",
+]
+
+class Particle {
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  color: string
+
+  constructor(canvasWidth: number, canvasHeight: number) {
+    this.x = Math.random() * canvasWidth
+    this.y = Math.random() * canvasHeight
+    this.size = Math.random() * 3 + 1.5
+    this.speedX = (Math.random() - 0.5) * 1.25
+    this.speedY = (Math.random() - 0.5) * 1.25
+    this.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]
+  }
+
+  update(canvasWidth: number, canvasHeight: number) {
+    if (this.x > canvasWidth || this.x < 0) this.speedX = -this.speedX
+    if (this.y > canvasHeight || this.y < 0) this.speedY = -this.speedY
+    this.x += this.speedX
+    this.y += this.speedY
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.color
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.2)"
+    ctx.lineWidth = 0.3
+    ctx.stroke()
+  }
+}
+
 /**
  * Wireframe-style particle background with connecting lines (ported from MLVScan-site).
  * Particles move and bounce; lines connect nearby particles with distance-based opacity.
@@ -24,55 +66,11 @@ const ParticleBackground = () => {
 
     const particlesArray: Particle[] = []
     const numberOfParticles = Math.min(150, Math.floor(window.innerWidth / 10))
-    // Reduced opacity colors
-    const colors = [
-      "rgba(45, 212, 191, 0.4)",
-      "rgba(6, 182, 212, 0.4)",
-      "rgba(34, 197, 94, 0.4)",
-      "rgba(255, 255, 255, 0.2)",
-    ]
-
-    class Particle {
-      x: number
-      y: number
-      size: number
-      speedX: number
-      speedY: number
-      color: string
-
-      constructor() {
-        this.x = Math.random() * (canvas?.width ?? window.innerWidth)
-        this.y = Math.random() * (canvas?.height ?? window.innerHeight)
-        this.size = Math.random() * 3 + 1.5
-        this.speedX = (Math.random() - 0.5) * 1.25
-        this.speedY = (Math.random() - 0.5) * 1.25
-        this.color = colors[Math.floor(Math.random() * colors.length)]
-      }
-
-      update() {
-        if (!canvas) return
-        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX
-        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY
-        this.x += this.speedX
-        this.y += this.speedY
-      }
-
-      draw() {
-        if (!ctx) return
-        ctx.fillStyle = this.color
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.2)" // Reduced stroke opacity
-        ctx.lineWidth = 0.3
-        ctx.stroke()
-      }
-    }
 
     const init = () => {
       particlesArray.length = 0
       for (let i = 0; i < numberOfParticles; i++) {
-        particlesArray.push(new Particle())
+        particlesArray.push(new Particle(canvas.width, canvas.height))
       }
     }
 
@@ -102,8 +100,8 @@ const ParticleBackground = () => {
       if (!ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update()
-        particlesArray[i].draw()
+        particlesArray[i].update(canvas.width, canvas.height)
+        particlesArray[i].draw(ctx)
       }
       connect()
       rafId = requestAnimationFrame(animate)
