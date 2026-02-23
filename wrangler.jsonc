@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mlvscan-web",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2026-02-01",
+
+  "observability": {
+    "enabled": true
+  },
+
+  "env": {
+    "preview": {
+      "name": "mlvscan-web-preview"
+    }
+  }
+}
