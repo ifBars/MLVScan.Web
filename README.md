@@ -4,7 +4,7 @@
 
 ## 🌍 Live Demo
 
-[Launch Scanner](https://ifbars.github.io/MLVScan.Web/)
+[Launch Scanner](https://mlvscan.com)
 
 ## ✨ Key Features
 

@@ -21,7 +21,7 @@ const getBaseUrl = () => {
     return '/'
   }
 
-  // If base is set to something specific (like /MLVScan.Web/), use it
+  // If base is set to something specific (e.g. /MLVScan.Web/ for GitHub Pages), use it
   if (base && base !== '/') {
     return base.endsWith('/') ? base : `${base}/`
   }

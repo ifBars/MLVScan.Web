@@ -22,9 +22,11 @@ function serveWasmFrameworkPlugin() {
           next()
           return
         }
-        // Support both /_framework and /MLVScan.Web/_framework (when base is set)
-        const base = '/MLVScan.Web'
-        const normalized = pathname.startsWith(base + '/') ? pathname.slice(base.length) : pathname
+        // Support both /_framework and /{base}/_framework (when base is set)
+        const appBase = '/' // must match base in defineConfig below
+        const normalized = appBase !== '/' && pathname.startsWith(appBase + '/')
+          ? pathname.slice(appBase.length)
+          : pathname
         if (!normalized.startsWith('/_framework/') && normalized !== '/_framework') {
           next()
           return
@@ -84,5 +86,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: '/MLVScan.Web/', // Base path for GitHub Pages deployment
+  base: '/', // Root for mlvscan.com (Cloudflare Pages)
 })
