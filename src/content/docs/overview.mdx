@@ -7,6 +7,22 @@ export default function OverviewContent() {
         MLVScan is a comprehensive security ecosystem for Unity modding. This documentation covers the core engine, web scanner, CLI tools, and runtime protection modules.
       </p>
 
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h3 className="text-amber-400 font-semibold mb-2">Why MLVScan?</h3>
+        <p className="text-sm text-gray-300 mb-2">
+          Unity mods are compiled .NET assemblies loaded directly into the game process. They have full access to the .NET runtime and Unity engine - the same flexibility that enables powerful mods also makes them attractive to attackers.
+        </p>
+        <p className="text-sm text-gray-300 mb-2">
+          Most modders trust platforms like <strong>Thunderstore</strong> or <strong>NexusMods</strong>, which scan files with <strong>VirusTotal</strong>. However, sophisticated threats slip through because attackers don't embed payloads directly in the mod. Instead, they use first-stage loaders - a small amount of code that downloads and executes the real malware at runtime.
+        </p>
+        <p className="text-sm text-gray-300 mb-2">
+          A common pattern: the mod calls <code>Process.Start("powershell.exe", ...)</code> with arguments that download a script to <code>%TEMP%</code>, execute it, then delete it. The payload lives on a remote server and never touches the assembly. VirusTotal doesn't flag this because launching PowerShell isn't inherently suspicious.
+        </p>
+        <p className="text-sm text-gray-300">
+          <strong>MLVScan targets these patterns specifically.</strong> It analyzes bytecode to detect process spawning, high-risk P/Invoke declarations, and encoded strings designed to hide malicious behavior. It's a second line of defense that catches what signature-based scanning misses.
+        </p>
+      </div>
+
       <h2 id="library-map">Library Map</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Link to="/docs/libraries/core" className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 hover:border-teal-500 transition-colors">
