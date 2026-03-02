@@ -85,6 +85,16 @@ const advisories: AdvisoryMeta[] = [
     contentPath: '2026-02-false-positive-bankapp.mdx',
     keywords: ['false-positive', 'network-call', 'file-write', 'unitywebrequest', 'coroutine', 'icon', 'bankapp', 'userdata'],
   },
+  {
+    id: 'malware-moretrees-2026',
+    title: 'Malware Analysis: MoreTrees Payload Dropper',
+    slug: '2026-02-malware-moretrees',
+    type: 'malware-analysis',
+    publishedDate: '2026-03-01',
+    description: 'Analysis of MoreTrees, a malicious mod that downloads and executes a payload via batch file. Uploaded to Nexus Mods on March 1, 2026, and detected by the Schedule 1 modding community.',
+    contentPath: '2026-02-malware-moretrees.mdx',
+    keywords: ['malware', 'cmd', 'batch', 'payload', 'downloader', 'nexus-mods', 'powershell', 'certutil'],
+  },
 ]
 
 export const allAdvisories = advisories
