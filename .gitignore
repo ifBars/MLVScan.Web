@@ -42,5 +42,6 @@ public/_framework/
 
 # Package manager lock files (using Bun)
 package-lock.json
+skills-lock.json
 yarn.lock
 pnpm-lock.yaml
