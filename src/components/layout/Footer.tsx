@@ -17,6 +17,7 @@ const Footer = () => {
     resources: [
       { name: "Documentation", href: "/docs", internal: true },
       { name: "Advisories", href: "/advisories", internal: true },
+      { name: "Threat Families", href: "/advisories/families", internal: true },
       { name: "Report Issue", href: "https://github.com/ifBars/MLVScan/issues" },
     ],
     community: [

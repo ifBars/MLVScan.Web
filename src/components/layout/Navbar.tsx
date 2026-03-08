@@ -35,6 +35,7 @@ const Navbar = () => {
     { name: "Scan", href: "/scan", external: false },
     { name: "Docs", href: "/docs", external: false },
     { name: "Advisories", href: "/advisories", external: false },
+    { name: "Threat Families", href: "/advisories/families", external: false },
   ]
 
   return (

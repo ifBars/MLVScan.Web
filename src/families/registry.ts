@@ -8,7 +8,7 @@ const families: ThreatFamilyMeta[] = [
     summary:
       'Embedded resource payload is written to a random TEMP .cmd file and executed hidden via ShellExecuteEx.',
     contentPath: 'resource-shell32-tempcmd-v1.mdx',
-    aliases: ['WaitingTimeOnFire multi-identity payload'],
+    aliases: ['embedded resource temp CMD loader'],
     sampleNames: ['CustomTV_IL2CPP.dll.di', 'NoMoreTrash.dll.di', 'RealRadio.dll.di', 'S1API.Il2Cpp.MelonLoader.dll.di'],
     advisorySlugs: [
       '2025-12-malware-customtv-il2cpp',
@@ -24,7 +24,7 @@ const families: ThreatFamilyMeta[] = [
     summary:
       'Hidden PowerShell downloads a TEMP batch file, executes it, waits, and deletes the staged script.',
     contentPath: 'powershell-iwr-dlbat-v1.mdx',
-    aliases: ['EndlessGraffiti downloader template'],
+    aliases: ['hidden PowerShell temp batch chain'],
     sampleNames: ['EndlessGraffiti.dll.di', 'FasterGrowth.dll.di'],
     advisorySlugs: ['2026-01-malware-endlessgraffiti'],
     behaviorTags: ['powershell', 'iwr', 'temp-batch', 'cleanup', 'hidden-window'],
@@ -36,9 +36,9 @@ const families: ThreatFamilyMeta[] = [
     summary:
       'WebClient downloads a payload into TEMP and immediately executes it through cmd.exe or a direct Process.Start call.',
     contentPath: 'webclient-stage-exec-v1.mdx',
-    aliases: ['MoreTrees downloader template'],
+    aliases: ['WebClient temp staging executor'],
     sampleNames: ['MoreTrees.dll.di', 'MelonLoaderMod55.dll.di'],
-    advisorySlugs: ['2026-02-malware-moretrees'],
+    advisorySlugs: ['2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
     behaviorTags: ['webclient', 'download-and-execute', 'temp-staging', 'cmd', 'process-start'],
   },
   {
@@ -48,7 +48,7 @@ const families: ThreatFamilyMeta[] = [
     summary:
       'Numeric string decoding and assembly metadata are used to reconstruct a hidden cmd.exe or PowerShell launcher at runtime.',
     contentPath: 'obfuscated-metadata-loader-v1.mdx',
-    aliases: ['ScheduleIMoreNpcs obfuscated loader'],
+    aliases: ['numeric metadata execution chain'],
     sampleNames: ['ScheduleIMoreNpcs.dll'],
     advisorySlugs: ['2025-11-malware-scheduleimorenpcs'],
     behaviorTags: ['obfuscation', 'assembly-metadata', 'numeric-encoding', 'reflection', 'hidden-loader'],

@@ -15,7 +15,7 @@ function FamilyListCard({ family }: { family: ThreatFamilyMeta }) {
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-200">
             <Shield className="h-3.5 w-3.5" />
-            Malware Family
+            Threat Family
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/60 px-3 py-1 text-xs text-gray-300">
             <FileStack className="h-3.5 w-3.5" />
@@ -47,10 +47,10 @@ function ThreatFamiliesList() {
       <div className="border-b border-gray-800 pb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center gap-3">
           <Sparkles className="w-10 h-10 text-teal-400" />
-          Malware Family Clusters
+          Threat Family Clusters
         </h1>
         <p className="text-lg text-gray-400 max-w-3xl">
-          These pages group related malware samples by their reusable loader template so repeat campaigns can be understood at a glance.
+          These pages group malicious reuploads by their shared injected loader behavior, not by the legitimate mod names the attacker reused as cover.
         </p>
       </div>
 
@@ -126,7 +126,7 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-200">
             <Shield className="h-3.5 w-3.5" />
-            Malware Family
+            Threat Family
           </span>
           {meta.aliases.map(alias => (
             <span key={alias} className="rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs text-gray-300">
@@ -137,25 +137,18 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
 
         <h1 className="text-3xl md:text-4xl font-bold text-white">{meta.title}</h1>
         <p className="text-lg text-gray-300 leading-relaxed">{meta.summary}</p>
+        <p className="text-sm text-gray-500 max-w-3xl">
+          Sample names referenced on this page are observed reupload identities used by the attacker, not the canonical name of the threat family.
+        </p>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">Observed Samples</h2>
-            <ul className="space-y-2 text-sm text-gray-200">
-              {meta.sampleNames.map(sample => (
-                <li key={sample} className="font-mono break-all">{sample}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">Behavior Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              {meta.behaviorTags.map(tag => (
-                <span key={tag} className="rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs text-gray-300">
-                  {tag}
-                </span>
-              ))}
-            </div>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Behavior Tags</h2>
+          <div className="flex flex-wrap gap-2">
+            {meta.behaviorTags.map(tag => (
+              <span key={tag} className="rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs text-gray-300">
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
       </div>

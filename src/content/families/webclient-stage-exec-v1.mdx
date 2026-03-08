@@ -4,7 +4,7 @@ export default function WebClientStageExecFamilyContent() {
       <h2>Behavior Pattern</h2>
       <p>
         This family performs a direct network download with <code>System.Net.WebClient</code>, stages the payload under
-        <code>%TEMP%</code>, then executes it with hidden or shell-assisted process launch.
+        <code> %TEMP%</code>, then executes it with hidden or shell-assisted process launch.
       </p>
 
       <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
@@ -25,7 +25,8 @@ export default function WebClientStageExecFamilyContent() {
 
       <h2>Observed Variants</h2>
       <p>
-        <code>MoreTrees.dll.di</code> and <code>MelonLoaderMod55.dll.di</code> share this broader download-stage-execute family.
+        Malicious reuploads observed as <code>MoreTrees.dll.di</code> and <code>MelonLoaderMod55.dll.di</code> share this broader
+        download-stage-execute family.
       </p>
 
       <h2>Key Signals In MLVScan</h2>
