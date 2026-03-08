@@ -1,0 +1,38 @@
+export default function ObfuscatedMetadataLoaderFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family hides the launcher recipe in numeric-encoded strings and assembly metadata, decodes it at runtime, and reconstructs a hidden
+        <code>cmd.exe</code> or <code>powershell.exe</code> execution chain.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`AssemblyMetadataAttribute.Value
+-> Split('.' or encoded delimiter)
+-> Convert numeric strings to chars
+-> rebuild ProcessStartInfo / cmd.exe / powershell.exe command
+-> hidden download-and-execute chain`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Strong obfuscation signal through numeric string pipelines</li>
+        <li>Metadata retrieval used as payload storage</li>
+        <li>Decoded content clearly reconstructs a hidden network-backed launcher</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        The current quarantine set includes <code>ScheduleIMoreNpcs.dll</code> as the primary example of this family.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>EncodedStringLiteralRule</code> with decoded <code>ProcessStartInfo</code> and PowerShell content</li>
+        <li><code>EncodedStringPipelineRule</code> on numeric-to-char decoding</li>
+        <li><code>ReflectionRule</code> on <code>AssemblyMetadataAttribute</code> access</li>
+      </ul>
+    </>
+  )
+}

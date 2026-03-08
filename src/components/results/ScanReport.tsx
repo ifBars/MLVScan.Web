@@ -3,10 +3,12 @@ import {
   AlertTriangle,
   CheckCircle,
   FileCode,
+  Link2,
   ShieldAlert,
   ShieldCheck,
   ShieldOff,
 } from "lucide-react"
+import { Link } from "react-router-dom"
 import type { Finding, ScanResult, Severity } from "@/types/mlvscan"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatBytes, formatDate, getSeverityBadgeColor, cn } from "@/lib/utils"
 import CallChainViewer from "@/components/scan/CallChainViewer"
 import DataFlowViewer from "@/components/scan/DataFlowViewer"
+import { getThreatFamilyById } from "@/families/registry"
 
 const severityOrder: Record<Severity, number> = {
   Critical: 4,
@@ -162,6 +165,7 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
   }, [filteredFindings, effectiveSelectedKey])
 
   const topFindings = sortedFindings.slice(0, 3)
+  const familyMatches = result.threatFamilies ?? []
 
   return (
     <div className="space-y-6">
@@ -216,6 +220,54 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {familyMatches.length > 0 && (
+        <Card className="border-red-500/20 bg-red-500/5">
+          <CardHeader>
+            <CardTitle>Known malware family match</CardTitle>
+            <CardDescription>This scan matches a previously observed malware family cluster.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {familyMatches.map(match => {
+              const familyMeta = getThreatFamilyById(match.familyId)
+
+              return (
+                <div key={`${match.familyId}-${match.variantId}`} className="rounded-lg border border-red-500/20 bg-background/60 p-4">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="border-red-500/30 bg-red-500/10 text-red-200">{match.matchKind === "ExactSampleHash" ? "Exact sample hash" : "Behavior match"}</Badge>
+                        <Badge variant="outline">{Math.round(match.confidence * 100)}% confidence</Badge>
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-foreground">{match.displayName}</p>
+                        <p className="text-sm text-muted-foreground">{match.summary}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        {match.matchedRules.map(rule => (
+                          <span key={rule} className="rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 font-mono">
+                            {rule}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {familyMeta && (
+                      <Link
+                        to={`/advisories/families/${familyMeta.slug}`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-teal-300 hover:text-teal-200"
+                      >
+                        <Link2 className="h-4 w-4" />
+                        Open family page
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <Card className="min-w-0">

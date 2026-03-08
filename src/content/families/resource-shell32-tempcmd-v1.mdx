@@ -1,0 +1,43 @@
+export default function ResourceShell32TempCmdFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family injects a small native-execution prelude into an otherwise believable mod. The malicious slice reads an
+        embedded resource, writes it into <code>%TEMP%</code> as a randomly named <code>.cmd</code> file, then launches it hidden with
+        <code>ShellExecuteEx</code>.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`GetManifestResourceStream("MelonBase" or "Melon")
+-> Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".cmd")
+-> CopyTo(tempFile)
+-> SHELLEXECUTEINFO.lpFile = tempFile
+-> nShow = 0
+-> ShellExecuteEx(...)`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Same staging shape: embedded resource to random TEMP <code>.cmd</code></li>
+        <li>Same native execution primitive: <code>shell32!ShellExecuteEx</code></li>
+        <li>Same evasion pattern: hidden window via <code>nShow = 0</code></li>
+        <li>Same attacker tradecraft despite different fake mod names and wrapper class names</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        <code>CustomTV_IL2CPP.dll.di</code>, <code>NoMoreTrash.dll.di</code>, <code>RealRadio.dll.di</code>, and
+        <code> S1API.Il2Cpp.MelonLoader.dll.di</code> all match this loader template. The RealRadio and S1API samples are exact hash duplicates.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>DllImportRule</code> with <code>ShellExecuteEx</code></li>
+        <li>Embedded resource materialization into disk</li>
+        <li>Temporary <code>.cmd</code> staging path</li>
+        <li>Hidden execution flags and correlated resource-to-execution data flow</li>
+      </ul>
+    </>
+  )
+}

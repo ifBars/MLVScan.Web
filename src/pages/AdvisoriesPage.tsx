@@ -113,6 +113,22 @@ function AdvisoryList() {
         <p className="text-lg text-gray-400 max-w-2xl mb-6">
           Security analysis of malicious mods, scanner bypass incidents, false positives, and updates to MLVScan security features.
         </p>
+
+        <div className="mb-6 rounded-xl border border-teal-500/30 bg-teal-500/10 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-teal-200">New</p>
+              <p className="text-gray-200">Browse malware family clusters to see which advisories belong to the same reusable loader template.</p>
+            </div>
+            <Link
+              to="/advisories/families"
+              className="inline-flex items-center gap-2 text-sm font-medium text-teal-300 hover:text-teal-200"
+            >
+              View family clusters
+              <span>→</span>
+            </Link>
+          </div>
+        </div>
         
         {/* Search */}
         <div className="max-w-md">

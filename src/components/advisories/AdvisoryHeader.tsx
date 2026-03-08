@@ -1,6 +1,8 @@
 import type { AdvisoryMeta } from '@/advisories/types'
 import { TypeBadge } from './TypeBadge'
 import { Badge } from '@/components/ui/badge'
+import { getThreatFamilyById } from '@/families/registry'
+import { Link } from 'react-router-dom'
 
 interface AdvisoryHeaderProps {
   meta: AdvisoryMeta
@@ -16,10 +18,19 @@ function formatDate(dateString: string): string {
 }
 
 export function AdvisoryHeader({ meta }: AdvisoryHeaderProps) {
+  const family = getThreatFamilyById(meta.familyId)
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <TypeBadge type={meta.type} />
+        {family && (
+          <Link to={`/advisories/families/${family.slug}`}>
+            <Badge variant="outline" className="bg-teal-500/10 border-teal-500/40 text-teal-200 hover:bg-teal-500/15">
+              Family cluster: {family.title}
+            </Badge>
+          </Link>
+        )}
       </div>
       
       <h1 className="text-3xl md:text-4xl font-bold text-white">

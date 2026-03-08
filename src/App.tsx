@@ -9,6 +9,7 @@ import TrustSection from "@/components/TrustSection"
 import DocsLayout from "@/components/docs/DocsLayout"
 import DocsPage from "@/pages/DocsPage"
 import AdvisoriesPage from "@/pages/AdvisoriesPage"
+import ThreatFamiliesPage from "@/pages/ThreatFamiliesPage"
 import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
 import { allDocs } from "@/docs/registry"
@@ -55,6 +56,8 @@ function App() {
             </Route>
             <Route path="/advisories" element={<AdvisoriesLayout />}>
               <Route index element={<AdvisoriesPage />} />
+              <Route path="families" element={<ThreatFamiliesPage />} />
+              <Route path="families/:slug" element={<ThreatFamiliesPage />} />
               <Route path=":slug" element={<AdvisoriesPage />} />
             </Route>
           </Routes>

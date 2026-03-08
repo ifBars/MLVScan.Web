@@ -5,6 +5,7 @@ export type AdvisoryMeta = {
   title: string
   slug: string
   type: AdvisoryType
+  familyId?: string
   publishedDate: string
   updatedDate?: string
   affectedVersions?: string[]
