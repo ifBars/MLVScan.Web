@@ -33,6 +33,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Scan", href: "/scan", external: false },
+    { name: "Inspector", href: "/inspector", external: false },
     { name: "Docs", href: "/docs", external: false },
     { name: "Advisories", href: "/advisories", external: false },
     { name: "Threat Families", href: "/advisories/families", external: false },

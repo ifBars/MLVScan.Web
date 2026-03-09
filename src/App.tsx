@@ -14,6 +14,8 @@ import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
 import { allDocs } from "@/docs/registry"
 
+import InspectorPage from "@/pages/InspectorPage"
+
 function Home() {
   return (
     <>
@@ -42,6 +44,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/scan" element={<ScanPage />} />
+            <Route path="/inspector" element={<InspectorPage />} />
             <Route path="/docs" element={
               <Suspense fallback={<LoadingSpinner />}>
                 <DocsLayout />
