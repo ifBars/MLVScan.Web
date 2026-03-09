@@ -1,2 +1,4 @@
 # SPA fallback for Cloudflare Pages
+/inspector   /inspector/index.html   200
+/inspector/*   /inspector/index.html   200
 /*    /index.html   200
