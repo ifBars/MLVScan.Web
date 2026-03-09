@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { Code, Download, Search, Shield, X, Zap } from "lucide-react"
 
 import "../components/inspector/inspector.css"
@@ -486,13 +486,10 @@ function InspectorPage() {
   const relevantFinding =
     activeMethod && selectedFinding?.methodId === activeMethod.id ? selectedFinding : null
 
-  const methodFindingCounts = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const finding of selectedAssembly.findings) {
-      counts.set(finding.methodId, (counts.get(finding.methodId) ?? 0) + 1)
-    }
-    return counts
-  }, [selectedAssembly])
+  const methodFindingCounts = new Map<string, number>()
+  for (const finding of selectedAssembly.findings) {
+    methodFindingCounts.set(finding.methodId, (methodFindingCounts.get(finding.methodId) ?? 0) + 1)
+  }
 
   const explorerBadge = `${mockAssemblies.length} asm / ${countClasses(selectedAssembly)} cls / ${selectedAssembly.namespaces.length} ns`
   const methodCount = countMethods(selectedAssembly)
