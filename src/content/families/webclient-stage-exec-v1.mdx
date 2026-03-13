@@ -12,7 +12,8 @@ export default function WebClientStageExecFamilyContent() {
 -> DownloadFileTaskAsync(url, tempPath)
 -> if (File.Exists(tempPath))
    -> Process.Start(tempPath)
-   or Process.Start("cmd.exe", "/c \"%TEMP%/d.bat\"")`}</code>
+   or Process.Start("cmd.exe", "/c \"%TEMP%/d.bat\"")
+   or Process.Start("powershell.exe", "-ExecutionPolicy Bypass -File \"%TEMP%/da.ps1\"")`}</code>
       </pre>
 
       <h2>Why It Clusters Cleanly</h2>
@@ -20,13 +21,13 @@ export default function WebClientStageExecFamilyContent() {
         <li>Shared async <code>WebClient.DownloadFileTaskAsync</code> staging behavior</li>
         <li>Payload lands in TEMP before execution</li>
         <li>Process launch carries hidden-window or shell-execute semantics</li>
-        <li>One variant uses a batch file, another uses a downloaded executable directly</li>
+        <li>Observed variants execute a batch file, direct executable, or staged PowerShell script</li>
       </ul>
 
       <h2>Observed Variants</h2>
       <p>
-        Malicious reuploads observed as <code>MoreTrees.dll.di</code> and <code>MelonLoaderMod55.dll.di</code> share this broader
-        download-stage-execute family.
+        Malicious reuploads observed as <code>MoreTrees.dll.di</code>, <code>MelonLoaderMod55.dll.di</code>, and
+        <code> NoPolice.dll.di</code> share this broader download-stage-execute family.
       </p>
 
       <h2>Key Signals In MLVScan</h2>

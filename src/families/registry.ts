@@ -34,12 +34,12 @@ const families: ThreatFamilyMeta[] = [
     slug: 'webclient-stage-exec-v1',
     title: 'WebClient Staged Payload Executor',
     summary:
-      'WebClient downloads a payload into TEMP and immediately executes it through cmd.exe or a direct Process.Start call.',
+      'WebClient downloads a payload into TEMP and immediately executes it through cmd.exe, powershell.exe, or a direct Process.Start call.',
     contentPath: 'webclient-stage-exec-v1.mdx',
     aliases: ['WebClient temp staging executor'],
-    sampleNames: ['MoreTrees.dll.di', 'MelonLoaderMod55.dll.di'],
-    advisorySlugs: ['2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
-    behaviorTags: ['webclient', 'download-and-execute', 'temp-staging', 'cmd', 'process-start'],
+    sampleNames: ['MoreTrees.dll.di', 'MelonLoaderMod55.dll.di', 'NoPolice.dll.di'],
+    advisorySlugs: ['2026-03-malware-nopolice', '2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
+    behaviorTags: ['webclient', 'download-and-execute', 'temp-staging', 'cmd', 'powershell', 'process-start'],
   },
   {
     id: 'family-obfuscated-metadata-loader-v1',

@@ -3,6 +3,17 @@ import type { AdvisoryMeta } from './types'
 
 const advisories: AdvisoryMeta[] = [
   {
+    id: 'malware-nopolice-2026',
+    title: 'Malware Analysis: Malicious NoPolice Reupload',
+    slug: '2026-03-malware-nopolice',
+    type: 'malware-analysis',
+    familyId: 'family-webclient-stage-exec-v1',
+    publishedDate: '2026-03-13',
+    description: 'Analysis of a malicious reupload distributed as NoPolice that downloads a PowerShell payload from stardewcookies.xyz into %TEMP% as da.ps1 and executes it hidden.',
+    contentPath: '2026-03-malware-nopolice.mdx',
+    keywords: ['malware', 'nopolice', 'webclient', 'powershell', 'download-and-execute', 'stardewcookies.xyz', 'melonloadermod56'],
+  },
+  {
     id: 'malware-customer-search-bar-2026',
     title: 'Malware Analysis: Malicious Search Bar Reupload',
     slug: '2026-03-malware-customer-search-bar',
