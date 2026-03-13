@@ -102,6 +102,17 @@ const docs: DocMeta[] = [
     keywords: ['api', 'assemblyscanner', 'rulefactory', 'scanfinding', 'dataflowanalyzer'],
   },
   {
+    id: 'core-scan-result-schema',
+    title: 'Scan Result Schema',
+    description: 'Central schema ownership, generated artifacts, and update workflow',
+    slug: 'libraries/core/scan-result-schema',
+    contentPath: 'libraries/core/scan-result-schema.mdx',
+    section: 'libraries',
+    library: 'core',
+    status: 'stable',
+    keywords: ['schema', 'json schema', 'typescript', 'dto', 'scanresult', 'riskscore', 'calldepth'],
+  },
+  {
     id: 'wasm-overview',
     title: 'WASM Overview',
     description: 'Browser scanning model and MLVScan.WASM architecture',
@@ -135,7 +146,7 @@ const docs: DocMeta[] = [
     section: 'libraries',
     library: 'wasm',
     status: 'stable',
-    keywords: ['integration', 'react', 'upload', 'schema', 'hosting'],
+    keywords: ['integration', 'react', 'upload', 'schema', 'hosting', 'generated types'],
   },
   {
     id: 'devcli-overview',

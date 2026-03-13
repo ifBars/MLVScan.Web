@@ -18,6 +18,7 @@ import { formatBytes, formatDate, getSeverityBadgeColor, cn } from "@/lib/utils"
 import CallChainViewer from "@/components/scan/CallChainViewer"
 import DataFlowViewer from "@/components/scan/DataFlowViewer"
 import { getThreatFamilyById } from "@/families/registry"
+import type { ThreatFamily, ThreatFamilyEvidence } from "@/types/mlvscan"
 
 const severityOrder: Record<Severity, number> = {
   Critical: 4,
@@ -129,6 +130,65 @@ const getActionItems = (summary: ScanResult["summary"]) => {
   }
 }
 
+const getThreatFamilyEvidenceMeta = (evidence: ThreatFamilyEvidence) => {
+  const meta: string[] = []
+
+  if (evidence.ruleId) meta.push(`Rule: ${evidence.ruleId}`)
+  if (evidence.pattern) meta.push(`Pattern: ${evidence.pattern}`)
+  if (evidence.callChainId) meta.push(`Call chain: ${evidence.callChainId}`)
+  if (evidence.dataFlowChainId) meta.push(`Data flow: ${evidence.dataFlowChainId}`)
+  if (typeof evidence.confidence === "number") meta.push(`${Math.round(evidence.confidence * 100)}% confidence`)
+
+  return meta
+}
+
+const getThreatFamilyEvidenceDetail = (evidence: ThreatFamilyEvidence) => {
+  return evidence.methodLocation ?? evidence.location ?? null
+}
+
+function ThreatFamilyEvidenceSection({ match }: { match: ThreatFamily }) {
+  if (match.evidence.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-foreground">Why this matched</p>
+        <Badge variant="outline" className="text-[11px]">
+          {match.evidence.length} evidence item{match.evidence.length === 1 ? "" : "s"}
+        </Badge>
+      </div>
+
+      <div className="space-y-3">
+        {match.evidence.map((evidence, index) => {
+          const meta = getThreatFamilyEvidenceMeta(evidence)
+          const detail = getThreatFamilyEvidenceDetail(evidence)
+
+          return (
+            <div key={`${match.familyId}-${match.variantId}-${evidence.kind}-${index}`} className="rounded-md border border-border/50 bg-background/70 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border-border/50 bg-muted/40 text-foreground">{evidence.kind}</Badge>
+                {meta.map(item => (
+                  <span key={item} className="rounded-full border border-border/50 bg-muted/20 px-2 py-0.5 text-[11px] text-muted-foreground">
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <p className="mt-2 text-sm text-foreground break-words">{evidence.value}</p>
+
+              {detail && (
+                <p className="mt-2 font-mono text-[11px] text-muted-foreground break-all">{detail}</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const ScanReport = ({ result, onReset }: ScanReportProps) => {
   const verdictKey = getVerdictKey(result.summary)
   const verdict = verdictPresets[verdictKey]
@@ -233,7 +293,8 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
 
               return (
                 <div key={`${match.familyId}-${match.variantId}`} className="rounded-lg border border-red-500/20 bg-background/60 p-4">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge className="border-red-500/30 bg-red-500/10 text-red-200">{match.matchKind === "ExactSampleHash" ? "Exact sample hash" : "Behavior match"}</Badge>
@@ -261,6 +322,9 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
                         Open family page
                       </Link>
                     )}
+                    </div>
+
+                    <ThreatFamilyEvidenceSection match={match} />
                   </div>
                 </div>
               )

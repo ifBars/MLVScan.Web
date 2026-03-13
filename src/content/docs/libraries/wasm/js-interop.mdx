@@ -7,6 +7,10 @@ export default function WasmInteropContent() {
         The MLVScan.WASM library uses the .NET 8 JS interop pattern for direct C# exports, avoiding the overhead of <code>DotNet.invokeMethodAsync</code> and <code>DotNetObjectReference</code>. The <strong className="text-white">@mlvscan/wasm-core</strong> npm package wraps this layer and exposes <code>initScanner</code>, <code>scanAssembly</code>, and status/error APIs; for integration in a web app, use the package as described in <Link to="/docs/libraries/wasm/web-integration" className="text-teal-400 hover:text-teal-300">Web Integration</Link>. This page documents the underlying C# ↔ JS boundary for reference or custom tooling.
       </p>
 
+      <p className="text-gray-300 mb-6">
+        Result payloads are serialized against the shared Core-owned schema, not a WASM-specific hand-maintained shape. That keeps interop output aligned with the CLI, API, and desktop consumers.
+      </p>
+
       <h2 id="c-sharp-side">C# Side: JSInvokable</h2>
       <p className="text-gray-300 mb-4">
         Methods exposed to JavaScript must be public, static, and annotated with <code>[JSExport]</code> (or <code>[JSInvokable]</code> for legacy compat). 
@@ -25,7 +29,10 @@ public static partial class ScannerExports
     }
 
     [JSExport]
-    public static string GetVersion() => "1.0.0";
+    public static string GetVersion() => MLVScanVersions.CoreVersion;
+
+    [JSExport]
+    public static string GetSchemaVersion() => MLVScanVersions.SchemaVersion;
 }`}</code>
       </pre>
 

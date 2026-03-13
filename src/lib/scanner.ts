@@ -7,10 +7,10 @@ import {
   isMockScanner as isPkgMockScanner,
   getInitError as getPkgInitError,
   getScannerStatus as getPkgScannerStatus,
-  type ScanResult,
   type ScannerInitOptions,
   type ScannerStatus,
 } from '@mlvscan/wasm-core'
+import type { ScanResult } from '@mlvscan/schema'
 
 const getBaseUrl = (): string => {
   // _framework is always at the site root. Use absolute URL to avoid resolution
@@ -34,7 +34,8 @@ export const scanAssembly = async (fileBytes: Uint8Array, fileName: string): Pro
   if (!isPkgScannerReady()) {
     await initScanner()
   }
-  return scanPkgAssembly(fileBytes, fileName)
+  const result = await scanPkgAssembly(fileBytes, fileName)
+  return result as ScanResult
 }
 
 export const isScannerReady = () => isPkgScannerReady()

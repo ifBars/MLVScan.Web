@@ -20,7 +20,7 @@ const DataFlowViewer = ({ chain, className }: DataFlowViewerProps) => {
                         </span>
                     </h3>
                     <span className="text-xs text-muted-foreground">
-                        Confidence: {(chain.confidence * 100).toFixed(0)}%
+                        {chain.callDepth > 1 ? `${chain.callDepth} methods` : `${chain.nodes.length} steps`}
                     </span>
                 </div>
                 <p className="text-sm text-muted-foreground">{chain.description}</p>

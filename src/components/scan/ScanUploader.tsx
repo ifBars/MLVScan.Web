@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Upload, ShieldAlert, RefreshCw } from "lucide-react"
 import type { ScanResult, ScanStatus } from "@/types/mlvscan"
 import { scanAssembly } from "@/lib/scanner"
+import { isSupportedAssemblyFileName, resolveUploadFile } from "@/lib/upload-file"
 import ScanReport from "@/components/results/ScanReport"
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
@@ -16,11 +17,8 @@ const ScanUploader = () => {
   const [dragActive, setDragActive] = useState(false)
 
   const handleFile = useCallback(async (selectedFile: File) => {
-    if (!selectedFile.name.toLowerCase().endsWith(".dll") &&
-      !selectedFile.name.toLowerCase().endsWith(".exe") &&
-      !selectedFile.name.toLowerCase().endsWith(".di") &&
-      !selectedFile.name.toLowerCase().endsWith(".netmodule")) {
-      setError("Please upload a .NET assembly (.dll, .exe, or .netmodule)")
+    if (!isSupportedAssemblyFileName(selectedFile.name) && !selectedFile.name.toLowerCase().endsWith(".zip")) {
+      setError("Please upload a .NET assembly (.dll, .exe, or .netmodule) or a .zip archive containing one")
       return
     }
 
@@ -34,8 +32,7 @@ const ScanUploader = () => {
     setProgress(0)
 
     try {
-      const arrayBuffer = await selectedFile.arrayBuffer()
-      const fileBytes = new Uint8Array(arrayBuffer)
+      const resolvedUpload = await resolveUploadFile(selectedFile, MAX_FILE_SIZE)
 
       let uploadProgress = 0
       const uploadInterval = setInterval(() => {
@@ -49,7 +46,7 @@ const ScanUploader = () => {
       setStatus("scanning")
       setProgress(0)
 
-      const scanResult = await scanAssembly(fileBytes, selectedFile.name)
+      const scanResult = await scanAssembly(resolvedUpload.fileBytes, resolvedUpload.fileName)
 
       setResult(scanResult)
       setStatus("complete")
@@ -104,7 +101,7 @@ const ScanUploader = () => {
             Scan Your Mods
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Upload a .dll file for instant security analysis directly in your browser
+            Upload a .dll or .zip file for instant security analysis directly in your browser
           </p>
         </div>
 
@@ -122,7 +119,7 @@ const ScanUploader = () => {
               >
                 <input
                   type="file"
-                  accept=".dll,.exe,.di,.netmodule"
+                  accept=".dll,.exe,.di,.netmodule,.zip"
                   onChange={handleInputChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
@@ -131,10 +128,10 @@ const ScanUploader = () => {
                     <Upload className="w-8 h-8 text-teal-300" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    Drop your .dll file here
+                    Drop your assembly or .zip archive here
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    or click to browse files
+                    or click to browse for a .dll, .exe, .netmodule, or .zip
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
                     Maximum file size: 50MB

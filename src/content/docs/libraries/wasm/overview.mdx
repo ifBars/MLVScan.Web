@@ -12,7 +12,12 @@ export default function WasmOverviewContent() {
         <li><strong className="text-white">Privacy-First:</strong> Files are processed in-memory and never leave the user's device.</li>
         <li><strong className="text-white">Full Engine Parity:</strong> Runs the exact same IL analysis rules as the CLI and Runtime scanners.</li>
         <li><strong className="text-white">Framework Agnostic:</strong> Designed to be consumed by React, Vue, Svelte, or vanilla JS via the .NET 8 JS interop model.</li>
+        <li><strong className="text-white">Shared Contract:</strong> Result types are generated from Core-owned DTOs, so the browser package stays aligned with CLI, API, and desktop consumers.</li>
       </ul>
+
+      <p className="text-gray-300 mb-6">
+        In other words, <strong className="text-white">@mlvscan/wasm-core</strong> does not define its own scan-result shape by hand. It re-exports generated types derived from MLVScan.Core, which keeps schema updates like v1.1.0 additive and consistent across the ecosystem.
+      </p>
 
       <h2 id="architecture">Architecture</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
@@ -48,6 +53,7 @@ export default function WasmOverviewContent() {
       <div className="space-y-2 text-teal-400">
         <Link to="/docs/libraries/wasm/web-integration" className="block hover:text-teal-300">Web Integration (React/Vite)</Link>
         <Link to="/docs/libraries/wasm/js-interop" className="block hover:text-teal-300">JS Interop Details</Link>
+        <Link to="/docs/libraries/core/scan-result-schema" className="block hover:text-teal-300">Core Scan Result Schema</Link>
       </div>
     </>
   )
