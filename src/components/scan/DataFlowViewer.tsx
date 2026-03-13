@@ -27,7 +27,7 @@ const DataFlowViewer = ({ chain, className }: DataFlowViewerProps) => {
             </div>
             <div className="p-4 overflow-x-auto">
                 <div className="flex flex-col md:flex-row items-stretch md:items-start gap-4 min-w-max">
-                    {chain.nodes.map((node, index) => (
+                    {chain.nodes.map((node: DataFlowNode, index: number) => (
                         <div key={index} className="flex flex-col md:flex-row items-center">
                             <DataFlowNodeItem node={node} />
                             {index < chain.nodes.length - 1 && (

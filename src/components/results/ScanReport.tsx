@@ -161,7 +161,7 @@ function ThreatFamilyEvidenceSection({ match }: { match: ThreatFamily }) {
       </div>
 
       <div className="space-y-3">
-        {match.evidence.map((evidence, index) => {
+        {match.evidence.map((evidence: ThreatFamilyEvidence, index: number) => {
           const meta = getThreatFamilyEvidenceMeta(evidence)
           const detail = getThreatFamilyEvidenceDetail(evidence)
 
@@ -288,7 +288,7 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
             <CardDescription>This scan matches a previously observed malware family cluster.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {familyMatches.map(match => {
+            {familyMatches.map((match: ThreatFamily) => {
               const familyMeta = getThreatFamilyById(match.familyId)
 
               return (
@@ -305,7 +305,7 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
                         <p className="text-sm text-muted-foreground">{match.summary}</p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        {match.matchedRules.map(rule => (
+                        {match.matchedRules.map((rule: string) => (
                           <span key={rule} className="rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 font-mono">
                             {rule}
                           </span>

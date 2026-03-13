@@ -27,7 +27,7 @@ const CallChainViewer = ({ chain, className }: CallChainViewerProps) => {
                 <p className="text-sm text-muted-foreground mt-1">{chain.description}</p>
             </div>
             <div className="p-4 space-y-0">
-                {chain.nodes.map((node, index) => (
+                {chain.nodes.map((node: CallChainNode, index: number) => (
                     <CallChainNodeItem
                         key={index}
                         node={node}
