@@ -93,6 +93,10 @@ function serveCoreSchemaPlugin(): Plugin {
         throw new Error('Vite config was not resolved before writing schema asset')
       }
 
+      if (!fs.existsSync(coreSchemaFile)) {
+        return
+      }
+
       const outputPath = path.resolve(resolvedConfig.root, resolvedConfig.build.outDir, schemaAssetPath)
       fs.mkdirSync(path.dirname(outputPath), { recursive: true })
       fs.copyFileSync(coreSchemaFile, outputPath)
@@ -102,16 +106,20 @@ function serveCoreSchemaPlugin(): Plugin {
 
 function getSchemaAssetPath(schemaFilePath: string): string {
   if (!fs.existsSync(schemaFilePath)) {
-    throw new Error(`Missing generated schema file: ${schemaFilePath}`)
+    return 'schema/mlvscan-result.schema.json'
   }
 
   const schema = JSON.parse(fs.readFileSync(schemaFilePath, 'utf8')) as { $id?: string }
   if (!schema.$id) {
-    throw new Error(`Schema file is missing $id: ${schemaFilePath}`)
+    return 'schema/mlvscan-result.schema.json'
   }
 
-  const schemaUrl = new URL(schema.$id)
-  return schemaUrl.pathname.replace(/^\/+/, '')
+  try {
+    const schemaUrl = new URL(schema.$id)
+    return schemaUrl.pathname.replace(/^\/+/, '')
+  } catch {
+    return 'schema/mlvscan-result.schema.json'
+  }
 }
 
 // Normalized for tinyglobby (Windows backslash)
