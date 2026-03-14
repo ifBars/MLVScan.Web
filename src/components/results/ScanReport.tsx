@@ -130,22 +130,6 @@ const getActionItems = (summary: ScanResult["summary"]) => {
   }
 }
 
-const getThreatFamilyEvidenceMeta = (evidence: ThreatFamilyEvidence) => {
-  const meta: string[] = []
-
-  if (evidence.ruleId) meta.push(`Rule: ${evidence.ruleId}`)
-  if (evidence.pattern) meta.push(`Pattern: ${evidence.pattern}`)
-  if (evidence.callChainId) meta.push(`Call chain: ${evidence.callChainId}`)
-  if (evidence.dataFlowChainId) meta.push(`Data flow: ${evidence.dataFlowChainId}`)
-  if (typeof evidence.confidence === "number") meta.push(`${Math.round(evidence.confidence * 100)}% confidence`)
-
-  return meta
-}
-
-const getThreatFamilyEvidenceDetail = (evidence: ThreatFamilyEvidence) => {
-  return evidence.methodLocation ?? evidence.location ?? null
-}
-
 function ThreatFamilyEvidenceSection({ match }: { match: ThreatFamily }) {
   if (match.evidence.length === 0) {
     return null
@@ -161,29 +145,15 @@ function ThreatFamilyEvidenceSection({ match }: { match: ThreatFamily }) {
       </div>
 
       <div className="space-y-3">
-        {match.evidence.map((evidence: ThreatFamilyEvidence, index: number) => {
-          const meta = getThreatFamilyEvidenceMeta(evidence)
-          const detail = getThreatFamilyEvidenceDetail(evidence)
-
-          return (
-            <div key={`${match.familyId}-${match.variantId}-${evidence.kind}-${index}`} className="rounded-md border border-border/50 bg-background/70 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-border/50 bg-muted/40 text-foreground">{evidence.kind}</Badge>
-                {meta.map(item => (
-                  <span key={item} className="rounded-full border border-border/50 bg-muted/20 px-2 py-0.5 text-[11px] text-muted-foreground">
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <p className="mt-2 text-sm text-foreground break-words">{evidence.value}</p>
-
-              {detail && (
-                <p className="mt-2 font-mono text-[11px] text-muted-foreground break-all">{detail}</p>
-              )}
+        {match.evidence.map((evidence: ThreatFamilyEvidence, index: number) => (
+          <div key={`${match.familyId}-${match.variantId}-${evidence.kind}-${index}`} className="rounded-md border border-border/50 bg-background/70 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="border-border/50 bg-muted/40 text-foreground">{evidence.kind}</Badge>
             </div>
-          )
-        })}
+
+            <p className="mt-2 text-sm text-foreground break-words">{evidence.value}</p>
+          </div>
+        ))}
       </div>
     </div>
   )

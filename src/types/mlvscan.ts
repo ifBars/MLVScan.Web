@@ -10,15 +10,12 @@ export type {
   Finding,
   ScanInput,
   ScanMetadata,
-  ScanMode,
-  ScanPlatform,
   ScanResult,
   ScanSummary,
-  SchemaVersion,
   Severity,
   ThreatFamily,
   ThreatFamilyEvidence,
   ThreatMatchKind,
-} from '@mlvscan/schema'
+} from '@mlvscan/wasm-core'
 
 export type ScanStatus = 'idle' | 'uploading' | 'scanning' | 'complete' | 'error'
