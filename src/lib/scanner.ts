@@ -10,7 +10,7 @@ import {
   type ScannerInitOptions,
   type ScannerStatus,
 } from '@mlvscan/wasm-core'
-import type { ScanResult } from '@mlvscan/wasm-core'
+import type { ScanResult } from '@/types/mlvscan'
 
 const getBaseUrl = (): string => {
   // _framework is always at the site root. Use absolute URL to avoid resolution
