@@ -4,7 +4,9 @@ export default function RuntimeOverviewContent() {
   return (
     <>
       <p className="text-gray-300 mb-6">
-        MLVScan runtime packages run before mod execution and enforce policy based on severity and hash trust.
+        MLVScan runtime packages run before mod execution and enforce policy from the Core threat
+        disposition. Known threat-family matches are treated as likely malware, while unknown correlated
+        behavior is surfaced separately as suspicious and may still be a false positive.
       </p>
 
       <h2 id="supported-loaders">Supported Loaders</h2>
@@ -16,33 +18,41 @@ export default function RuntimeOverviewContent() {
 
       <h2 id="configuration">Configuration</h2>
       <p className="text-gray-300 mb-4">
-        Configuration files are automatically generated on first run. You can customize scanning behavior, severity thresholds, and whitelist settings.
+        Configuration files are automatically generated on first run. You can customize scanning behavior,
+        scan scope, automatic blocking, and whitelist settings.
       </p>
       
       <h3 id="melonloader-config">MelonLoader</h3>
       <p className="text-gray-400 text-sm mb-2">File: <code>UserData/MelonPreferences.cfg</code></p>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
         <code className="text-sm text-gray-300">{`[MLVScan]
-Enabled = true
-ScanLevel = "Detailed"  # "Fast" or "Detailed"
-AutoDisableHighSeverity = true
-LogToConsole = true`}</code>
+EnableAutoScan = true
+EnableAutoDisable = true
+BlockKnownThreats = true
+BlockSuspicious = true`}</code>
       </pre>
 
       <h3 id="bepinex-config">BepInEx</h3>
       <p className="text-gray-400 text-sm mb-2">File: <code>BepInEx/config/MLVScan.json</code></p>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
         <code className="text-sm text-gray-300">{`{
-  "Enabled": true,
-  "ScanLevel": "Detailed",
-  "AutoDisableHighSeverity": true,
-  "LogToConsole": true
+  "EnableAutoScan": true,
+  "EnableAutoDisable": true,
+  "BlockKnownThreats": true,
+  "BlockSuspicious": true
 }`}</code>
       </pre>
 
+      <p className="text-gray-300 mb-8">
+        <code>EnableAutoDisable</code> remains the master switch. <code>BlockKnownThreats</code> controls
+        exact malicious sample matches and known malware-family matches. <code>BlockSuspicious</code>
+        controls unknown correlated behavior that is blocked as a precaution but may still be benign.
+      </p>
+
       <h2 id="logs-and-reports">Logs and Reports</h2>
       <p className="text-gray-300 mb-4">
-        Scan results are saved locally to your game directory. These JSON reports contain detailed findings for every mod scanned during startup.
+        Scan results are saved locally to your game directory. Reports include the primary disposition,
+        any matched threat families, and the retained findings that support the verdict for each scanned mod.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

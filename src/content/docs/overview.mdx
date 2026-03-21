@@ -23,16 +23,6 @@ export default function OverviewContent() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
-        <h3 className="text-teal-300 font-semibold mb-2">Schema Ownership</h3>
-        <p className="text-sm text-gray-300 mb-2">
-          The shared scan-result contract is now owned centrally in <code>MLVScan.Core/Models/Dto/</code>. JSON Schema and shared TypeScript definitions are generated from Core and reused by the WASM package, web app, API, and desktop tools.
-        </p>
-        <p className="text-sm text-gray-300">
-          If you are touching result payloads, start with <Link to="/docs/libraries/core/scan-result-schema" className="text-teal-300 hover:text-teal-200">Scan Result Schema</Link> before editing consumer docs or UI code.
-        </p>
-      </div>
-
       <h2 id="library-map">Library Map</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Link to="/docs/libraries/core" className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 hover:border-teal-500 transition-colors">

@@ -18,16 +18,6 @@ export default function CoreAdvancedAnalysisContent() {
   -> [SINK] File.WriteAllBytes
   -> [SINK] Process.Start`}</code></pre>
 
-      <div className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 mb-6">
-        <h3 className="text-white font-semibold mb-2">Schema v1.1.0 Output Highlights</h3>
-        <ul className="list-disc list-inside space-y-2 text-gray-300">
-          <li><code>findings[].riskScore</code> exposes scoring-based rule context when available.</li>
-          <li><code>findings[].callChainId</code> and <code>findings[].dataFlowChainId</code> give stable join keys for UI linking.</li>
-          <li><code>findings[].developerGuidance</code> can now carry inline remediation context on the finding itself.</li>
-          <li><code>dataFlows[].callDepth</code> and <code>dataFlows[].isSuspicious</code> make deep chains easier to summarize.</li>
-        </ul>
-      </div>
-
       <h2 id="config-depth">Depth and Performance</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var config = new ScanConfig
 {

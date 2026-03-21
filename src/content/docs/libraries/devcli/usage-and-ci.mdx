@@ -7,12 +7,18 @@ export default function DevCliUsageAndCiContent() {
       <h2 id="common-commands">Common Commands</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`mlvscan-dev MyMod.dll
 mlvscan-dev MyMod.dll --json
+mlvscan-dev MyMod.dll --fail-on-disposition Suspicious
 mlvscan-dev MyMod.dll --fail-on High
 mlvscan-dev MyMod.dll --verbose`}</code></pre>
 
+      <p className="text-gray-300 mb-6">
+        Prefer <code>--fail-on-disposition</code> for CI because it follows the family-first verdict model.
+        <code>--fail-on</code> is still available when you need legacy severity-based gating.
+      </p>
+
       <h2 id="msbuild">MSBuild Hook</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`<Target Name="MLVScanCheck" AfterTargets="Build">
-  <Exec Command="dotnet mlvscan-dev &quot;$(TargetPath)&quot; --fail-on High" />
+  <Exec Command="dotnet mlvscan-dev &quot;$(TargetPath)&quot; --fail-on-disposition Suspicious" />
 </Target>`}</code></pre>
 
       <h2 id="github-actions">GitHub Actions</h2>

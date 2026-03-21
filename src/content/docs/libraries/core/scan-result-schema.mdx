@@ -7,60 +7,45 @@ export default function CoreScanResultSchemaContent() {
         The shared scan-result contract is owned in <code>MLVScan.Core/Models/Dto/</code>. Every downstream artifact now flows from those DTOs: the checked-in JSON Schema, the shared TypeScript definitions, and the WASM package copy used by external consumers.
       </p>
 
-      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
-        <h3 className="text-teal-300 font-semibold mb-2">Rule of Thumb</h3>
-        <p className="text-sm text-gray-300 mb-2">
-          If you want to change the payload shape, change Core DTOs first. Do not hand-edit schema copies in the web app, API, Tauri app, or npm package.
-        </p>
-        <p className="text-sm text-gray-300">
-          The generator lives in <code>MLVScan.Core/Tools/MLVScan.SchemaGen/</code> and runs after DTO changes. The generated artifacts are checked into git on purpose, because they are part of the published contract consumed by the website, npm package, API, and desktop tools.
-        </p>
-      </div>
+      <p className="text-gray-300 mb-6">
+        The generator lives in <code>MLVScan.Core/Tools/MLVScan.SchemaGen/</code> and the generated artifacts are checked into source control because they are part of the published contract consumed by the website, npm package, API, and desktop tools.
+      </p>
 
       <h2 id="artifact-map">Artifact Map</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`MLVScan.Core/
-  Models/Dto/                        // source of truth
+  Models/Dto/
   schema/mlvscan-result.schema.json  // generated JSON Schema
   schema/generated/mlvscan-schema.ts // generated shared TypeScript types
   MLVScan.WASM/npm/src/generated/
     mlvscan-schema.ts                // npm package copy`}</code></pre>
 
       <p className="text-gray-300 mb-6">
-        The website publishes the generated schema from Core at the URL declared by the schema <code>$id</code>. Today that resolves to <code>https://mlvscan.com/schemas/scan-result/1.1.0/schema.json</code>.
+        The website publishes the generated schema from Core at the versioned path declared by the schema <code>$id</code>. The current schema is available at <code>https://mlvscan.com/schemas/scan-result/1.2.0/schema.json</code>.
       </p>
-
-      <h2 id="update-workflow">Update Workflow</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`# 1. Update DTOs in Core
-# 2. Regenerate artifacts
-dotnet run --project Tools/MLVScan.SchemaGen/MLVScan.SchemaGen.csproj
-
-# 3. Commit the changed generated artifacts
-
-# 4. Verify generated files are current
-dotnet run --project Tools/MLVScan.SchemaGen/MLVScan.SchemaGen.csproj -- --verify`}</code></pre>
 
       <h2 id="consumer-guidance">Consumer Guidance</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
         <li><strong className="text-white">External web consumers:</strong> import scan-result types from <code>@mlvscan/wasm-core</code>.</li>
-        <li><strong className="text-white">Mono-repo apps:</strong> import from the Core-generated schema alias (<code>@mlvscan/schema</code>) instead of redefining interfaces.</li>
         <li><strong className="text-white">Schema validation:</strong> use <code>MLVScan.Core/schema/mlvscan-result.schema.json</code> as the canonical validation file.</li>
-        <li><strong className="text-white">Git hygiene:</strong> do not gitignore <code>MLVScan.Core/schema/</code> or <code>MLVScan.WASM/npm/src/generated/</code>; those files should ship with source changes.</li>
       </ul>
 
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`// external app consuming the npm package
 import type { ScanResult } from '@mlvscan/wasm-core'
+`}</code></pre>
 
-// apps inside this monorepo
-import type { ScanResult } from '@mlvscan/schema'`}</code></pre>
-
-      <h2 id="v1-1-highlights">Schema v1.1.0 Highlights</h2>
+      <h2 id="schema-highlights">Schema Highlights</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li><code>disposition.classification</code> gives the primary verdict as <code>Clean</code>, <code>Suspicious</code>, or <code>KnownThreat</code>.</li>
+        <li><code>disposition.headline</code>, <code>disposition.summary</code>, and <code>disposition.blockingRecommended</code> provide the user-facing verdict message and action guidance.</li>
+        <li><code>disposition.primaryThreatFamilyId</code> links the primary verdict to the matched family when a known threat is identified.</li>
+        <li><code>findings[].visibility</code> separates default findings from advanced diagnostics so consumer UIs can hide noisy heuristics by default.</li>
+        <li><code>threatFamilies[]</code> carries known malware family matches, including <code>matchKind</code>, <code>confidence</code>, <code>exactHashMatch</code>, and matched rules.</li>
+        <li><code>threatFamilies[].evidence[]</code> provides family evidence details such as <code>pattern</code>, <code>methodLocation</code>, <code>callChainId</code>, and <code>dataFlowChainId</code>.</li>
         <li><code>findings[].riskScore</code> for scoring-based rules.</li>
         <li><code>findings[].callChainId</code> and <code>findings[].dataFlowChainId</code> for stable linking.</li>
         <li><code>findings[].developerGuidance</code> for inline remediation context.</li>
         <li><code>developerGuidance[].ruleIds</code> for aggregated rule provenance.</li>
         <li><code>dataFlows[].callDepth</code> and <code>dataFlows[].isSuspicious</code> for deeper chain summaries.</li>
-        <li>Expanded threat-family evidence fields such as <code>callChainId</code>, <code>dataFlowChainId</code>, <code>pattern</code>, and <code>methodLocation</code>.</li>
       </ul>
 
       <p className="text-gray-300">

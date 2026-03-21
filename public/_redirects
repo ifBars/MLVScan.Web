@@ -1,2 +1,6 @@
+# Preserve published static assets before SPA fallback.
+/schemas/*      /schemas/:splat      200
+/_framework/*   /_framework/:splat   200
+
 # SPA fallback for Cloudflare Pages
-/*    /index.html   200
+/*              /index.html          200

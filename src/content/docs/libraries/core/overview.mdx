@@ -5,22 +5,26 @@ export default function CoreOverviewContent() {
     <>
       <p className="text-gray-300 mb-6">
         MLVScan.Core is the shared detection engine used by runtime mods, the web scanner, and DevCLI.
-        It provides static IL analysis via Mono.Cecil, rule execution, and structured output.
+        It provides static IL analysis via Mono.Cecil, threat-family classification, and structured scan output.
       </p>
 
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
-        <h3 className="text-teal-300 font-semibold mb-2">Single Source of Truth</h3>
+        <h3 className="text-teal-300 font-semibold mb-2">Shared Scan Contract</h3>
         <p className="text-sm text-gray-300 mb-2">
-          The public scan-result contract lives in <code>MLVScan.Core/Models/Dto/</code>. JSON Schema and shared TypeScript definitions are generated from those DTOs so consumers do not hand-maintain copies.
+          The public scan-result contract includes scan metadata, retained findings, threat-family matches,
+          and the primary file disposition. JSON Schema and shared TypeScript definitions are generated from
+          the Core DTOs so every consumer reads the same payload shape.
         </p>
         <p className="text-sm text-gray-300">
-          See <Link to="/docs/libraries/core/scan-result-schema" className="text-teal-300 hover:text-teal-200">Scan Result Schema</Link> for the generation workflow and artifact locations.
+          See <Link to="/docs/libraries/core/scan-result-schema" className="text-teal-300 hover:text-teal-200">Scan Result Schema</Link> for the published fields and generated artifacts.
         </p>
       </div>
 
       <h2 id="what-you-get">What You Get</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
-        <li>Rule-based detections grouped by severity.</li>
+        <li>Threat-family matching for known malware samples and recurring malware behavior patterns.</li>
+        <li>Primary file disposition values: <code>Clean</code>, <code>Suspicious</code>, and <code>KnownThreat</code>.</li>
+        <li>Default findings for the retained verdict, plus advanced diagnostics for lower-confidence supporting signals.</li>
         <li>Call-chain consolidation for traceable entry-point paths.</li>
         <li>Data-flow tracking for multi-step attack patterns.</li>
         <li>Core-owned schema artifacts reused across WASM, Web, API, and desktop tools.</li>

@@ -60,7 +60,7 @@ npm install @mlvscan/wasm-core
 
 The WASM core is automatically bundled and available at runtime. For development tips on the WASM package, see [MLVScan.Core/MLVScan.WASM](https://github.com/ifBars/MLVScan.Core/tree/main/MLVScan.WASM).
 
-The site also serves the canonical generated scan-result schema from `MLVScan.Core` at the versioned path declared by the schema `$id`, for example `https://mlvscan.com/schemas/scan-result/1.1.0/schema.json`.
+The site also serves the canonical generated scan-result schema from `MLVScan.Core` at the versioned path declared by the schema `$id`, for example `https://mlvscan.com/schemas/scan-result/1.2.0/schema.json`.
 
 ## 📚 Documentation
 
