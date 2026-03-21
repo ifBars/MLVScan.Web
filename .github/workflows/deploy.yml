@@ -43,10 +43,10 @@ jobs:
       - name: Restore Core tools and packages
         run: |
           dotnet tool restore
-          dotnet restore ../MLVScan.Core/MLVScan.Core.sln
+          dotnet restore ../MLVScan.Core/MLVScan.Core.csproj
 
       - name: Build Core
-        run: dotnet build ../MLVScan.Core/MLVScan.Core.sln -c Release --no-restore
+        run: dotnet build ../MLVScan.Core/MLVScan.Core.csproj -c Release --no-restore
 
       - name: Generate reference docs
         run: bun run docs:generate
