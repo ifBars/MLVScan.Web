@@ -11,12 +11,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Type-check, lint, test, build ────────────────────────────────────────────
   ci:
     name: CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Clone MLVScan.Core
+        run: git clone --depth 1 https://github.com/ifBars/MLVScan.Core ../MLVScan.Core
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -34,6 +40,17 @@ jobs:
       - name: Test
         run: bun run test
 
+      - name: Restore Core tools and packages
+        run: |
+          dotnet tool restore
+          dotnet restore ../MLVScan.Core/MLVScan.Core.sln
+
+      - name: Build Core
+        run: dotnet build ../MLVScan.Core/MLVScan.Core.sln -c Release --no-restore
+
+      - name: Generate reference docs
+        run: bun run docs:generate
+
       - name: Build
         run: bun run build
 
@@ -44,7 +61,6 @@ jobs:
           path: dist/
           retention-days: 1
 
-  # ── Cloudflare Pages deploy ───────────────────────────────────────────────────
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -52,7 +68,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
-      pull-requests: write  # allows posting the preview URL comment on PRs
+      pull-requests: write
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -66,7 +82,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # On pushes to main this deploys to production; PRs get a preview URL.
           command: >
             pages deploy dist
             --project-name=mlvscan-web

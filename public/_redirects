@@ -1,4 +1,5 @@
 # Preserve published static assets before SPA fallback.
+/docs/reference/* /docs/reference/:splat 200
 /schemas/*      /schemas/:splat      200
 /_framework/*   /_framework/:splat   200
 

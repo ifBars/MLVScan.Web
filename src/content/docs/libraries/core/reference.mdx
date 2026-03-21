@@ -1,0 +1,27 @@
+export default function CoreReferenceContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        The Core reference is generated from the public <code>MLVScan.Core</code> API surface and
+        XML documentation comments. It stays aligned with the shipped library contract instead of
+        relying on hand-maintained member documentation.
+      </p>
+
+      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
+        <h2 id="what-youll-find" className="text-xl font-semibold text-teal-300 mb-2">What You&apos;ll Find</h2>
+        <ul className="list-disc list-inside space-y-2 text-gray-300">
+          <li>Public scanner entry points and configuration types.</li>
+          <li>Threat-family, disposition, and scan-result DTO reference.</li>
+          <li>Member-level API details generated directly from the Core source.</li>
+        </ul>
+      </div>
+
+      <a
+        href="/docs/reference/core/"
+        className="inline-flex items-center rounded-md bg-teal-500 px-4 py-2 font-medium text-black transition-colors hover:bg-teal-400"
+      >
+        Open Generated Core Reference
+      </a>
+    </>
+  )
+}

@@ -12,6 +12,7 @@ dist
 dist/
 dist-ssr
 *.local
+.generated/
 
 # Editor directories and files
 .vscode/*
@@ -45,3 +46,5 @@ package-lock.json
 skills-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+docs/docfx/api/

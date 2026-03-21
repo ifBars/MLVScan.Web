@@ -1,0 +1,19 @@
+{
+  "entryPoints": [
+    "../../MLVScan.Core/MLVScan.WASM/npm/src/index.ts",
+    "../../MLVScan.Core/MLVScan.WASM/npm/src/types.ts"
+  ],
+  "entryPointStrategy": "resolve",
+  "tsconfig": "../../MLVScan.Core/MLVScan.WASM/npm/tsconfig.json",
+  "out": "../.generated/reference/wasm",
+  "plugin": [],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "readme": "none",
+  "name": "@mlvscan/wasm-core Reference",
+  "categorizeByGroup": false,
+  "sort": [
+    "source-order"
+  ]
+}

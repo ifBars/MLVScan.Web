@@ -7,14 +7,24 @@ import fs from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
-// Resolve _framework from @mlvscan/wasm-core (npm package; same path in node_modules)
 const wasmCoreDist = path.resolve(__dirname, 'node_modules/@mlvscan/wasm-core/dist')
 const frameworkDir = path.join(wasmCoreDist, '_framework')
 const coreSchemaFile = path.resolve(__dirname, '../MLVScan.Core/schema/mlvscan-result.schema.json')
 const schemaAssetPath = getSchemaAssetPath(coreSchemaFile)
 const schemaPublicPath = `/${schemaAssetPath}`
+const generatedReferenceDocs = [
+  {
+    name: 'core',
+    mountPath: '/docs/reference/core',
+    sourceDir: path.resolve(__dirname, '.generated/reference/core'),
+  },
+  {
+    name: 'wasm',
+    mountPath: '/docs/reference/wasm',
+    sourceDir: path.resolve(__dirname, '.generated/reference/wasm'),
+  },
+]
 
-/** Serves /_framework from the npm package in dev so we don't need public/_framework */
 function serveWasmFrameworkPlugin(): Plugin {
   return {
     name: 'serve-wasm-framework',
@@ -26,34 +36,20 @@ function serveWasmFrameworkPlugin(): Plugin {
           next()
           return
         }
-        const normalized = pathname
-        if (!normalized.startsWith('/_framework/') && normalized !== '/_framework') {
+
+        if (!pathname.startsWith('/_framework/') && pathname !== '/_framework') {
           next()
           return
         }
-        const subpath = normalized.slice('/_framework'.length) || '/'
-        const filePath = path.join(frameworkDir, subpath)
-        if (!filePath.startsWith(frameworkDir) || !fs.existsSync(filePath)) {
+
+        const subpath = pathname.slice('/_framework'.length) || '/'
+        const filePath = resolveStaticRequest(frameworkDir, subpath)
+        if (filePath === null) {
           next()
           return
         }
-        const stat = fs.statSync(filePath)
-        if (stat.isDirectory()) {
-          next()
-          return
-        }
-        const ext = path.extname(filePath)
-        const mime: Record<string, string> = {
-          '.js': 'application/javascript',
-          '.json': 'application/json',
-          '.wasm': 'application/wasm',
-          '.bin': 'application/octet-stream',
-          '.symbols': 'application/octet-stream',
-        }
-        res.setHeader('Content-Type', mime[ext] ?? 'application/octet-stream')
-        res.setHeader('Cache-Control', 'no-cache')
-        res.writeHead(200)
-        fs.createReadStream(filePath).pipe(res)
+
+        serveFile(filePath, res)
       })
     },
   }
@@ -89,11 +85,7 @@ function serveCoreSchemaPlugin(): Plugin {
       })
     },
     writeBundle() {
-      if (resolvedConfig === null) {
-        throw new Error('Vite config was not resolved before writing schema asset')
-      }
-
-      if (!fs.existsSync(coreSchemaFile)) {
+      if (resolvedConfig === null || !fs.existsSync(coreSchemaFile)) {
         return
       }
 
@@ -102,6 +94,117 @@ function serveCoreSchemaPlugin(): Plugin {
       fs.copyFileSync(coreSchemaFile, outputPath)
     },
   }
+}
+
+function generatedReferenceDocsPlugin(): Plugin {
+  let resolvedConfig: ResolvedConfig | null = null
+
+  return {
+    name: 'generated-reference-docs',
+    configResolved(config) {
+      resolvedConfig = config
+    },
+    configureServer(server: { middlewares: { use: (handler: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void } }) {
+      server.middlewares.use((req: IncomingMessage & { url?: string; method?: string }, res: ServerResponse, next: () => void) => {
+        const url = req.url ?? ''
+        const pathname = url.replace(/\?.*$/, '')
+
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          next()
+          return
+        }
+
+        for (const generatedDoc of generatedReferenceDocs) {
+          if (!pathname.startsWith(`${generatedDoc.mountPath}/`) && pathname !== generatedDoc.mountPath) {
+            continue
+          }
+
+          const subpath = pathname.slice(generatedDoc.mountPath.length) || '/'
+          const filePath = resolveStaticRequest(generatedDoc.sourceDir, subpath)
+          if (filePath === null) {
+            continue
+          }
+
+          serveFile(filePath, res)
+          return
+        }
+
+        next()
+      })
+    },
+    writeBundle() {
+      if (resolvedConfig === null) {
+        return
+      }
+
+      for (const generatedDoc of generatedReferenceDocs) {
+        if (!fs.existsSync(generatedDoc.sourceDir)) {
+          continue
+        }
+
+        const outputPath = path.resolve(
+          resolvedConfig.root,
+          resolvedConfig.build.outDir,
+          generatedDoc.mountPath.replace(/^\/+/, ''),
+        )
+
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+        fs.cpSync(generatedDoc.sourceDir, outputPath, { recursive: true, force: true })
+      }
+    },
+  }
+}
+
+function resolveStaticRequest(rootDir: string, requestSubpath: string): string | null {
+  if (!fs.existsSync(rootDir)) {
+    return null
+  }
+
+  const relativePath = requestSubpath.replace(/^\/+/, '')
+  let targetPath = path.resolve(rootDir, relativePath)
+
+  if (!targetPath.startsWith(rootDir)) {
+    return null
+  }
+
+  if (fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
+    targetPath = path.join(targetPath, 'index.html')
+  } else if (!fs.existsSync(targetPath)) {
+    const indexCandidate = path.join(rootDir, relativePath, 'index.html')
+    if (indexCandidate.startsWith(rootDir) && fs.existsSync(indexCandidate)) {
+      targetPath = indexCandidate
+    }
+  }
+
+  if (!fs.existsSync(targetPath) || fs.statSync(targetPath).isDirectory()) {
+    return null
+  }
+
+  return targetPath
+}
+
+function serveFile(filePath: string, res: ServerResponse): void {
+  res.setHeader('Content-Type', getMimeType(filePath))
+  res.setHeader('Cache-Control', 'no-cache')
+  res.writeHead(200)
+  fs.createReadStream(filePath).pipe(res)
+}
+
+function getMimeType(filePath: string): string {
+  const ext = path.extname(filePath)
+  const mime: Record<string, string> = {
+    '.css': 'text/css; charset=utf-8',
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.wasm': 'application/wasm',
+    '.bin': 'application/octet-stream',
+    '.png': 'image/png',
+    '.symbols': 'application/octet-stream',
+  }
+
+  return mime[ext] ?? 'application/octet-stream'
 }
 
 function getSchemaAssetPath(schemaFilePath: string): string {
@@ -122,10 +225,8 @@ function getSchemaAssetPath(schemaFilePath: string): string {
   }
 }
 
-// Normalized for tinyglobby (Windows backslash)
 const frameworkGlob = normalizePath(path.join(wasmCoreDist, '_framework', '**', '*'))
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -136,6 +237,7 @@ export default defineConfig({
     }),
     serveWasmFrameworkPlugin(),
     serveCoreSchemaPlugin(),
+    generatedReferenceDocsPlugin(),
     viteStaticCopy({
       targets: [
         {
@@ -150,5 +252,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: '/', // Root for mlvscan.com (Cloudflare Pages)
+  base: '/',
 })

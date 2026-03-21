@@ -1,0 +1,36 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../../../MLVScan.Core",
+          "files": [
+            "MLVScan.Core.csproj"
+          ]
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "api/**.yml",
+          "api/index.md",
+          "index.md",
+          "toc.yml"
+        ]
+      }
+    ],
+    "dest": "../../.generated/reference/core",
+    "template": [
+      "default"
+    ],
+    "globalMetadata": {
+      "_appTitle": "MLVScan.Core Reference",
+      "_appName": "MLVScan.Core Reference",
+      "_appFooter": "Generated from XML documentation comments and public API metadata."
+    }
+  }
+}

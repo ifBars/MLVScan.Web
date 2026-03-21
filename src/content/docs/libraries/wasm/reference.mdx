@@ -1,0 +1,27 @@
+export default function WasmReferenceContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        The WASM reference is generated from the public <code>@mlvscan/wasm-core</code> entry points
+        and JSDoc comments. It covers the browser-facing scanner API without requiring the web docs to
+        mirror every exported function and type by hand.
+      </p>
+
+      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
+        <h2 id="what-youll-find" className="text-xl font-semibold text-teal-300 mb-2">What You&apos;ll Find</h2>
+        <ul className="list-disc list-inside space-y-2 text-gray-300">
+          <li>Initialization, scanning, and status helper functions.</li>
+          <li>Browser scan configuration types.</li>
+          <li>Shared scan-result schema types re-exported by the package.</li>
+        </ul>
+      </div>
+
+      <a
+        href="/docs/reference/wasm/"
+        className="inline-flex items-center rounded-md bg-teal-500 px-4 py-2 font-medium text-black transition-colors hover:bg-teal-400"
+      >
+        Open Generated WASM Reference
+      </a>
+    </>
+  )
+}
