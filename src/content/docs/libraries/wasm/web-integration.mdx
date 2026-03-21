@@ -10,7 +10,6 @@ export default function WasmIntegrationContent() {
         <li>Add <code>@mlvscan/wasm-core</code> from npm (or <code>file:</code> link to the WASM repo’s <code>npm</code> folder for local development).</li>
         <li>For local testing: build the MLVScan.WASM .NET project, then run <code>npm run copy:framework</code> in the package so <code>dist/_framework</code> is populated.</li>
         <li>Configure your dev server and build to serve or copy <code>_framework</code> from the package (e.g. Vite plugin to serve <code>/_framework</code> from the package in dev and copy to output on build).</li>
-        <li>If you host docs or validators against <code>mlvscan.com</code>, also publish the generated schema path from Core so the schema <code>$id</code> resolves correctly.</li>
       </ul>
 
       <h2 id="api-overview">API Overview</h2>
@@ -21,10 +20,7 @@ export default function WasmIntegrationContent() {
       <div className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 mb-6">
         <h3 className="text-white font-semibold mb-2">Type Ownership</h3>
         <p className="text-sm text-gray-300 mb-2">
-          <strong className="text-white">@mlvscan/wasm-core</strong> re-exports generated scan-result types that come from <code>MLVScan.Core/Models/Dto/</code>. Prefer importing those types instead of redefining your own interfaces.
-        </p>
-        <p className="text-sm text-gray-300">
-          Inside this mono-repo, the Web, API, and Tauri projects additionally point <code>@mlvscan/schema</code> at the generated Core artifact so every surface stays aligned.
+          <strong className="text-white">@mlvscan/wasm-core</strong> re-exports the shared scan-result types used across MLVScan. Prefer importing those types instead of redefining your own interfaces.
         </p>
       </div>
 

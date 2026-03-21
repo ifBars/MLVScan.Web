@@ -16,7 +16,7 @@ export default function CoreOverviewContent() {
           the Core DTOs so every consumer reads the same payload shape.
         </p>
         <p className="text-sm text-gray-300">
-          See <Link to="/docs/libraries/core/scan-result-schema" className="text-teal-300 hover:text-teal-200">Scan Result Schema</Link> for the published fields and generated artifacts.
+          See <Link to="/docs/libraries/core/scan-result-schema" className="text-teal-300 hover:text-teal-200">Scan Result Schema</Link> for the published fields and consumption guidance.
         </p>
       </div>
 
@@ -27,14 +27,14 @@ export default function CoreOverviewContent() {
         <li>Default findings for the retained verdict, plus advanced diagnostics for lower-confidence supporting signals.</li>
         <li>Call-chain consolidation for traceable entry-point paths.</li>
         <li>Data-flow tracking for multi-step attack patterns.</li>
-        <li>Core-owned schema artifacts reused across WASM, Web, API, and desktop tools.</li>
+        <li>A shared result format used across the web scanner, WASM package, API, and desktop tools.</li>
       </ul>
 
       <h2 id="next-pages">Next Pages</h2>
       <div className="space-y-2 text-teal-400">
         <Link to="/docs/libraries/core/getting-started" className="block hover:text-teal-300">Getting Started</Link>
         <Link to="/docs/libraries/core/advanced-analysis" className="block hover:text-teal-300">Advanced Analysis</Link>
-        <Link to="/docs/libraries/core/api-reference" className="block hover:text-teal-300">API Reference</Link>
+        <Link to="/docs/libraries/core/reference" className="block hover:text-teal-300">Core Reference</Link>
         <Link to="/docs/libraries/core/scan-result-schema" className="block hover:text-teal-300">Scan Result Schema</Link>
       </div>
     </>

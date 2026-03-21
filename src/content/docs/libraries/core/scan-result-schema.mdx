@@ -4,29 +4,20 @@ export default function CoreScanResultSchemaContent() {
   return (
     <>
       <p className="text-gray-300 mb-6">
-        The shared scan-result contract is owned in <code>MLVScan.Core/Models/Dto/</code>. Every downstream artifact now flows from those DTOs: the checked-in JSON Schema, the shared TypeScript definitions, and the WASM package copy used by external consumers.
+        MLVScan uses a shared scan-result contract across the Core library, the web scanner, the WASM package,
+        and other consumers. This page summarizes the fields most people care about and points to the best
+        ways to consume that contract in your own tooling.
       </p>
 
       <p className="text-gray-300 mb-6">
-        The generator lives in <code>MLVScan.Core/Tools/MLVScan.SchemaGen/</code> and the generated artifacts are checked into source control because they are part of the published contract consumed by the website, npm package, API, and desktop tools.
-      </p>
-
-      <h2 id="artifact-map">Artifact Map</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`MLVScan.Core/
-  Models/Dto/
-  schema/mlvscan-result.schema.json  // generated JSON Schema
-  schema/generated/mlvscan-schema.ts // generated shared TypeScript types
-  MLVScan.WASM/npm/src/generated/
-    mlvscan-schema.ts                // npm package copy`}</code></pre>
-
-      <p className="text-gray-300 mb-6">
-        The website publishes the generated schema from Core at the versioned path declared by the schema <code>$id</code>. The current schema is available at <code>https://mlvscan.com/schemas/scan-result/1.2.0/schema.json</code>.
+        The current JSON Schema is published at <code>https://mlvscan.com/schemas/scan-result/1.2.0/schema.json</code>.
       </p>
 
       <h2 id="consumer-guidance">Consumer Guidance</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
-        <li><strong className="text-white">External web consumers:</strong> import scan-result types from <code>@mlvscan/wasm-core</code>.</li>
-        <li><strong className="text-white">Schema validation:</strong> use <code>MLVScan.Core/schema/mlvscan-result.schema.json</code> as the canonical validation file.</li>
+        <li><strong className="text-white">TypeScript apps:</strong> import scan-result types from <code>@mlvscan/wasm-core</code>.</li>
+        <li><strong className="text-white">Schema validation:</strong> validate against the published JSON Schema when you need runtime payload checks.</li>
+        <li><strong className="text-white">API details:</strong> use the generated <Link to="/docs/libraries/core/reference" className="text-teal-400 hover:text-teal-300">Core Reference</Link> for member-level DTO documentation.</li>
       </ul>
 
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`// external app consuming the npm package

@@ -8,7 +8,7 @@ export default function WasmInteropContent() {
       </p>
 
       <p className="text-gray-300 mb-6">
-        Result payloads are serialized against the shared Core-owned schema, not a WASM-specific hand-maintained shape. That keeps interop output aligned with the CLI, API, and desktop consumers.
+        Result payloads follow the shared scan-result schema rather than a WASM-only format. That keeps interop output aligned with other MLVScan consumers.
       </p>
 
       <h2 id="c-sharp-side">C# Side: JSInvokable</h2>

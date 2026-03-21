@@ -91,17 +91,6 @@ const docs: DocMeta[] = [
     keywords: ['call graph', 'data flow', 'cross method', 'threat chains'],
   },
   {
-    id: 'core-api-reference',
-    title: 'API Reference',
-    description: 'High-value APIs in MLVScan.Core with usage guidance',
-    slug: 'libraries/core/api-reference',
-    contentPath: 'libraries/core/api-reference.mdx',
-    section: 'libraries',
-    library: 'core',
-    status: 'stable',
-    keywords: ['api', 'assemblyscanner', 'rulefactory', 'scanfinding', 'dataflowanalyzer'],
-  },
-  {
     id: 'core-reference',
     title: 'Core Reference',
     description: 'Generated reference docs for the public MLVScan.Core API surface',
