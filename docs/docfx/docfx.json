@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
   "metadata": [
     {
       "src": [
@@ -25,12 +26,16 @@
     ],
     "dest": "../../.generated/reference/core",
     "template": [
-      "default"
+      "default",
+      "modern",
+      "templates/material"
     ],
     "globalMetadata": {
       "_appTitle": "MLVScan.Core Reference",
       "_appName": "MLVScan.Core Reference",
-      "_appFooter": "Generated from XML documentation comments and public API metadata."
+      "_appFooter": "Generated from XML documentation comments and public API metadata.",
+      "_enableSearch": true,
+      "_navbarTitle": "MLVScan.Core Reference"
     }
   }
 }
