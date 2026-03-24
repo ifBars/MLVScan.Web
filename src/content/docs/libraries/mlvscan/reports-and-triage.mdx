@@ -7,10 +7,11 @@ export default function RuntimeReportsAndTriageContent() {
   Prompts/ModName.prompt.md
   IL/ModName_timestamp.il.txt`}</code></pre>
 
-      <h2 id="disposition-triage">Disposition Triage</h2>
+      <h2 id="disposition-triage">Outcome Triage</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
         <li><strong className="text-white">KnownThreat:</strong> the mod matched a known malware family or exact malicious sample and should be treated as likely malware.</li>
         <li><strong className="text-white">Suspicious:</strong> the mod triggered correlated suspicious behavior and was blocked as a precaution, but it may still be a false positive.</li>
+        <li><strong className="text-white">Manual review required:</strong> the loader could not complete full IL analysis. MLVScan still ran SHA256 and exact known-malicious sample checks, but the file needs human review. It is only auto-blocked if <code>BlockIncompleteScans</code> is enabled.</li>
         <li><strong className="text-white">Clean:</strong> no retained malicious verdict was produced. Advanced diagnostics may still exist in the report for deeper review.</li>
       </ul>
 
@@ -21,19 +22,24 @@ export default function RuntimeReportsAndTriageContent() {
 
 [MLVScan] SUSPICIOUS MOD: UnknownMod.dll
 [MLVScan] Correlated suspicious behavior detected
-[MLVScan] This may still be a false positive`}</code></pre>
+[MLVScan] This may still be a false positive
+
+[MLVScan] REVIEW REQUIRED: VeryLargeMod.dll
+[MLVScan] Full IL analysis was skipped because the file exceeded the loader scan limit
+[MLVScan] Exact known-malicious sample checks still ran`}</code></pre>
 
       <h2 id="reading-the-report">Reading the Report</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
-        <li>Start with the top-level disposition and summary rather than raw rule severity counts.</li>
+        <li>Start with the top-level outcome and summary rather than raw rule severity counts.</li>
         <li>If a threat family is present, review the family name, match kind, and evidence before looking at lower-level findings.</li>
+        <li>If the outcome is manual review required, focus on why analysis was incomplete before treating the file as suspicious.</li>
         <li>Use default findings for the retained verdict first, then inspect advanced diagnostics only if you need deeper technical context.</li>
       </ul>
 
       <h2 id="false-positive-handling">False Positive Handling</h2>
       <ol className="list-decimal list-inside space-y-2 text-gray-300">
         <li>Capture hash and full report details.</li>
-        <li>Check whether the verdict was <code>Suspicious</code> or <code>KnownThreat</code> before escalating. Suspicious verdicts deserve more validation because they may still be benign.</li>
+        <li>Check whether the outcome was <code>KnownThreat</code>, <code>Suspicious</code>, or <code>Manual review required</code> before escalating. Manual-review outcomes mean the loader hit an analysis limit, not that suspicious behavior was confirmed.</li>
         <li>Validate expected mod behavior with the author or community.</li>
         <li>Whitelist only the verified hash, not wildcard names.</li>
         <li>Optionally enable report upload to send submissions to the MLVScan API. This helps improve threat-family coverage and reduce false positives. See <a href="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</a>.</li>

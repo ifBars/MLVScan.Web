@@ -78,7 +78,7 @@ describe("upload-file", () => {
     })
 
     await expect(resolveUploadFile(file, 1024)).rejects.toThrow(
-      "The extracted assembly exceeds the 50MB limit",
+      "The extracted assembly exceeds the 100MB limit",
     )
   })
 

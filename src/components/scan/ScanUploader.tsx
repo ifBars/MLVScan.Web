@@ -7,7 +7,7 @@ import { scanAssembly } from "@/lib/scanner"
 import { isSupportedAssemblyFileName, resolveUploadFile } from "@/lib/upload-file"
 import ScanReport from "@/components/results/ScanReport"
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
 
 const ScanUploader = () => {
   const [status, setStatus] = useState<ScanStatus>("idle")
@@ -23,7 +23,7 @@ const ScanUploader = () => {
     }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
-      setError("File size exceeds 50MB limit")
+      setError("File size exceeds 100MB limit")
       return
     }
 
@@ -134,7 +134,7 @@ const ScanUploader = () => {
                     or click to browse for a .dll, .exe, .netmodule, or .zip
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    Maximum file size: 50MB
+                    Maximum file size: 100MB
                   </p>
                 </div>
               </div>

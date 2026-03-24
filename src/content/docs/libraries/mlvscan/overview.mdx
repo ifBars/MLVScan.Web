@@ -6,7 +6,9 @@ export default function RuntimeOverviewContent() {
       <p className="text-gray-300 mb-6">
         MLVScan runtime packages run before mod execution and enforce policy from the Core threat
         disposition. Known threat-family matches are treated as likely malware, while unknown correlated
-        behavior is surfaced separately as suspicious and may still be a false positive.
+        behavior is surfaced separately as suspicious and may still be a false positive. Files that the
+        loader cannot fully analyze are reported as manual-review items instead of being mislabeled as
+        suspicious.
       </p>
 
       <h2 id="supported-loaders">Supported Loaders</h2>
@@ -29,7 +31,8 @@ export default function RuntimeOverviewContent() {
 EnableAutoScan = true
 EnableAutoDisable = true
 BlockKnownThreats = true
-BlockSuspicious = true`}</code>
+BlockSuspicious = true
+BlockIncompleteScans = false`}</code>
       </pre>
 
       <h3 id="bepinex-config">BepInEx</h3>
@@ -39,7 +42,8 @@ BlockSuspicious = true`}</code>
   "EnableAutoScan": true,
   "EnableAutoDisable": true,
   "BlockKnownThreats": true,
-  "BlockSuspicious": true
+  "BlockSuspicious": true,
+  "BlockIncompleteScans": false
 }`}</code>
       </pre>
 
@@ -47,6 +51,15 @@ BlockSuspicious = true`}</code>
         <code>EnableAutoDisable</code> remains the master switch. <code>BlockKnownThreats</code> controls
         exact malicious sample matches and known malware-family matches. <code>BlockSuspicious</code>
         controls unknown correlated behavior that is blocked as a precaution but may still be benign.
+        <code>BlockIncompleteScans</code> controls files that require manual review because the loader
+        could not finish full analysis.
+      </p>
+
+      <p className="text-gray-300 mb-8">
+        The current loader scan limit is <code>256 MB</code> per assembly. When a file exceeds that
+        limit, MLVScan still computes the SHA256 hash and checks exact known-malicious sample matches,
+        but it skips full IL analysis and reports the file as manual-review required unless you enable
+        <code>BlockIncompleteScans</code>.
       </p>
 
       <h2 id="logs-and-reports">Logs and Reports</h2>

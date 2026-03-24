@@ -3,7 +3,7 @@ import { unzipSync } from "fflate"
 const supportedAssemblyExtensions = [".dll", ".exe", ".di", ".netmodule"] as const
 const invalidUploadMessage = "Please upload a .NET assembly (.dll, .exe, or .netmodule) or a .zip archive containing one"
 const missingAssemblyMessage = "This .zip archive does not contain a supported .NET assembly"
-const extractedSizeMessage = "The extracted assembly exceeds the 50MB limit"
+const extractedSizeMessage = "The extracted assembly exceeds the 100MB limit"
 const invalidZipMessage = "Failed to read the .zip archive. Make sure it is valid and contains a supported .NET assembly"
 
 const archivePriority = new Map<string, number>([
