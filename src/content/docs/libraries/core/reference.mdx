@@ -7,9 +7,18 @@ export default function CoreReferenceContent() {
         best place to look up current member-level API details.
       </p>
 
+      <p className="text-gray-300 mb-6">
+        If you want the end-to-end integration workflow first, start with the{' '}
+        <a href="/docs/reference/core/guides/using-mlvscan-core.html" className="text-teal-400 hover:text-teal-300">
+          Using MLVScan.Core guide
+        </a>
+        . It covers raw findings, threat-family matching, and how the final disposition is derived.
+      </p>
+
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
         <h2 id="what-youll-find" className="text-xl font-semibold text-teal-300 mb-2">What You&apos;ll Find</h2>
         <ul className="list-disc list-inside space-y-2 text-gray-300">
+          <li>A conceptual guide for scanning assemblies and consuming the final result contract.</li>
           <li>Public scanner entry points and configuration types.</li>
           <li>Threat-family, disposition, and scan-result DTO reference.</li>
           <li>Member-level API details generated directly from the Core source.</li>

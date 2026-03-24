@@ -1,4 +1,8 @@
 - name: Overview
   href: index.md
+- name: Guides
+  items:
+  - name: Using MLVScan.Core
+    href: guides/using-mlvscan-core.md
 - name: API Reference
   href: api/
