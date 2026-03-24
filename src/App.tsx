@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
 import Hero from "@/components/layout/Hero"
 import ScanPage from "@/pages/ScanPage"
+import AttestationPage from "@/pages/AttestationPage"
 import Footer from "@/components/layout/Footer"
 import Features from "@/components/Features"
 import TrustSection from "@/components/TrustSection"
@@ -44,6 +45,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/scan" element={<ScanPage />} />
+            <Route path="/attestations/:shareId" element={<AttestationPage />} />
             <Route path="/inspector" element={<InspectorPage />} />
             <Route path="/docs" element={
               <Suspense fallback={<LoadingSpinner />}>
