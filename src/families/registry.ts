@@ -26,7 +26,7 @@ const families: ThreatFamilyMeta[] = [
     contentPath: 'powershell-iwr-dlbat-v1.mdx',
     aliases: ['hidden PowerShell temp batch chain'],
     sampleNames: ['EndlessGraffiti.dll.di', 'FasterGrowth.dll.di'],
-    advisorySlugs: ['2026-01-malware-endlessgraffiti'],
+    advisorySlugs: ['2026-01-malware-fastergrowth', '2026-01-malware-endlessgraffiti'],
     behaviorTags: ['powershell', 'iwr', 'temp-batch', 'cleanup', 'hidden-window'],
   },
   {
@@ -37,8 +37,8 @@ const families: ThreatFamilyMeta[] = [
       'WebClient downloads a payload into TEMP and immediately executes it through cmd.exe, powershell.exe, or a direct Process.Start call.',
     contentPath: 'webclient-stage-exec-v1.mdx',
     aliases: ['WebClient temp staging executor'],
-    sampleNames: ['MoreTrees.dll.di', 'MelonLoaderMod55.dll.di', 'NoPolice.dll.di'],
-    advisorySlugs: ['2026-03-malware-nopolice', '2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
+    sampleNames: ['MoreTrees.dll.di', 'MelonLoaderMod55.dll.di', 'NoPolice.dll.di', 'LongLastingFertilizer.dll.di'],
+    advisorySlugs: ['2026-03-malware-longlastingfertilizer', '2026-03-malware-nopolice', '2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
     behaviorTags: ['webclient', 'download-and-execute', 'temp-staging', 'cmd', 'powershell', 'process-start'],
   },
   {

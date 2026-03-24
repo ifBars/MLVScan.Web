@@ -2,20 +2,18 @@ import { useMemo, useState } from "react"
 import {
   CheckCircle,
   FileCode,
-  Link2,
   ShieldAlert,
   ShieldCheck,
   ShieldOff,
 } from "lucide-react"
-import { Link } from "react-router-dom"
-import type { Finding, ScanResult, Severity, ThreatFamily, ThreatFamilyEvidence } from "@/types/mlvscan"
+import type { Finding, ScanResult, Severity } from "@/types/mlvscan"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import ThreatFamilyMatches from "@/components/results/ThreatFamilyMatches"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import CallChainViewer from "@/components/scan/CallChainViewer"
 import DataFlowViewer from "@/components/scan/DataFlowViewer"
-import { getThreatFamilyById } from "@/families/registry"
 import {
   getActionItems,
   getAdvancedFindings,
@@ -24,6 +22,7 @@ import {
   getResultClassification,
 } from "@/lib/scan-result-view"
 import { cn, formatBytes, formatDate, getSeverityBadgeColor } from "@/lib/utils"
+import { patternLabelMap } from "@/components/results/threat-family-match-utils"
 
 const severityOrder: Record<Severity, number> = {
   Critical: 4,
@@ -33,16 +32,6 @@ const severityOrder: Record<Severity, number> = {
 }
 
 const severityList: Array<Severity | "All"> = ["All", "Critical", "High", "Medium", "Low"]
-
-const patternLabelMap: Record<string, string> = {
-  DownloadAndExecute: "Downloads and executes code",
-  DataExfiltration: "Sends data outside the game",
-  DynamicCodeLoading: "Loads code dynamically",
-  CredentialTheft: "Attempts to access credentials",
-  RemoteConfigLoad: "Loads remote configuration",
-  ObfuscatedPersistence: "Attempts persistent behavior",
-  EmbeddedResourceDropAndExecute: "Drops an embedded payload and executes it",
-}
 
 const verdictPresets = {
   Clean: {
@@ -82,88 +71,6 @@ const getFindingSummary = (finding: Finding) => {
   }
 
   return "Suspicious behavior detected"
-}
-
-const getThreatFamilyEvidenceMeta = (evidence: ThreatFamilyEvidence): string[] => {
-  const items: string[] = []
-
-  if (evidence.ruleId) {
-    items.push(evidence.ruleId)
-  }
-
-  if (evidence.pattern) {
-    items.push(patternLabelMap[evidence.pattern] ?? evidence.pattern)
-  }
-
-  if (typeof evidence.confidence === "number") {
-    items.push(`${Math.round(evidence.confidence * 100)}% confidence`)
-  }
-
-  return items
-}
-
-const getThreatFamilyEvidenceDetail = (evidence: ThreatFamilyEvidence): string | null => {
-  const parts = [
-    evidence.methodLocation,
-    evidence.location,
-    evidence.callChainId ? `Call chain: ${evidence.callChainId}` : null,
-    evidence.dataFlowChainId ? `Data flow: ${evidence.dataFlowChainId}` : null,
-  ].filter((value): value is string => Boolean(value))
-
-  if (parts.length === 0) {
-    return null
-  }
-
-  return Array.from(new Set(parts)).join(" | ")
-}
-
-function ThreatFamilyEvidenceSection({ match }: { match: ThreatFamily }) {
-  if (match.evidence.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-foreground">Why this matched</p>
-        <Badge variant="outline" className="text-[11px]">
-          {match.evidence.length} evidence item{match.evidence.length === 1 ? "" : "s"}
-        </Badge>
-      </div>
-
-      <div className="space-y-3">
-        {match.evidence.map((evidence, index) => {
-          const meta = getThreatFamilyEvidenceMeta(evidence)
-          const detail = getThreatFamilyEvidenceDetail(evidence)
-
-          return (
-            <div
-              key={`${match.familyId}-${match.variantId}-${evidence.kind}-${index}`}
-              className="rounded-md border border-border/50 bg-background/70 p-3"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-border/50 bg-muted/40 text-foreground">{evidence.kind}</Badge>
-                {meta.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-border/50 bg-muted/20 px-2 py-0.5 text-[11px] text-muted-foreground"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <p className="mt-2 break-words text-sm text-foreground">{evidence.value}</p>
-
-              {detail && (
-                <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{detail}</p>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 const ScanReport = ({ result, onReset }: ScanReportProps) => {
@@ -275,67 +182,10 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
         </CardContent>
       </Card>
 
-      {familyMatches.length > 0 && (
-        <Card className="border-red-500/20 bg-red-500/5">
-          <CardHeader>
-            <CardTitle>Known malware family match</CardTitle>
-            <CardDescription>
-              This scan matches a previously observed malware family cluster.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {familyMatches.map((match) => {
-              const familyMeta = getThreatFamilyById(match.familyId)
-
-              return (
-                <div
-                  key={`${match.familyId}-${match.variantId}`}
-                  className="rounded-lg border border-red-500/20 bg-background/60 p-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge className="border-red-500/30 bg-red-500/10 text-red-200">
-                            {match.matchKind === "ExactSampleHash" ? "Exact sample hash" : "Behavior match"}
-                          </Badge>
-                          <Badge variant="outline">{Math.round(match.confidence * 100)}% confidence</Badge>
-                        </div>
-                        <div>
-                          <p className="text-base font-semibold text-foreground">{match.displayName}</p>
-                          <p className="text-sm text-muted-foreground">{match.summary}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          {match.matchedRules.map((rule) => (
-                            <span
-                              key={rule}
-                              className="rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 font-mono"
-                            >
-                              {rule}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {familyMeta && (
-                        <Link
-                          to={`/advisories/families/${familyMeta.slug}`}
-                          className="inline-flex items-center gap-2 text-sm font-medium text-teal-300 hover:text-teal-200"
-                        >
-                          <Link2 className="h-4 w-4" />
-                          Open family page
-                        </Link>
-                      )}
-                    </div>
-
-                    <ThreatFamilyEvidenceSection match={match} />
-                  </div>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      )}
+      <ThreatFamilyMatches
+        matches={familyMatches}
+        primaryThreatFamilyId={result.disposition?.primaryThreatFamilyId}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <Card className="min-w-0">
