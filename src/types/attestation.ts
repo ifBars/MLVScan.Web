@@ -31,6 +31,7 @@ export interface PublicAttestationPayload {
   publicationStatus: PublicationStatus
   sourceBindingStatus: SourceBindingStatus
   publicDisplayName: string
+  fileName: string
   canonicalSourceUrl: string | null
   activeReportId: string
   contentHash: string

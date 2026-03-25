@@ -124,7 +124,7 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
                 {payload.canonicalSourceUrl && (
                   <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5 text-white hover:bg-white/10">
                     <a href={payload.canonicalSourceUrl} target="_blank" rel="noreferrer">
-                      Declared source
+                      Publisher-declared source
                       <ArrowUpRight className="h-4 w-4" />
                     </a>
                   </Button>
@@ -132,8 +132,15 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
               </div>
             </div>
 
-            <div className="rounded-[1.4rem] border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-300">
-              This attestation applies to the SHA-256 below. If the distributed file changes, the badge no longer applies.
+            <div className="space-y-3">
+              {payload.verificationTier === "self_submitted" && (
+                <div className="rounded-[1.4rem] border border-amber-300/18 bg-amber-400/8 px-5 py-4 text-sm text-amber-50">
+                  MLVScan has not verified the current download source for this self-submitted scan.
+                </div>
+              )}
+              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-300">
+                This attestation applies to the submitted file and SHA-256 below. If the distributed file changes, the badge no longer applies.
+              </div>
             </div>
           </div>
 
@@ -154,6 +161,8 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
                 <div className="mt-3 flex items-start gap-3">
                   <Fingerprint className="mt-1 h-4 w-4 text-primary" />
                   <div className="min-w-0">
+                    <p className="text-sm text-slate-400">Submitted file</p>
+                    <p className="mt-1 break-all font-mono text-xs text-slate-100">{payload.fileName}</p>
                     <p className="text-sm text-slate-400">SHA-256</p>
                     <p className="mt-1 break-all font-mono text-xs text-slate-100">{payload.contentHash}</p>
                   </div>
@@ -197,6 +206,11 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
             <p>
               MLVScan scanned the exact bytes identified by the SHA-256 above and published the current disposition for that file.
             </p>
+            {payload.verificationTier === "self_submitted" && (
+              <p>
+                The current download page or file host has not been verified by MLVScan for this attestation.
+              </p>
+            )}
             <p>
               This is a {verificationLabel.toLowerCase()}. It does not prove that every file from the same mod page or archive is identical.
             </p>

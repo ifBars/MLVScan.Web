@@ -30,7 +30,7 @@ export function getAttestationVerdictLabel(
 export function getSourceBindingLabel(status: SourceBindingStatus): string {
   switch (status) {
     case "declared":
-      return "Declared source URL"
+      return "Publisher-declared source URL"
     case "verified":
       return "Verified source"
     case "stale":

@@ -22,6 +22,7 @@ describe("attestation-view", () => {
 
   it("formats source binding and verification tier labels", () => {
     expect(getSourceBindingLabel("stale")).toBe("Source stale")
+    expect(getSourceBindingLabel("declared")).toBe("Publisher-declared source URL")
     expect(getVerificationTierLabel("self_submitted")).toBe("Self-submitted scan")
   })
 
