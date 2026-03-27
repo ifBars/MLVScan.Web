@@ -181,12 +181,7 @@ export default function PartnerAuthScreen({
                       Discord sign-in is not configured in this environment. Use a shared-key
                       account instead.
                     </div>
-                  ) : (
-                    <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-3 text-xs text-slate-400">
-                      Accounts pending approval can still sign in, but publishing workflows and
-                      API key creation stay blocked until access is approved.
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               </TabsContent>
 
