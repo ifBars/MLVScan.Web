@@ -7,7 +7,6 @@ import {
 } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import {
-  ArrowRight,
   BadgeCheck,
   ChevronLeft,
   House,
@@ -53,7 +52,6 @@ import {
   PartnerUnauthorizedError,
   publishPartnerAttestation,
   refreshPartnerAttestation,
-  requestPartnerUpgrade,
   revokePartnerApiKey,
   revokePartnerAttestation,
   rotatePartnerApiKey,
@@ -124,7 +122,6 @@ export default function PartnerDashboardPage() {
   const [booting, setBooting] = useState(true)
   const [authBusy, setAuthBusy] = useState(false)
   const [refreshBusy, setRefreshBusy] = useState(false)
-  const [upgradeBusy, setUpgradeBusy] = useState(false)
   const [detailSheetOpen, setDetailSheetOpen] = useState(false)
   const [profileSheetOpen, setProfileSheetOpen] = useState(false)
 
@@ -495,31 +492,6 @@ export default function PartnerDashboardPage() {
     }
   }
 
-  async function handleRequestUpgrade(): Promise<void> {
-    setUpgradeBusy(true)
-
-    try {
-      const response = await requestPartnerUpgrade()
-      setPartner((current) =>
-        current
-          ? {
-              ...current,
-              requestedTier: "partner",
-            }
-          : current,
-      )
-      toast.success(response.message)
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Unable to request partner tier upgrade.",
-      )
-    } finally {
-      setUpgradeBusy(false)
-    }
-  }
-
   async function handleCreateKey(
     input: PartnerCreateKeyInput,
   ): Promise<PartnerCreateKeyResponse> {
@@ -865,18 +837,7 @@ export default function PartnerDashboardPage() {
                 >
                   Pending approval
                 </Badge>
-              ) : partner.tierRestriction !== "partner" ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 border-slate-700 bg-slate-900 text-xs text-slate-200 hover:bg-slate-800"
-                  disabled={upgradeBusy || partner.requestedTier === "partner"}
-                  onClick={handleRequestUpgrade}
-                >
-                  <ArrowRight data-icon="inline-start" className="size-3" />
-                  {partner.requestedTier ? "Requested" : "Upgrade"}
-                </Button>
-              ) : (
+              ) : partner.tierRestriction === "partner" ? (
                 <Badge
                   variant="outline"
                   className="h-7 border-emerald-600/30 bg-emerald-950/40 px-2.5 text-[0.72rem] text-emerald-300"
@@ -884,7 +845,7 @@ export default function PartnerDashboardPage() {
                   <ShieldCheck data-icon="inline-start" className="mr-1 size-3" />
                   Partner
                 </Badge>
-              )}
+              ) : null}
 
               <Button
                 variant="ghost"
@@ -1061,12 +1022,6 @@ export default function PartnerDashboardPage() {
                 value={partner.tierRestriction === "partner" ? "Partner" : "Free"}
               />
               <ProfileFact label="Key limit" value={`${partner.maxKeys} total keys`} />
-              {partner.requestedTier ? (
-                <ProfileFact
-                  label="Pending request"
-                  value={`Upgrade requested: ${partner.requestedTier}`}
-                />
-              ) : null}
             </div>
 
             <div className="flex justify-end">

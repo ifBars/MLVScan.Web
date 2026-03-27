@@ -50,12 +50,6 @@ export default function PartnerStatusScreen({
               <p className="mt-1 text-sm text-slate-400">{partner.email}</p>
             </div>
 
-            {partner.requestedTier ? (
-              <div className="rounded-lg border border-cyan-600/30 bg-cyan-950/50 px-5 py-4 text-sm text-cyan-200">
-                Requested tier: <span className="font-medium">{partner.requestedTier}</span>
-              </div>
-            ) : null}
-
             <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-5 py-4 text-sm leading-6 text-slate-400">
               If this suspension looks wrong, review the account state in the API-admin workflow rather than trying to bypass it from the client.
             </div>

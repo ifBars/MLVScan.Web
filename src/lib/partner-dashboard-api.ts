@@ -153,13 +153,6 @@ export async function logoutPartner(): Promise<void> {
   clearPartnerDashboardSessionState()
 }
 
-export async function requestPartnerUpgrade(): Promise<{ success: boolean; message: string }> {
-  return requestApi<{ success: boolean; message: string }>("/partner/auth/request-upgrade", {
-    method: "POST",
-    body: JSON.stringify({ requestedTier: "partner" }),
-  })
-}
-
 export async function listPartnerApiKeys(signal?: AbortSignal): Promise<PartnerApiKey[]> {
   const response = await requestApi<{ keys: PartnerApiKey[] }>("/partner/api-keys", { signal })
   return response.keys ?? []
