@@ -78,16 +78,6 @@ export default function PrivacyContent() {
         <li><strong className="text-white">NuGet:</strong> <a href="https://www.nuget.org/packages/MLVScan.DevCLI/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">nuget.org/packages/MLVScan.DevCLI</a></li>
       </ul>
 
-      <h3 id="documentation-wikis">Documentation Wikis</h3>
-      <p className="text-gray-300 mb-4">
-        GitHub-hosted wikis for user and developer documentation.
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">MLVScan Wiki:</strong> <a href="https://github.com/ifBars/MLVScan/wiki" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/wiki</a></li>
-        <li><strong className="text-white">MLVScan.Core Wiki:</strong> <a href="https://github.com/ifBars/MLVScan.Core/wiki" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Core/wiki</a></li>
-        <li><strong className="text-white">Static content:</strong> Wikis contain only documentation, no tracking or data collection</li>
-      </ul>
-
       <h2 id="how-it-works">How It Works</h2>
       <p className="text-gray-300 mb-4">
         Most MLVScan components follow the same privacy-preserving pattern:
@@ -110,7 +100,7 @@ export default function PrivacyContent() {
         <li><strong className="text-white">Web Scanner:</strong> When you first visit the MLVScan website, static assets are downloaded from GitHub Pages</li>
         <li><strong className="text-white">WASM Module Loading:</strong> The scanning engine is downloaded and cached by your browser</li>
         <li><strong className="text-white">NuGet Installation:</strong> When installing MLVScan.Core or DevCLI via NuGet, packages are downloaded from NuGet.org</li>
-        <li><strong className="text-white">Documentation:</strong> Accessing wiki pages on GitHub</li>
+        <li><strong className="text-white">Documentation:</strong> Accessing documentation pages on mlvscan.com or repository pages on GitHub</li>
         <li><strong className="text-white">Runtime Report Upload (optional):</strong> If you enable report upload in the runtime plugin, it may send assemblies and metadata to the MLVScan API. This is off by default.</li>
         <li><strong className="text-white">Dashboard Draft Submission (developer-initiated):</strong> Creating a dashboard attestation draft uploads the selected artifact to the MLVScan API for private analysis and draft generation.</li>
       </ul>
@@ -176,7 +166,7 @@ export default function PrivacyContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">GitHub Pages:</strong> Hosts the static web scanner. GitHub's servers receive standard HTTP requests to deliver website files only. They do not have access to any scanning data.</li>
         <li><strong className="text-white">NuGet.org:</strong> Hosts the MLVScan.Core and MLVScan.DevCLI packages. Standard NuGet package download traffic only.</li>
-        <li><strong className="text-white">GitHub:</strong> Hosts the repositories and wikis. Standard GitHub access patterns only.</li>
+        <li><strong className="text-white">GitHub:</strong> Hosts the source repositories. Standard GitHub access patterns only.</li>
         <li><strong className="text-white">MLVScan API (optional):</strong> If you enable report upload in the runtime plugin, assemblies and metadata are sent to the MLVScan API for triage and false positive analysis. This is off by default.</li>
       </ul>
       <p className="text-gray-300 mb-6">

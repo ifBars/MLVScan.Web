@@ -1,0 +1,153 @@
+import { Link } from "react-router-dom"
+
+export default function CiAttestationsContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        Partner API keys can now drive private upload, report polling, draft creation, and public
+        attestation publishing from CI. The default pattern below publishes only on tagged release
+        runs.
+      </p>
+
+      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
+        <h3 className="text-teal-300 font-semibold mb-2">What this flow does</h3>
+        <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
+          <li>Uploads the exact release artifact to the MLVScan API with your partner API key.</li>
+          <li>Polls the private report until the scan is complete.</li>
+          <li>Creates or reuses a draft attestation bound to those exact bytes.</li>
+          <li>Publishes the attestation on release tags and writes the public URL and badge URL into the workflow summary.</li>
+        </ul>
+      </div>
+
+      <h2 id="requirements">Requirements</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Create a partner API key in the dashboard under <code>/dashboard/access</code>.</li>
+        <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
+        <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
+        <li>Authenticated uploads become partner-owned. Only the same partner can read the private report or turn that submission into an attestation.</li>
+      </ul>
+
+      <p className="text-gray-300 mb-6">
+        Dashboard-created keys currently work as full-access partner keys in v1. You do not need to
+        configure scopes in the dashboard UI yet.
+      </p>
+
+      <h2 id="github-actions-template">GitHub Actions Example</h2>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`name: Publish MLVScan attestation
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      MLVSCAN_API_BASE: https://api.mlvscan.com
+      ARTIFACT_PATH: ./dist/MyMod.dll
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release artifact
+        run: |
+          mkdir -p ./dist
+          cp ./bin/Release/netstandard2.1/MyMod.dll "$ARTIFACT_PATH"
+
+      - name: Publish MLVScan attestation
+        env:
+          MLVSCAN_API_KEY: \${{ secrets.MLVSCAN_API_KEY }}
+          GITHUB_REF_NAME: \${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "$ARTIFACT_PATH" ]; then
+            echo "Artifact not found: $ARTIFACT_PATH" >&2
+            exit 1
+          fi
+
+          upload_json=$(curl -fsS \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            -F "file=@$ARTIFACT_PATH" \
+            "$MLVSCAN_API_BASE/files")
+
+          submission_id=$(echo "$upload_json" | jq -r '.data.id')
+
+          for attempt in $(seq 1 60); do
+            report_json=$(curl -fsS \
+              -H "X-API-Key: $MLVSCAN_API_KEY" \
+              "$MLVSCAN_API_BASE/reports/$submission_id")
+
+            status=$(echo "$report_json" | jq -r '.status')
+
+            if [ "$status" = "completed" ]; then
+              break
+            fi
+
+            if [ "$status" = "failed" ]; then
+              echo "$report_json" | jq
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          draft_json=$(curl -fsS \
+            -X POST \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\\"submissionId\\":\\"$submission_id\\",\\"publicDisplayName\\":\\"MyMod $GITHUB_REF_NAME\\"}" \
+            "$MLVSCAN_API_BASE/partner/automation/attestations")
+
+          attestation_id=$(echo "$draft_json" | jq -r '.id')
+
+          published_json=$(curl -fsS \
+            -X POST \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            "$MLVSCAN_API_BASE/partner/automation/attestations/$attestation_id/publish")
+
+          public_url=$(echo "$published_json" | jq -r '.publicUrl')
+          badge_url=$(echo "$published_json" | jq -r '.badgeUrl')
+
+          {
+            echo "## MLVScan attestation"
+            echo
+            echo "- Public URL: $public_url"
+            echo "- Badge URL: $badge_url"
+          } >> "$GITHUB_STEP_SUMMARY"`}</code></pre>
+
+      <h2 id="every-run-variant">Every-Run Variant</h2>
+      <p className="text-gray-300 mb-4">
+        The example above is release-only by default. If your team wants to publish on every
+        successful build, widen the workflow trigger and keep the same attestation steps.
+      </p>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`on:
+  push:
+    branches:
+      - main
+  pull_request:`}</code></pre>
+
+      <p className="text-gray-300 mb-6">
+        That variant will create a new attestation whenever the artifact bytes change. If the bytes
+        are identical to an existing non-revoked attestation owned by your partner account, the API
+        reuses the existing record instead of publishing a duplicate.
+      </p>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>
+          <Link to="/docs/libraries/devcli/usage-and-ci" className="text-teal-400 hover:text-teal-300">
+            MLVScan.DevCLI Usage and CI
+          </Link>
+        </li>
+        <li>
+          <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:text-teal-300">
+            Automated Reporting &amp; Data Handling
+          </Link>
+        </li>
+      </ul>
+    </>
+  )
+}

@@ -15,7 +15,6 @@ export type DocMeta = {
   links?: {
     github?: string
     nuget?: string
-    wiki?: string
     discord?: string
     download?: string
   }
@@ -65,7 +64,6 @@ const docs: DocMeta[] = [
     links: {
       github: 'https://github.com/ifBars/MLVScan.Core',
       nuget: 'https://www.nuget.org/packages/MLVScan.Core/',
-      wiki: 'https://github.com/ifBars/MLVScan.Core/wiki',
     },
   },
   {
@@ -235,17 +233,26 @@ const docs: DocMeta[] = [
   },
   {
     id: 'legacy',
-    title: 'Legacy Wiki Links',
-    description: 'Direct links to historical wiki pages kept for reference',
+    title: 'Project Resources',
+    description: 'Repository and package links for the main MLVScan projects',
     slug: 'resources/legacy',
     contentPath: 'resources/legacy.mdx',
     section: 'resources',
     status: 'legacy',
-    keywords: ['legacy', 'wiki', 'historical'],
+    keywords: ['resources', 'repositories', 'packages', 'historical'],
     links: {
-      github: 'https://github.com/ifBars/MLVScan.Core/wiki',
-      wiki: 'https://github.com/ifBars/MLVScan/wiki',
+      github: 'https://github.com/ifBars/MLVScan',
     },
+  },
+  {
+    id: 'ci-attestations',
+    title: 'CI Attestations',
+    description: 'Partner API-key automation for release attestations and GitHub Actions',
+    slug: 'ci-attestations',
+    contentPath: 'ci-attestations.mdx',
+    section: 'getting-started',
+    status: 'stable',
+    keywords: ['ci', 'attestations', 'github actions', 'api key', 'partner automation', 'release'],
   },
   {
     id: 'privacy',

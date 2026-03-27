@@ -22,6 +22,14 @@ mlvscan-dev MyMod.dll --verbose`}</code></pre>
 </Target>`}</code></pre>
 
       <h2 id="github-actions">GitHub Actions</h2>
+      <p className="text-gray-300 mb-4">
+        If you want to publish a public MLVScan attestation from CI instead of only running the
+        local CLI gate, continue with the{" "}
+        <a href="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">
+          CI Attestations guide
+        </a>
+        .
+      </p>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`- name: Install MLVScan.DevCLI
   run: dotnet tool install --global MLVScan.DevCLI
 

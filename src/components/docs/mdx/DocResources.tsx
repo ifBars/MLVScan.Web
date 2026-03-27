@@ -1,4 +1,4 @@
-import { Package, ExternalLink, Download, BookOpen } from 'lucide-react'
+import { Package, ExternalLink, Download } from 'lucide-react'
 import type { DocMeta } from '@/docs/registry'
 
 interface DocResourcesProps {
@@ -8,7 +8,6 @@ interface DocResourcesProps {
 const linkConfig = {
   github: { icon: ExternalLink, label: 'GitHub' },
   nuget: { icon: Package, label: 'NuGet' },
-  wiki: { icon: BookOpen, label: 'Wiki' },
   discord: { icon: ExternalLink, label: 'Discord' },
   download: { icon: Download, label: 'Download' },
 }

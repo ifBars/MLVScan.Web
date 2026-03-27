@@ -64,8 +64,7 @@ The current scan-result schema is also available at `https://mlvscan.com/schemas
 
 ## Documentation
 
-* **Detection Rules**: See [MLVScan.Core Wiki](https://github.com/ifBars/MLVScan.Core/wiki/Detection-Rules)
-* **Architecture**: See [MLVScan Wiki](https://github.com/ifBars/MLVScan/wiki/Architecture)
+* **Website Docs**: [mlvscan.com/docs](https://mlvscan.com/docs)
 * **WASM Package**: [@mlvscan/wasm-core on npm](https://www.npmjs.com/package/@mlvscan/wasm-core)
 
 ---

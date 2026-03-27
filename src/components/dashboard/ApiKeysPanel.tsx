@@ -192,11 +192,27 @@ export default function ApiKeysPanel({
               </CardTitle>
               <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
                 Plaintext key material is only returned on create and rotate. Store it
-                immediately, because the API never serves it again after that response.
+                immediately, because the API never serves it again after that response. Use these
+                keys for CI uploads and attestation automation, then follow the{" "}
+                <a
+                  href="/docs/ci-attestations"
+                  className="text-teal-300 underline-offset-4 hover:text-teal-200 hover:underline"
+                >
+                  CI attestation guide
+                </a>
+                {" "}for the GitHub Actions flow.
               </CardDescription>
             </div>
 
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                onClick={() => window.open("/docs/ci-attestations", "_blank", "noopener,noreferrer")}
+              >
+                CI attestation guide
+                <ArrowUpRight data-icon="inline-end" />
+              </Button>
               <Button
                 variant="outline"
                 className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
@@ -333,7 +349,8 @@ export default function ApiKeysPanel({
             <DialogTitle className="font-display text-xl">Create API key</DialogTitle>
             <DialogDescription className="text-slate-400">
               Keys inherit your account tier automatically. Set an optional expiration and issue
-              the key when you are ready.
+              the key when you are ready. Dashboard-created keys work for CI attestation
+              automation in v1 without any extra scope setup.
             </DialogDescription>
           </DialogHeader>
 
