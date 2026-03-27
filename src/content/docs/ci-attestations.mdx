@@ -4,7 +4,7 @@ export default function CiAttestationsContent() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
-        Partner API keys can now drive private upload, report polling, draft creation, and public
+        API keys can now drive private upload, report polling, draft creation, and public
         attestation publishing from CI. The default pattern below publishes only on tagged release
         runs.
       </p>
@@ -12,7 +12,7 @@ export default function CiAttestationsContent() {
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
         <h3 className="text-teal-300 font-semibold mb-2">What this flow does</h3>
         <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
-          <li>Uploads the exact release artifact to the MLVScan API with your partner API key.</li>
+          <li>Uploads the exact release artifact to the MLVScan API with your API key.</li>
           <li>Polls the private report until the scan is complete.</li>
           <li>Creates or reuses a draft attestation bound to those exact bytes.</li>
           <li>Publishes the attestation on release tags and writes the public URL and badge URL into the workflow summary.</li>
@@ -21,16 +21,26 @@ export default function CiAttestationsContent() {
 
       <h2 id="requirements">Requirements</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
-        <li>Create a partner API key in the dashboard under <code>/dashboard/access</code>.</li>
+        <li>Create an API key in the dashboard under <code>/dashboard/access</code>.</li>
         <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
         <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
-        <li>Authenticated uploads become partner-owned. Only the same partner can read the private report or turn that submission into an attestation.</li>
+        <li>Authenticated uploads become account-owned. Only the same account can read the private report or turn that submission into an attestation.</li>
       </ul>
 
       <p className="text-gray-300 mb-6">
-        Dashboard-created keys currently work as full-access partner keys in v1. You do not need to
+        Dashboard-created keys currently work as full-access account keys in v1. You do not need to
         configure scopes in the dashboard UI yet.
       </p>
+
+      <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 mb-8">
+        <h3 className="text-white font-semibold mb-2">Auth Header</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          Automation requests should include your key as <code>X-API-Key</code>. The API also accepts
+          <code>Authorization: Bearer &lt;key&gt;</code>, but the examples here use <code>X-API-Key</code>.
+        </p>
+        <pre className="bg-gray-950 rounded-lg p-3 overflow-x-auto"><code>{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  https://api.mlvscan.com/automation/attestations`}</code></pre>
+      </div>
 
       <h2 id="github-actions-template">GitHub Actions Example</h2>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`name: Publish MLVScan attestation
@@ -99,14 +109,14 @@ jobs:
             -H "X-API-Key: $MLVSCAN_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\\"submissionId\\":\\"$submission_id\\",\\"publicDisplayName\\":\\"MyMod $GITHUB_REF_NAME\\"}" \
-            "$MLVSCAN_API_BASE/partner/automation/attestations")
+            "$MLVSCAN_API_BASE/automation/attestations")
 
           attestation_id=$(echo "$draft_json" | jq -r '.id')
 
           published_json=$(curl -fsS \
             -X POST \
             -H "X-API-Key: $MLVSCAN_API_KEY" \
-            "$MLVSCAN_API_BASE/partner/automation/attestations/$attestation_id/publish")
+            "$MLVSCAN_API_BASE/automation/attestations/$attestation_id/publish")
 
           public_url=$(echo "$published_json" | jq -r '.publicUrl')
           badge_url=$(echo "$published_json" | jq -r '.badgeUrl')
@@ -131,7 +141,7 @@ jobs:
 
       <p className="text-gray-300 mb-6">
         That variant will create a new attestation whenever the artifact bytes change. If the bytes
-        are identical to an existing non-revoked attestation owned by your partner account, the API
+        are identical to an existing non-revoked attestation owned by your account, the API
         reuses the existing record instead of publishing a duplicate.
       </p>
 

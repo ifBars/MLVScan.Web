@@ -260,7 +260,7 @@ export default function PartnerDashboardPage() {
     if (keysResult.status === "fulfilled") {
       setKeys(keysResult.value)
     } else {
-      nextErrors.push("Unable to load partner API keys.")
+      nextErrors.push("Unable to load API keys.")
     }
 
     if (attestationsResult.status === "fulfilled") {
@@ -403,7 +403,7 @@ export default function PartnerDashboardPage() {
         resetWorkspaceState()
       }
 
-      toast.success("Signed in to the partner dashboard")
+      toast.success("Signed in to the dashboard")
     } catch (error) {
       setAuthMessage(
         error instanceof Error ? error.message : "Unable to sign in with shared key.",
@@ -434,7 +434,7 @@ export default function PartnerDashboardPage() {
       const nextKeys = await listPartnerApiKeys()
       setKeys(nextKeys)
     } catch (error) {
-      console.error(`Unable to refresh partner API keys after ${successContext}.`, error)
+      console.error(`Unable to refresh API keys after ${successContext}.`, error)
       toast.error(`${successContext}, but the key list could not be refreshed.`)
     }
   }
@@ -976,7 +976,7 @@ export default function PartnerDashboardPage() {
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Workspace navigation</SheetTitle>
-            <SheetDescription>Switch between partner dashboard surfaces.</SheetDescription>
+            <SheetDescription>Switch between dashboard surfaces.</SheetDescription>
           </SheetHeader>
           <PartnerSidebarNav
             partner={partner}

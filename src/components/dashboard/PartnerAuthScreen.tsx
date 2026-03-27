@@ -61,8 +61,8 @@ export default function PartnerAuthScreen({
                 Publish attestations, manage access, and keep releases moving.
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-400">
-                Sign in to submit new drafts, review attestation history, and manage partner API
-                keys from one workspace.
+                Sign in to submit new drafts, review attestation history, and manage API keys
+                from one workspace.
               </p>
             </div>
 
@@ -74,7 +74,7 @@ export default function PartnerAuthScreen({
                 <div>
                   <p className="text-sm font-medium text-slate-200">Release confidence</p>
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Partner attestations
+                    Attestation workflow
                   </p>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function PartnerAuthScreen({
                 />
                 <FeatureRow
                   title="Keep access separate"
-                  description="Create and rotate partner keys without mixing credential work into the release flow."
+                  description="Create and rotate API keys without mixing credential work into the release flow."
                 />
               </div>
             </div>
@@ -105,10 +105,10 @@ export default function PartnerAuthScreen({
               </Badge>
             </div>
             <CardTitle className="font-display text-2xl text-white">
-              Access the partner dashboard
+              Access the publishing dashboard
             </CardTitle>
             <CardDescription className="max-w-xl text-sm leading-6 text-slate-400">
-              Use Discord for partner identity or a shared-key account for team access.
+              Use Discord or a shared-key account for team access.
             </CardDescription>
           </CardHeader>
 
@@ -146,7 +146,7 @@ export default function PartnerAuthScreen({
                     <p className="dashboard-kicker">Partner identity</p>
                     <h2 className="font-display text-lg text-white">Use your Discord-backed account</h2>
                     <p className="text-sm leading-6 text-slate-400">
-                      Best for individual partner accounts that manage their own publication
+                      Best for individual accounts that manage their own publication
                       workflow.
                     </p>
                   </div>

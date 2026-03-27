@@ -188,7 +188,7 @@ export default function DashboardHome({
           <p className="dashboard-kicker">Workspace lanes</p>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
             Each surface has one job. Start in Submit, operate from Ledger, and use Access only
-            when you need to rotate or issue partner keys.
+            when you need to rotate or issue API keys.
           </p>
         </div>
 

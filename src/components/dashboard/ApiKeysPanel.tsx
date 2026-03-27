@@ -138,7 +138,7 @@ export default function ApiKeysPanel({
       setLabel("")
       setExpiresAt("")
       await revealSecret("New API key", response.plaintextKey, response.warning)
-      toast.success("Partner API key created")
+      toast.success("API key created")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create API key")
     } finally {
@@ -152,7 +152,7 @@ export default function ApiKeysPanel({
     try {
       const response = await onRotateKey(id)
       await revealSecret("Rotated API key", response.plaintextKey, response.warning)
-      toast.success("Partner API key rotated")
+      toast.success("API key rotated")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to rotate API key")
     } finally {
@@ -169,7 +169,7 @@ export default function ApiKeysPanel({
 
     try {
       await onRevokeKey(revokeKeyId)
-      toast.success("Partner API key revoked")
+      toast.success("API key revoked")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to revoke API key")
     } finally {
@@ -188,7 +188,7 @@ export default function ApiKeysPanel({
                 API access
               </Badge>
               <CardTitle className="font-display text-[1.65rem] text-white">
-                Manage partner API keys
+                Manage API keys
               </CardTitle>
               <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
                 Plaintext key material is only returned on create and rotate. Store it
@@ -242,7 +242,7 @@ export default function ApiKeysPanel({
 
           {isLoading && keys.length === 0 ? (
             <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-5 text-sm text-slate-400">
-              Loading partner API keys...
+              Loading API keys...
             </div>
           ) : visibleKeys.length > 0 ? (
             <Table>
@@ -336,8 +336,7 @@ export default function ApiKeysPanel({
             </Table>
           ) : (
             <div className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-5 py-6 text-sm leading-6 text-slate-400">
-              No keys match the current filter. Create one when you need server-side partner API
-              access.
+              No keys match the current filter. Create one when you need server-side API access.
             </div>
           )}
         </CardContent>

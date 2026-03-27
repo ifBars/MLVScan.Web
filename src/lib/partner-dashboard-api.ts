@@ -154,27 +154,27 @@ export async function logoutPartner(): Promise<void> {
 }
 
 export async function listPartnerApiKeys(signal?: AbortSignal): Promise<PartnerApiKey[]> {
-  const response = await requestApi<{ keys: PartnerApiKey[] }>("/partner/api-keys", { signal })
+  const response = await requestApi<{ keys: PartnerApiKey[] }>("/account/api-keys", { signal })
   return response.keys ?? []
 }
 
 export async function createPartnerApiKey(
   input: PartnerCreateKeyInput,
 ): Promise<PartnerCreateKeyResponse> {
-  return requestApi<PartnerCreateKeyResponse>("/partner/api-keys", {
+  return requestApi<PartnerCreateKeyResponse>("/account/api-keys", {
     method: "POST",
     body: JSON.stringify(input),
   })
 }
 
 export async function rotatePartnerApiKey(id: string): Promise<PartnerRotateKeyResponse> {
-  return requestApi<PartnerRotateKeyResponse>(`/partner/api-keys/${encodeURIComponent(id)}/rotate`, {
+  return requestApi<PartnerRotateKeyResponse>(`/account/api-keys/${encodeURIComponent(id)}/rotate`, {
     method: "POST",
   })
 }
 
 export async function revokePartnerApiKey(id: string): Promise<void> {
-  await requestApi<{ success: boolean }>(`/partner/api-keys/${encodeURIComponent(id)}/revoke`, {
+  await requestApi<{ success: boolean }>(`/account/api-keys/${encodeURIComponent(id)}/revoke`, {
     method: "POST",
   })
 }
