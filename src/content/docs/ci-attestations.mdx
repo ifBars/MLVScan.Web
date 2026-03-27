@@ -6,7 +6,7 @@ export default function CiAttestationsContent() {
       <p className="text-lg text-gray-200 mb-6">
         API keys support private upload, report polling, draft creation, public
         attestation publishing, and README badge updates from CI. The pattern below matches the
-        S1API workflow: build the Mono DLL, upload that exact DLL, publish the attestation,
+        typical workflow: build your release artifact, upload those exact bytes, publish the attestation,
         and write a compact split-pill badge into the README.
       </p>
 
@@ -26,7 +26,10 @@ export default function CiAttestationsContent() {
         <li>Create an API key in the dashboard under <code>/dashboard/access</code>.</li>
         <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
         <li>If you use explicit scopes, the key needs <code>uploads:write</code>, <code>reports:read</code>, and <code>attestations:write</code>.</li>
-        <li>If your custom API domain is behind a Cloudflare challenge, set a repository variable such as <code>MLVSCAN_API_BASE_URL</code> to a non-challenged Worker hostname like your <code>workers.dev</code> URL.</li>
+        <li>
+          If you use a custom API domain, ensure the base URL your CI calls is reachable without interactive bot checks or browser challenges.
+          If needed, set a repository variable like <code>MLVSCAN_API_BASE_URL</code> to a CI-reachable hostname for your API.
+        </li>
         <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
         <li>Authenticated uploads become account-owned. Only the same account can read the private report or turn that submission into an attestation.</li>
       </ul>
@@ -83,15 +86,15 @@ jobs:
           resolved_base_url="\${MLVSCAN_API_BASE_URL:-https://api.mlvscan.com}"
           echo "base_url=$resolved_base_url" >> "$GITHUB_OUTPUT"
 
-      - name: Build Mono DLL
-        run: dotnet build S1API/S1API.csproj -c MonoMelon
+      - name: Build release artifact
+        run: dotnet build path/to/YourProject.csproj -c Release
 
       - name: Publish MLVScan attestation
         env:
           MLVSCAN_API_KEY: \${{ secrets.MLVSCAN_API_KEY }}
         run: |
           set -euo pipefail
-          artifact_path="S1API/bin/MonoMelon/netstandard2.1/S1API.dll"
+          artifact_path="path/to/your/artifact.dll"
 
           if [ ! -f "$artifact_path" ]; then
             echo "Artifact not found: $artifact_path" >&2
@@ -110,7 +113,7 @@ jobs:
           fi
 
           submission_id=$(echo "$upload_json" | jq -r '.data.id')
-          version=$(grep -oPm1 '(?<=<Version>)[^<]+' S1API/S1API.csproj)
+          version="\${{ github.ref_name }}"
 
           for attempt in $(seq 1 60); do
             report_status=$(curl -sS -o report.json -w "%{http_code}" \
@@ -154,7 +157,7 @@ jobs:
 
           draft_payload=$(jq -n \
             --arg submissionId "$submission_id" \
-            --arg publicDisplayName "S1API MonoMelon $version" \
+            --arg publicDisplayName "Release artifact $version" \
             --arg canonicalSourceUrl "$canonical_source_url" \
             '{
               submissionId: $submissionId,
@@ -248,8 +251,8 @@ jobs:
       </p>
 
       <p className="text-gray-300 mb-6">
-        For badges, the public badge endpoint supports a style override query parameter. The S1API
-        workflow uses <code>?style=split-pill</code> for a compact README badge even though the
+        For badges, the public badge endpoint supports a style override query parameter. This example uses
+        <code>?style=split-pill</code> for a compact README badge even though the
         attestation itself may still store the default badge style server-side.
       </p>
 
