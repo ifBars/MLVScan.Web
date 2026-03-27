@@ -1,4 +1,7 @@
-import type { PublicAttestationPayload } from "@/types/attestation"
+import type {
+  AttestationBadgeStyle,
+  PublicAttestationPayload,
+} from "@/types/attestation"
 
 export type PartnerAccountStatus = "pending" | "active" | "suspended"
 export type PartnerAuthMethod = "discord" | "shared_key" | null
@@ -83,6 +86,10 @@ export interface PartnerAttestationDraftInput {
   submissionId: string
   publicDisplayName?: string
   canonicalSourceUrl?: string
+}
+
+export interface PartnerAttestationBadgeStyleInput {
+  badgeStyle: AttestationBadgeStyle
 }
 
 export interface PartnerUploadResponse {

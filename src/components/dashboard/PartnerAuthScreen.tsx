@@ -183,8 +183,8 @@ export default function PartnerAuthScreen({
                     </div>
                   ) : (
                     <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-3 text-xs text-slate-400">
-                      Accounts pending approval can still sign in and manage attestations. API key
-                      creation becomes available after access is approved.
+                      Accounts pending approval can still sign in, but publishing workflows and
+                      API key creation stay blocked until access is approved.
                     </div>
                   )}
                 </div>

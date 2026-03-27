@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { ExternalLink } from "lucide-react"
+import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
 type FooterLink = {
   name: string
@@ -10,9 +11,10 @@ type FooterLink = {
 const Footer = () => {
   const links: Record<string, FooterLink[]> = {
     product: [
+      { name: "Developer Dashboard", href: getPartnerDashboardPath("home"), internal: true },
+      { name: "Scan Online", href: "/scan", internal: true },
       { name: "Download", href: "https://www.nexusmods.com/site/mods/1689?tab=files" },
       { name: "GitHub", href: "https://github.com/ifBars/MLVScan" },
-      { name: "Scan Online", href: "/scan", internal: true },
     ],
     resources: [
       { name: "Documentation", href: "/docs", internal: true },
@@ -33,7 +35,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="mb-4 flex items-center gap-2">
               <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
                 <img
                   src={`${import.meta.env.BASE_URL}icon.png`}
@@ -48,7 +50,7 @@ const Footer = () => {
             <p className="text-sm text-gray-400 mb-4">
               Security-focused scanner for Unity mods. Protect your gaming experience.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex gap-4">
               <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-gray-400 hover:text-teal-300 transition-colors">
                 <ExternalLink className="w-5 h-5" />
               </a>
@@ -63,7 +65,7 @@ const Footer = () => {
           {/* Links */}
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Product</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.product.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -90,7 +92,7 @@ const Footer = () => {
 
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Resources</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.resources.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -117,7 +119,7 @@ const Footer = () => {
 
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Community</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.community.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -148,7 +150,7 @@ const Footer = () => {
             <p className="text-sm text-gray-500">
               © 2026 MLVScan. All rights reserved. Open source under GPL-3.0.
             </p>
-            <div className="flex items-center space-x-6 text-sm text-gray-500">
+            <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link to="/docs/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link to="/docs/terms" className="hover:text-white transition-colors">Terms</Link>
               <a href="https://github.com/ifBars/MLVScan/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">License</a>

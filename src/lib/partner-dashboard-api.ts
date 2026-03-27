@@ -1,4 +1,5 @@
 import type {
+  PartnerAttestationBadgeStyleInput,
   PartnerAttestationDraftInput,
   PartnerAttestationSummary,
   PartnerAuthProviders,
@@ -241,6 +242,19 @@ export async function revokePartnerAttestation(id: string): Promise<PartnerAttes
   return requestApi<PartnerAttestationSummary>(`/partner/attestations/${encodeURIComponent(id)}/revoke`, {
     method: "POST",
   })
+}
+
+export async function updatePartnerAttestationBadgeStyle(
+  id: string,
+  input: PartnerAttestationBadgeStyleInput,
+): Promise<PartnerAttestationSummary> {
+  return requestApi<PartnerAttestationSummary>(
+    `/partner/attestations/${encodeURIComponent(id)}/badge-style`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  )
 }
 
 export async function uploadSubmission(file: File, signal?: AbortSignal): Promise<string> {

@@ -4,7 +4,7 @@ import {
   useEffectEvent,
   useState,
 } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import {
   ArrowRight,
   BadgeCheck,
@@ -55,8 +55,13 @@ import {
   revokePartnerApiKey,
   revokePartnerAttestation,
   rotatePartnerApiKey,
+  updatePartnerAttestationBadgeStyle,
   uploadSubmission,
 } from "@/lib/partner-dashboard-api"
+import {
+  getPartnerDashboardPath,
+  getPartnerDashboardView,
+} from "@/lib/partner-dashboard-routes"
 import { cn, copyTextToClipboard } from "@/lib/utils"
 import type {
   PartnerApiKey,
@@ -70,6 +75,7 @@ import type {
   PublishFlowState,
   ShareOutputs,
 } from "@/types/partner-dashboard"
+import type { AttestationBadgeStyle } from "@/types/attestation"
 
 const REPORT_POLL_INTERVAL_MS = 2_000
 const REPORT_POLL_TIMEOUT_MS = 3 * 60 * 1_000
@@ -78,6 +84,7 @@ const EMPTY_AUTH_PROVIDERS: PartnerAuthProviders = {
   discordOAuthEnabled: false,
   devDiscordLoginEnabled: false,
 }
+const PARTNER_DASHBOARD_RETURN_PATH_KEY = "mlvscan.partner-dashboard.return-path"
 
 const workspaceItems: Array<{
   value: PartnerWorkspaceView
@@ -107,15 +114,10 @@ const workspaceItems: Array<{
   },
 ]
 
-const workspaceDescriptions: Record<PartnerWorkspaceView, string> = {
-  home: "Overview of the partner publication workspace",
-  publish: "Upload an artifact and create a draft attestation",
-  attestations: "Review, publish, refresh, and revoke attestations",
-  access: "Manage API keys",
-}
-
 export default function PartnerDashboardPage() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const requestedWorkspaceView = getPartnerDashboardView(location.pathname)
 
   const [booting, setBooting] = useState(true)
   const [authBusy, setAuthBusy] = useState(false)
@@ -132,7 +134,7 @@ export default function PartnerDashboardPage() {
 
   const [partner, setPartner] = useState<PartnerProfile | null>(null)
   const [workspaceView, setWorkspaceView] =
-    useState<PartnerWorkspaceView>("home")
+    useState<PartnerWorkspaceView>(requestedWorkspaceView ?? "home")
 
   const [keys, setKeys] = useState<PartnerApiKey[]>([])
   const [keysLoading, setKeysLoading] = useState(false)
@@ -143,6 +145,7 @@ export default function PartnerDashboardPage() {
   const [selectedAttestationId, setSelectedAttestationId] = useState<string | null>(
     null,
   )
+  const [badgeStyleBusyId, setBadgeStyleBusyId] = useState<string | null>(null)
 
   const [publishFlow, setPublishFlow] = useState<PublishFlowState>(
     initialPublishFlow(),
@@ -168,8 +171,8 @@ export default function PartnerDashboardPage() {
   ).length
 
   function handleSelectWorkspace(value: PartnerWorkspaceView): void {
-    startTransition(() => setWorkspaceView(value))
     setSidebarOpen(false)
+    navigateToWorkspace(value)
   }
 
   function handleOpenProfileSheet(): void {
@@ -197,7 +200,21 @@ export default function PartnerDashboardPage() {
     setPublishFlow(initialPublishFlow())
     setPublishFile(null)
     setPublishError("")
-    startTransition(() => setWorkspaceView("home"))
+    startTransition(() => setWorkspaceView(requestedWorkspaceView ?? "home"))
+  }
+
+  function navigateToWorkspace(
+    value: PartnerWorkspaceView,
+    options?: { replace?: boolean },
+  ): void {
+    const nextPath = getPartnerDashboardPath(value)
+
+    if (location.pathname === nextPath) {
+      startTransition(() => setWorkspaceView(value))
+      return
+    }
+
+    navigate(nextPath, { replace: options?.replace })
   }
 
   function setAuthedPartner(nextPartner: PartnerProfile | null): void {
@@ -330,6 +347,41 @@ export default function PartnerDashboardPage() {
     return () => controller.abort()
   }, [location.search])
 
+  useEffect(() => {
+    if (requestedWorkspaceView) {
+      startTransition(() =>
+        setWorkspaceView((current) =>
+          current === requestedWorkspaceView ? current : requestedWorkspaceView,
+        ),
+      )
+      return
+    }
+
+    navigate(getPartnerDashboardPath("home"), { replace: true })
+  }, [navigate, requestedWorkspaceView])
+
+  useEffect(() => {
+    if (partner?.status !== "active") {
+      return
+    }
+
+    if (location.pathname !== getPartnerDashboardPath("home")) {
+      consumePartnerDashboardReturnPath()
+      return
+    }
+
+    const rememberedPath = consumePartnerDashboardReturnPath()
+    if (!rememberedPath || rememberedPath === location.pathname) {
+      return
+    }
+
+    if (!getPartnerDashboardView(rememberedPath)) {
+      return
+    }
+
+    navigate(rememberedPath, { replace: true })
+  }, [location.pathname, navigate, partner?.status])
+
   async function handleSharedKeyLogin(
     username: string,
     key: string,
@@ -455,13 +507,32 @@ export default function PartnerDashboardPage() {
     try {
       const nextAttestation = await revokePartnerAttestation(id)
       upsertAttestationRecord(nextAttestation)
-      startTransition(() => setWorkspaceView("attestations"))
+      navigateToWorkspace("attestations")
       setDetailSheetOpen(true)
       toast.success("Public attestation revoked")
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Unable to revoke attestation.",
       )
+    }
+  }
+
+  async function handleUpdateBadgeStyle(
+    id: string,
+    badgeStyle: AttestationBadgeStyle,
+  ): Promise<void> {
+    setBadgeStyleBusyId(id)
+
+    try {
+      const nextAttestation = await updatePartnerAttestationBadgeStyle(id, { badgeStyle })
+      upsertAttestationRecord(nextAttestation)
+      toast.success("Badge design updated")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to update badge design.",
+      )
+    } finally {
+      setBadgeStyleBusyId((current) => (current === id ? null : current))
     }
   }
 
@@ -483,7 +554,7 @@ export default function PartnerDashboardPage() {
     try {
       const nextAttestation = await publishPartnerAttestation(attestationId)
       upsertAttestationRecord(nextAttestation)
-      startTransition(() => setWorkspaceView("attestations"))
+      navigateToWorkspace("attestations")
       setDetailSheetOpen(true)
       setPublishFlow((current) => ({
         ...current,
@@ -538,7 +609,7 @@ export default function PartnerDashboardPage() {
 
       upsertAttestationRecord(nextDraft)
       setPublishFile(null)
-      startTransition(() => setWorkspaceView("attestations"))
+      navigateToWorkspace("attestations")
       setDetailSheetOpen(true)
 
       setPublishFlow({
@@ -631,8 +702,13 @@ export default function PartnerDashboardPage() {
 
   function handleReviewAttestation(attestation: PartnerAttestationSummary): void {
     setSelectedAttestationId(attestation.id)
-    startTransition(() => setWorkspaceView("attestations"))
+    navigateToWorkspace("attestations")
     setDetailSheetOpen(true)
+  }
+
+  function handleBeginDiscordLogin(path: string): void {
+    rememberPartnerDashboardReturnPath(location.pathname)
+    window.location.assign(buildPartnerAuthUrl(path))
   }
 
   function handleCopySnippet(text: string, successMessage: string): void {
@@ -663,12 +739,8 @@ export default function PartnerDashboardPage() {
         authProviders={authProviders}
         loading={authBusy}
         errorMessage={authMessage}
-        onBeginDiscordLogin={() =>
-          window.location.assign(buildPartnerAuthUrl("/partner/auth/discord"))
-        }
-        onBeginDevDiscordLogin={() =>
-          window.location.assign(buildPartnerAuthUrl("/partner/auth/dev-login"))
-        }
+        onBeginDiscordLogin={() => handleBeginDiscordLogin("/partner/auth/discord")}
+        onBeginDevDiscordLogin={() => handleBeginDiscordLogin("/partner/auth/dev-login")}
         onSharedKeyLogin={handleSharedKeyLogin}
       />
     )
@@ -825,9 +897,11 @@ export default function PartnerDashboardPage() {
                         onPublish={handlePublishAttestation}
                         onRefresh={handleRefreshAttestation}
                         onRevoke={handleRevokeAttestation}
+                        onBadgeStyleChange={handleUpdateBadgeStyle}
                         onOpenLink={handleOpenLink}
                         onCopySnippet={handleCopySnippet}
                         publishBusy={publishFlow.stage === "publishing"}
+                        badgeStyleBusy={badgeStyleBusyId === selectedAttestation.id}
                       />
                     </div>
                   ) : (
@@ -955,9 +1029,11 @@ export default function PartnerDashboardPage() {
               onPublish={handlePublishAttestation}
               onRefresh={handleRefreshAttestation}
               onRevoke={handleRevokeAttestation}
+              onBadgeStyleChange={handleUpdateBadgeStyle}
               onOpenLink={handleOpenLink}
               onCopySnippet={handleCopySnippet}
               publishBusy={publishFlow.stage === "publishing"}
+              badgeStyleBusy={selectedAttestation ? badgeStyleBusyId === selectedAttestation.id : false}
             />
           </div>
         </SheetContent>
@@ -1112,6 +1188,34 @@ function sleep(durationMs: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, durationMs)
   })
+}
+
+function rememberPartnerDashboardReturnPath(pathname: string): void {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  if (!getPartnerDashboardView(pathname)) {
+    return
+  }
+
+  window.sessionStorage.setItem(PARTNER_DASHBOARD_RETURN_PATH_KEY, pathname)
+}
+
+function consumePartnerDashboardReturnPath(): string | null {
+  if (typeof window === "undefined") {
+    return null
+  }
+
+  const rememberedPath =
+    window.sessionStorage.getItem(PARTNER_DASHBOARD_RETURN_PATH_KEY)
+
+  if (!rememberedPath) {
+    return null
+  }
+
+  window.sessionStorage.removeItem(PARTNER_DASHBOARD_RETURN_PATH_KEY)
+  return rememberedPath
 }
 
 function getOAuthErrorMessage(errorCode: string | null): string {

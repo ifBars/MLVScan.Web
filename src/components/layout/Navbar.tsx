@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Download, ExternalLink } from "lucide-react"
 import DocsSearch from "@/components/docs/DocsSearch"
+import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
 const SCROLL_HIDE_THRESHOLD = 100
 const SCROLL_SHOW_THRESHOLD = 30
@@ -49,7 +50,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
               <img
                 src={`${import.meta.env.BASE_URL}icon.png`}
@@ -63,7 +64,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               link.external === false ? (
                 <Link
@@ -93,16 +94,19 @@ const Navbar = () => {
           </div>
 
           {/* CTAs */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
               <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" />
+                <ExternalLink data-icon="inline-start" />
                 GitHub
               </a>
             </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={getPartnerDashboardPath("home")}>Dashboard</Link>
+            </Button>
             <Button size="sm" className="hidden md:flex" asChild>
               <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
-                <Download className="w-4 h-4 mr-2" />
+                <Download data-icon="inline-start" />
                 Download
               </a>
             </Button>
@@ -123,7 +127,7 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden navbar-glass border-t border-white/10">
-          <div className="container mx-auto px-4 py-4 space-y-4">
+          <div className="container mx-auto flex flex-col gap-4 px-4 py-4">
             {navLinks.map((link) => (
               link.external === false ? (
                 <Link
@@ -145,16 +149,21 @@ const Navbar = () => {
                 </a>
               )
             ))}
-            <div className="pt-4 border-t dark:border-gray-800 space-y-2">
+            <div className="flex flex-col gap-2 border-t pt-4 dark:border-gray-800">
+              <Button variant="outline" className="w-full" asChild>
+                <Link to={getPartnerDashboardPath("home")} onClick={() => setIsMenuOpen(false)}>
+                  Dashboard
+                </Link>
+              </Button>
               <Button variant="outline" className="w-full" asChild>
                 <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-2" />
+                  <ExternalLink data-icon="inline-start" />
                   GitHub
                 </a>
               </Button>
               <Button className="w-full" asChild>
                 <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download data-icon="inline-start" />
                   Download
                 </a>
               </Button>

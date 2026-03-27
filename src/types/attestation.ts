@@ -2,6 +2,11 @@ export type VerificationTier = "self_submitted" | "source_verified"
 export type PublicationStatus = "draft" | "published" | "revoked"
 export type SourceBindingStatus = "none" | "declared" | "verified" | "stale" | "failed"
 export type ThreatDispositionClassification = "Clean" | "Suspicious" | "KnownThreat"
+export type AttestationBadgeStyle =
+  | "ledger-strip"
+  | "split-pill"
+  | "classic-shield"
+  | "signature-bar"
 
 export interface PublicAttestationFinding {
   id: string | null
@@ -30,6 +35,7 @@ export interface PublicAttestationPayload {
   verificationTier: VerificationTier
   publicationStatus: PublicationStatus
   sourceBindingStatus: SourceBindingStatus
+  badgeStyle: AttestationBadgeStyle
   publicDisplayName: string
   fileName: string
   canonicalSourceUrl: string | null

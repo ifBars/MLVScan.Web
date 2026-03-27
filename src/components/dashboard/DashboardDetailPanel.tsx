@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import AttestationBadgeStylePicker from "@/components/dashboard/AttestationBadgeStylePicker"
 import {
   getAttestationTone,
   getAttestationVerdictLabel,
@@ -36,6 +37,7 @@ import type {
   PartnerAttestationSummary,
   ShareOutputs,
 } from "@/types/partner-dashboard"
+import type { AttestationBadgeStyle } from "@/types/attestation"
 
 const toneStyles = {
   clean: {
@@ -62,9 +64,11 @@ interface DashboardDetailPanelProps {
   onPublish: () => Promise<void>
   onRefresh: (id: string) => Promise<void>
   onRevoke: (id: string) => Promise<void>
+  onBadgeStyleChange: (id: string, badgeStyle: AttestationBadgeStyle) => Promise<void>
   onOpenLink: (url: string) => void
   onCopySnippet: (text: string, successMessage: string) => void
   publishBusy?: boolean
+  badgeStyleBusy?: boolean
   className?: string
 }
 
@@ -74,9 +78,11 @@ export default function DashboardDetailPanel({
   onPublish,
   onRefresh,
   onRevoke,
+  onBadgeStyleChange,
   onOpenLink,
   onCopySnippet,
   publishBusy = false,
+  badgeStyleBusy = false,
   className,
 }: DashboardDetailPanelProps) {
   if (!attestation) {
@@ -180,6 +186,12 @@ export default function DashboardDetailPanel({
                 <Fact label="Findings retained" value={`${attestation.findingCount}`} />
               </div>
             </section>
+
+            <AttestationBadgeStylePicker
+              attestation={attestation}
+              busy={badgeStyleBusy}
+              onSelect={(badgeStyle) => void onBadgeStyleChange(attestation.id, badgeStyle)}
+            />
           </div>
 
           <aside className="space-y-3 xl:sticky xl:top-6 xl:self-start">
@@ -256,7 +268,12 @@ export default function DashboardDetailPanel({
                     <Button
                       variant="outline"
                       className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                      onClick={() => onOpenLink(attestation.canonicalSourceUrl)}
+                      onClick={() => {
+                        if (!attestation.canonicalSourceUrl) {
+                          return
+                        }
+                        onOpenLink(attestation.canonicalSourceUrl)
+                      }}
                     >
                       Open declared source
                       <ArrowUpRight data-icon="inline-end" />
