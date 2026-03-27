@@ -12,6 +12,7 @@ import type {
   PartnerUploadUrlResponse,
   PartnerApiKey,
 } from "@/types/partner-dashboard"
+import { resolvePublicApiBaseUrl } from "@/lib/public-api-base-url"
 
 // Keep direct dashboard uploads under the buffered multipart Worker path.
 // Larger browser uploads should go straight to R2 via a presigned URL.
@@ -25,21 +26,10 @@ interface ApiErrorBody {
 
 let csrfToken: string | null = null
 
-function trimTrailingSlashes(value: string): string {
-  return value.replace(/\/+$/, "")
-}
-
 function resolveApiBaseUrl(): string {
-  const configured = import.meta.env.VITE_PUBLIC_API_BASE_URL?.trim()
-  if (configured) {
-    return trimTrailingSlashes(configured)
-  }
-
-  if (typeof window !== "undefined") {
-    return trimTrailingSlashes(window.location.origin)
-  }
-
-  return ""
+  return resolvePublicApiBaseUrl({
+    configuredBaseUrl: import.meta.env.VITE_PUBLIC_API_BASE_URL,
+  })
 }
 
 function buildApiUrl(path: string): string {

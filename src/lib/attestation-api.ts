@@ -1,8 +1,5 @@
 import type { PublicAttestationPayload } from "@/types/attestation"
-
-function trimTrailingSlashes(value: string): string {
-  return value.replace(/\/+$/, "")
-}
+import { resolvePublicApiBaseUrl } from "@/lib/public-api-base-url"
 
 export class PublicAttestationNotFoundError extends Error {
   constructor(shareId: string) {
@@ -12,16 +9,9 @@ export class PublicAttestationNotFoundError extends Error {
 }
 
 export function resolvePublicAttestationApiBaseUrl(): string {
-  const configured = import.meta.env.VITE_PUBLIC_API_BASE_URL?.trim()
-  if (configured) {
-    return trimTrailingSlashes(configured)
-  }
-
-  if (typeof window !== "undefined") {
-    return trimTrailingSlashes(window.location.origin)
-  }
-
-  return ""
+  return resolvePublicApiBaseUrl({
+    configuredBaseUrl: import.meta.env.VITE_PUBLIC_API_BASE_URL,
+  })
 }
 
 export function buildAttestationBadgeUrl(shareId: string): string {
