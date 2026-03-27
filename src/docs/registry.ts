@@ -1,4 +1,8 @@
-export type DocSectionId = 'getting-started' | 'libraries' | 'resources'
+export type DocSectionId =
+  | 'getting-started'
+  | 'libraries'
+  | 'for-developers'
+  | 'resources'
 
 export type DocStatus = 'stable' | 'legacy' | 'beta'
 
@@ -272,7 +276,7 @@ const docs: DocMeta[] = [
     description: 'Partner API-key automation for release attestations and GitHub Actions',
     slug: 'ci-attestations',
     contentPath: 'ci-attestations.mdx',
-    section: 'getting-started',
+    section: 'for-developers',
     status: 'stable',
     keywords: ['ci', 'attestations', 'github actions', 'api key', 'partner automation', 'release'],
   },
@@ -324,7 +328,8 @@ const libraryTitles: Record<NonNullable<DocMeta['library']>, string> = {
 export const docSections: DocSection[] = [
   { id: 'getting-started', title: 'Getting Started', order: 0 },
   { id: 'libraries', title: 'Libraries', order: 1 },
-  { id: 'resources', title: 'Resources', order: 2 },
+  { id: 'for-developers', title: 'For Developers', order: 2 },
+  { id: 'resources', title: 'Resources', order: 3 },
 ]
 
 export const allDocs = docs

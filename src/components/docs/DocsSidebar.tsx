@@ -62,7 +62,7 @@ const SidebarSection = ({ section, isExpanded, onToggle }: SidebarSectionProps) 
 
 const DocsSidebar = () => {
   const [expandedSections, setExpandedSections] = useState<Set<DocSectionId>>(
-    new Set(["getting-started", "libraries", "resources"])
+    new Set(["getting-started", "libraries", "for-developers", "resources"])
   )
 
   const toggleSection = (sectionId: DocSectionId) => {

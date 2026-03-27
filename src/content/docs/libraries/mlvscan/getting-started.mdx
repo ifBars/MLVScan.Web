@@ -24,9 +24,8 @@ export default function RuntimeGettingStartedContent() {
         <code>EnableAutoDisable</code>.
       </p>
       <p className="text-gray-300 mb-6">
-        The runtime also seeds a small default whitelist for known-safe false-positive cases such as
-        UnityExplorer and CustomTV, so your first saved config may already contain hashes before you add
-        any of your own.
+        Loader configs now start with an empty whitelist. A file is only skipped when its exact
+        SHA256 appears in <code>WhitelistedHashes</code> because you added it after verification.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -41,7 +40,7 @@ EnableScanCache = true
 BlockKnownThreats = true
 BlockSuspicious = true
 BlockIncompleteScans = false
-WhitelistedHashes = ["<verified SHA256 hash>"]
+WhitelistedHashes = []
 DumpFullIlReports = false
 EnableReportUpload = false`}</code>
           </pre>
@@ -57,7 +56,7 @@ EnableReportUpload = false`}</code>
   "BlockKnownThreats": true,
   "BlockSuspicious": true,
   "BlockIncompleteScans": false,
-  "WhitelistedHashes": ["<verified SHA256 hash>"],
+  "WhitelistedHashes": [],
   "DumpFullIlReports": false,
   "EnableReportUpload": false
 }`}</code>
