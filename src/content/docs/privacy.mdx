@@ -90,7 +90,7 @@ export default function PrivacyContent() {
 
       <h2 id="how-it-works">How It Works</h2>
       <p className="text-gray-300 mb-4">
-        Across all MLVScan components, the process follows the same privacy-preserving pattern:
+        Most MLVScan components follow the same privacy-preserving pattern:
       </p>
       <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">File Selection:</strong> You select or the system identifies a file to scan</li>
@@ -99,7 +99,7 @@ export default function PrivacyContent() {
         <li><strong className="text-white">Results:</strong> Findings are displayed or saved locally on your device</li>
       </ol>
       <p className="text-gray-300 mb-6">
-        <strong className="text-teal-400">Your file is never uploaded to any server.</strong> All analysis happens on your device, whether in a browser, game, or development environment.
+        <strong className="text-teal-400">The public web scanner, DevCLI, and local library integrations do not upload your file.</strong> Those flows analyze content on your device. The exception is the developer dashboard attestation workflow, where submitting a draft uploads the selected DLL or EXE to the MLVScan API for private server-side analysis before any publication step exists.
       </p>
 
       <h2 id="network-connections">Network Connections</h2>
@@ -112,9 +112,10 @@ export default function PrivacyContent() {
         <li><strong className="text-white">NuGet Installation:</strong> When installing MLVScan.Core or DevCLI via NuGet, packages are downloaded from NuGet.org</li>
         <li><strong className="text-white">Documentation:</strong> Accessing wiki pages on GitHub</li>
         <li><strong className="text-white">Runtime Report Upload (optional):</strong> If you enable report upload in the runtime plugin, it may send assemblies and metadata to the MLVScan API. This is off by default.</li>
+        <li><strong className="text-white">Dashboard Draft Submission (developer-initiated):</strong> Creating a dashboard attestation draft uploads the selected artifact to the MLVScan API for private analysis and draft generation.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        During web or DevCLI scanning: <strong className="text-white">no data is sent to any server</strong>. Runtime scanning does not make network calls unless you have explicitly enabled report upload.
+        During public web or DevCLI scanning: <strong className="text-white">no scan data is sent to any server</strong>. Runtime scanning does not make network calls unless you have explicitly enabled report upload. Dashboard draft submission is separate: it uploads the artifact privately for analysis, and a public attestation is only created later if you explicitly publish it.
       </p>
 
       <h2 id="data-we-do-not-collect">Data We Do NOT Collect (Default Behavior)</h2>
@@ -122,8 +123,8 @@ export default function PrivacyContent() {
         By default, MLVScan does not collect, store, or transmit any of the following:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Your scanned files or assemblies (unless you opt in to runtime report upload or explicitly publish an attestation through the MLVScan Dashboard)</li>
-        <li>Scan results or findings (unless you explicitly publish a public attestation)</li>
+        <li>Your scanned files or assemblies (unless you opt in to runtime report upload or explicitly submit a dashboard draft for private server-side analysis)</li>
+        <li>Scan results or findings (unless they are part of an optional runtime upload or an explicitly published public attestation)</li>
         <li>Your IP address</li>
         <li>Your browser fingerprints or user agent</li>
         <li>Usage statistics or analytics</li>
@@ -132,7 +133,7 @@ export default function PrivacyContent() {
         <li>Any personal information</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        If you enable the optional runtime report upload, assemblies and metadata may be sent to the MLVScan API. If you explicitly publish a dashboard attestation, a sanitized public report page and badge will also be made available. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link>.
+        If you enable the optional runtime report upload, assemblies and metadata may be sent to the MLVScan API. If you submit a dashboard draft, the artifact is uploaded privately so the API can produce a completed report and attestation draft. If you later publish that dashboard attestation, a sanitized public report page and badge will also be made available. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link>.
       </p>
 
       <h2 id="cookies">Cookies and Local Storage</h2>

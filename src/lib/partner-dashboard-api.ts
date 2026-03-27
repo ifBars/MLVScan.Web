@@ -109,21 +109,7 @@ async function requestApi<T>(
 }
 
 async function requestUploadApi<T>(path: string, init: RequestInit): Promise<T> {
-  const headers = new Headers(init.headers)
-  headers.set("Accept", "application/json")
-
-  const response = await fetch(buildApiUrl(path), {
-    ...init,
-    credentials: "same-origin",
-    headers,
-  })
-  const responseBody = await readJson(response)
-
-  if (!response.ok) {
-    throw new Error(extractErrorMessage(responseBody, response))
-  }
-
-  return responseBody as T
+  return requestApi<T>(path, init, { includeCsrf: false })
 }
 
 export class PartnerUnauthorizedError extends Error {
@@ -290,7 +276,14 @@ export async function uploadSubmission(file: File, signal?: AbortSignal): Promis
       body: file,
       signal,
     })
-  } catch {
+  } catch (error) {
+    if (
+      (error instanceof DOMException && error.name === "AbortError") ||
+      (error instanceof Error && error.name === "AbortError")
+    ) {
+      throw error
+    }
+
     const origin =
       typeof window !== "undefined" ? window.location.origin : "this dashboard origin"
     console.error(

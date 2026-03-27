@@ -387,7 +387,15 @@ export default function ApiKeysPanel({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={secretDialogOpen} onOpenChange={setSecretDialogOpen}>
+      <Dialog
+        open={secretDialogOpen}
+        onOpenChange={(open) => {
+          setSecretDialogOpen(open)
+          if (!open) {
+            setRevealedSecret(null)
+          }
+        }}
+      >
         <DialogContent className="border-slate-800 bg-slate-900 text-white">
           <DialogHeader className="flex flex-col gap-2">
             <DialogTitle className="font-display text-xl">

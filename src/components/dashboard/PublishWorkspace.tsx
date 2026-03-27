@@ -1,3 +1,4 @@
+import { useId, useRef } from "react"
 import { Sparkles, UploadCloud } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +32,9 @@ export default function PublishWorkspace({
   onScan,
 }: PublishWorkspaceProps) {
   const limitLabel = formatBytes(getFilesSizeLimitBytes())
+  const fileInputId = useId()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const scanBusy = publishFlow.stage === "uploading" || publishFlow.stage === "polling"
 
   return (
     <Card className="partner-pane overflow-hidden border border-slate-800/80 bg-slate-950/55 shadow-none">
@@ -53,7 +57,7 @@ export default function PublishWorkspace({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-5 px-5 py-5 sm:px-6">
-        <label className="group flex cursor-pointer flex-col gap-3 rounded-lg border border-dashed border-slate-700 bg-slate-800/40 px-5 py-5 transition hover:border-primary/40 hover:bg-slate-800/60">
+        <div className="group flex flex-col gap-4 rounded-lg border border-dashed border-slate-700 bg-slate-800/40 px-5 py-5 transition hover:border-primary/40 hover:bg-slate-800/60">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-800">
               <UploadCloud className="h-5 w-5 text-primary" />
@@ -67,17 +71,38 @@ export default function PublishWorkspace({
             </div>
           </div>
           <input
+            id={fileInputId}
             accept=".dll,.exe"
-            className="hidden"
+            ref={fileInputRef}
+            className="sr-only"
+            disabled={scanBusy}
             type="file"
-            onChange={(event) => onPublishFileChange(event.target.files?.[0] ?? null)}
+            onChange={(event) => {
+              const nextFile = event.target.files?.[0] ?? null
+              onPublishFileChange(nextFile)
+              event.target.value = ""
+            }}
           />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+              disabled={scanBusy}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Choose file
+            </Button>
+            <p id={`${fileInputId}-hint`} className="text-xs leading-5 text-slate-500">
+              Keyboard accessible file picker for DLL and EXE uploads.
+            </p>
+          </div>
           <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-3 text-sm text-slate-300">
             {publishFile
               ? `${publishFile.name} - ${formatBytes(publishFile.size)}`
               : "No file selected yet."}
           </div>
-        </label>
+        </div>
 
         <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-4">
           <p className="dashboard-kicker">Flow status</p>
@@ -98,16 +123,16 @@ export default function PublishWorkspace({
         ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <Button onClick={onScan}>
+          <Button disabled={!publishFile || scanBusy} onClick={onScan}>
             <Sparkles data-icon="inline-start" />
-            Create attestation
+            {scanBusy ? "Scanning..." : "Create attestation"}
           </Button>
           <Button
             variant="outline"
             className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
             onClick={onReset}
           >
-            Reset flow
+            {scanBusy ? "Cancel scan" : "Reset flow"}
           </Button>
         </div>
 

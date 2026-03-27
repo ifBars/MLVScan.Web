@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   ArrowUpRight,
   FileJson,
@@ -25,6 +26,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import AttestationBadgeStylePicker from "@/components/dashboard/AttestationBadgeStylePicker"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   getAttestationTone,
   getAttestationVerdictLabel,
@@ -85,6 +96,8 @@ export default function DashboardDetailPanel({
   badgeStyleBusy = false,
   className,
 }: DashboardDetailPanelProps) {
+  const [revokeConfirmAttestationId, setRevokeConfirmAttestationId] = useState<string | null>(null)
+
   if (!attestation) {
     return (
       <Card className={cn("border-slate-800 bg-slate-900/80 shadow-none", className)}>
@@ -113,203 +126,226 @@ export default function DashboardDetailPanel({
   const isPublished = attestation.publicationStatus === "published"
 
   return (
-    <Card className={cn("border-slate-800 bg-slate-900/80 shadow-none", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
-            Attestation detail
-          </Badge>
-          <Badge className={cn("border", toneStyle.badge)}>
-            <VerdictIcon data-icon="inline-start" />
-            {getAttestationVerdictLabel(
-              attestation.classification,
-              attestation.publicationStatus,
-            )}
-          </Badge>
-        </div>
-
-        <div className="mt-2 space-y-2">
-          <CardTitle className="font-display text-4xl leading-tight text-white">
-            {attestation.publicDisplayName}
-          </CardTitle>
-          <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
-            {attestation.summary}
-          </CardDescription>
-        </div>
-
-        <TooltipProvider>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-default border-slate-700 bg-slate-800 text-slate-300">
-                  {getVerificationTierLabel(attestation.verificationTier)}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Evidence is tied to the verification tier returned by the API.</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-default border-slate-700 bg-slate-800 text-slate-300">
-                  <Link2 data-icon="inline-start" />
-                  {getSourceBindingLabel(attestation.sourceBindingStatus)}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Source binding is evaluated server-side before publish.</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
-      </CardHeader>
-
-      <CardContent className="space-y-4 pt-0">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="space-y-4">
-            <section className="rounded-xl border border-slate-800 bg-slate-900/45 p-4">
-              <p className="dashboard-kicker">Snapshot</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
-                <Fact label="Scanned at" value={formatDate(attestation.scannedAt)} />
-                <Fact
-                  label="Published"
-                  value={
-                    attestation.publishedAt
-                      ? formatDate(attestation.publishedAt)
-                      : "Not yet published"
-                  }
-                />
-                <Fact label="File" value={attestation.fileName} mono />
-                <Fact label="Short hash" value={shortenHash(attestation.contentHash)} mono />
-                <Fact label="Size" value={formatBytes(attestation.sizeBytes)} />
-                <Fact label="Findings retained" value={`${attestation.findingCount}`} />
-              </div>
-            </section>
-
-            <AttestationBadgeStylePicker
-              attestation={attestation}
-              busy={badgeStyleBusy}
-              onSelect={(badgeStyle) => void onBadgeStyleChange(attestation.id, badgeStyle)}
-            />
+    <>
+      <Card className={cn("border-slate-800 bg-slate-900/80 shadow-none", className)}>
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+              Attestation detail
+            </Badge>
+            <Badge className={cn("border", toneStyle.badge)}>
+              <VerdictIcon data-icon="inline-start" />
+              {getAttestationVerdictLabel(
+                attestation.classification,
+                attestation.publicationStatus,
+              )}
+            </Badge>
           </div>
 
-          <aside className="space-y-3 xl:sticky xl:top-6 xl:self-start">
-            <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
-              <p className="dashboard-kicker">Operations</p>
-              <div className="mt-3 flex flex-col gap-2">
-                {isDraft ? (
-                  <Button
-                    disabled={publishBusy}
-                    className="justify-between"
-                    onClick={() => void onPublish()}
-                  >
-                    {publishBusy ? "Publishing..." : "Publish attestation"}
-                    <ArrowUpRight data-icon="inline-end" />
-                  </Button>
-                ) : null}
+          <div className="mt-2 space-y-2">
+            <CardTitle className="font-display text-4xl leading-tight text-white">
+              {attestation.publicDisplayName}
+            </CardTitle>
+            <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
+              {attestation.summary}
+            </CardDescription>
+          </div>
 
-                <Button
-                  variant="outline"
-                  className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                  onClick={() => void onRefresh(attestation.id)}
-                >
-                  Refresh to newest report
-                  <ArrowUpRight data-icon="inline-end" />
-                </Button>
+          <TooltipProvider>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="cursor-default border-slate-700 bg-slate-800 text-slate-300">
+                    {getVerificationTierLabel(attestation.verificationTier)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Evidence is tied to the verification tier returned by the API.</p>
+                </TooltipContent>
+              </Tooltip>
 
-                {isPublished ? (
-                  <Button
-                    variant="outline"
-                    className="justify-between border-rose-700/60 bg-rose-950/30 text-rose-200 hover:bg-rose-950/45"
-                    onClick={() => void onRevoke(attestation.id)}
-                  >
-                    Revoke public attestation
-                    <TriangleAlert data-icon="inline-end" />
-                  </Button>
-                ) : null}
-              </div>
-            </section>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="cursor-default border-slate-700 bg-slate-800 text-slate-300">
+                    <Link2 data-icon="inline-start" />
+                    {getSourceBindingLabel(attestation.sourceBindingStatus)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Source binding is evaluated server-side before publish.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+        </CardHeader>
 
-            {isPublished || attestation.canonicalSourceUrl ? (
+        <CardContent className="space-y-4 pt-0">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-4">
+              <section className="rounded-xl border border-slate-800 bg-slate-900/45 p-4">
+                <p className="dashboard-kicker">Snapshot</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+                  <Fact label="Scanned at" value={formatDate(attestation.scannedAt)} />
+                  <Fact
+                    label="Published"
+                    value={
+                      attestation.publishedAt
+                        ? formatDate(attestation.publishedAt)
+                        : "Not yet published"
+                    }
+                  />
+                  <Fact label="File" value={attestation.fileName} mono />
+                  <Fact label="Short hash" value={shortenHash(attestation.contentHash)} mono />
+                  <Fact label="Size" value={formatBytes(attestation.sizeBytes)} />
+                  <Fact label="Findings retained" value={`${attestation.findingCount}`} />
+                </div>
+              </section>
+
+              <AttestationBadgeStylePicker
+                attestation={attestation}
+                busy={badgeStyleBusy}
+                onSelect={(badgeStyle) => void onBadgeStyleChange(attestation.id, badgeStyle)}
+              />
+            </div>
+
+            <aside className="space-y-3 xl:sticky xl:top-6 xl:self-start">
               <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
-                <p className="dashboard-kicker">Links</p>
+                <p className="dashboard-kicker">Operations</p>
                 <div className="mt-3 flex flex-col gap-2">
-                  {isPublished ? (
-                    <>
-                      <Button className="justify-between" onClick={() => onOpenLink(attestation.publicUrl)}>
-                        Open public attestation
-                        <ArrowUpRight data-icon="inline-end" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                        onClick={() => onOpenLink(attestation.badgeUrl)}
-                      >
-                        Open badge SVG
-                        <FileText data-icon="inline-end" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                        onClick={() =>
-                          onOpenLink(
-                            attestation.badgeUrl.replace(/\/badge\.svg(?:\?.*)?$/, "/attestation.json"),
-                          )
-                        }
-                      >
-                        Open signed JSON
-                        <FileJson data-icon="inline-end" />
-                      </Button>
-                    </>
+                  {isDraft ? (
+                    <Button
+                      disabled={publishBusy}
+                      className="justify-between"
+                      onClick={() => void onPublish()}
+                    >
+                      {publishBusy ? "Publishing..." : "Publish attestation"}
+                      <ArrowUpRight data-icon="inline-end" />
+                    </Button>
                   ) : null}
 
-                  {attestation.canonicalSourceUrl ? (
+                  <Button
+                    variant="outline"
+                    className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                    onClick={() => void onRefresh(attestation.id)}
+                  >
+                    Refresh to newest report
+                    <ArrowUpRight data-icon="inline-end" />
+                  </Button>
+
+                  {isPublished ? (
                     <Button
                       variant="outline"
-                      className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                      onClick={() => {
-                        if (!attestation.canonicalSourceUrl) {
-                          return
-                        }
-                        onOpenLink(attestation.canonicalSourceUrl)
-                      }}
+                      className="justify-between border-rose-700/60 bg-rose-950/30 text-rose-200 hover:bg-rose-950/45"
+                      onClick={() => setRevokeConfirmAttestationId(attestation.id)}
                     >
-                      Open declared source
-                      <ArrowUpRight data-icon="inline-end" />
+                      Revoke public attestation
+                      <TriangleAlert data-icon="inline-end" />
                     </Button>
                   ) : null}
                 </div>
               </section>
-            ) : null}
 
-            {shareOutputs ? (
-              <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
-                <p className="dashboard-kicker">Share snippets</p>
-                <div className="mt-3 flex flex-col gap-2">
-                  <Button
-                    variant="outline"
-                    className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                    onClick={() => onCopySnippet(shareOutputs.markdown, "Copied Markdown badge snippet")}
-                  >
-                    Copy Markdown
-                    <FileText data-icon="inline-end" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                    onClick={() => onCopySnippet(shareOutputs.bbcode, "Copied BBCode badge snippet")}
-                  >
-                    Copy BBCode
-                    <ArrowUpRight data-icon="inline-end" />
-                  </Button>
-                </div>
-              </section>
-            ) : null}
-          </aside>
-        </div>
-      </CardContent>
-    </Card>
+              {isPublished || attestation.canonicalSourceUrl ? (
+                <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
+                  <p className="dashboard-kicker">Links</p>
+                  <div className="mt-3 flex flex-col gap-2">
+                    {isPublished ? (
+                      <>
+                        <Button className="justify-between" onClick={() => onOpenLink(attestation.publicUrl)}>
+                          Open public attestation
+                          <ArrowUpRight data-icon="inline-end" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                          onClick={() => onOpenLink(attestation.badgeUrl)}
+                        >
+                          Open badge SVG
+                          <FileText data-icon="inline-end" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                          onClick={() =>
+                            onOpenLink(
+                              attestation.badgeUrl.replace(/\/badge\.svg(?:\?.*)?$/, "/attestation.json"),
+                            )
+                          }
+                        >
+                          Open signed JSON
+                          <FileJson data-icon="inline-end" />
+                        </Button>
+                      </>
+                    ) : null}
+
+                    {attestation.canonicalSourceUrl ? (
+                      <Button
+                        variant="outline"
+                        className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                        onClick={() => {
+                          if (!attestation.canonicalSourceUrl) {
+                            return
+                          }
+                          onOpenLink(attestation.canonicalSourceUrl)
+                        }}
+                      >
+                        Open declared source
+                        <ArrowUpRight data-icon="inline-end" />
+                      </Button>
+                    ) : null}
+                  </div>
+                </section>
+              ) : null}
+
+              {shareOutputs ? (
+                <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
+                  <p className="dashboard-kicker">Share snippets</p>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                      onClick={() => onCopySnippet(shareOutputs.markdown, "Copied Markdown badge snippet")}
+                    >
+                      Copy Markdown
+                      <FileText data-icon="inline-end" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                      onClick={() => onCopySnippet(shareOutputs.bbcode, "Copied BBCode badge snippet")}
+                    >
+                      Copy BBCode
+                      <ArrowUpRight data-icon="inline-end" />
+                    </Button>
+                  </div>
+                </section>
+              ) : null}
+            </aside>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AlertDialog
+        open={revokeConfirmAttestationId === attestation.id}
+        onOpenChange={(open) => setRevokeConfirmAttestationId(open ? attestation.id : null)}
+      >
+        <AlertDialogContent className="border-slate-800 bg-slate-900">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke public attestation</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the public page and badge for {attestation.publicDisplayName} right away.
+              The ledger entry remains so you can refresh or republish later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void onRevoke(attestation.id)}>
+              Revoke attestation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 

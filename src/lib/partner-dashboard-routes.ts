@@ -13,19 +13,10 @@ export function getPartnerDashboardPath(view: PartnerWorkspaceView): string {
 
 export function getPartnerDashboardView(pathname: string): PartnerWorkspaceView | null {
   const normalizedPathname = normalizePathname(pathname)
-
-  switch (normalizedPathname) {
-    case "/dashboard":
-      return "home"
-    case "/dashboard/submit":
-      return "publish"
-    case "/dashboard/attestations":
-      return "attestations"
-    case "/dashboard/access":
-      return "access"
-    default:
-      return null
-  }
+  const matchingEntry = Object.entries(PARTNER_DASHBOARD_PATHS).find(
+    ([, path]) => path === normalizedPathname,
+  )
+  return (matchingEntry?.[0] as PartnerWorkspaceView | undefined) ?? null
 }
 
 function normalizePathname(pathname: string): string {

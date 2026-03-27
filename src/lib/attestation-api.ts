@@ -51,13 +51,88 @@ export async function fetchPublicAttestation(
     throw new PublicAttestationNotFoundError(shareId)
   }
 
-  const body = (await response.json().catch(() => ({}))) as Partial<PublicAttestationPayload> & {
-    error?: string
+  let body: unknown
+  try {
+    body = await response.json()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown parse failure"
+    throw new Error(`Failed to parse public attestation (${response.status}): ${message}`)
   }
 
   if (!response.ok) {
-    throw new Error(body.error ?? `Failed to load public attestation (${response.status})`)
+    const errorMessage =
+      isRecord(body) && typeof body.error === "string"
+        ? body.error
+        : `Failed to load public attestation (${response.status})`
+    throw new Error(errorMessage)
   }
 
-  return body as PublicAttestationPayload
+  if (!isPublicAttestationPayload(body)) {
+    throw new Error(
+      `Public attestation response was missing required fields (${response.status})`,
+    )
+  }
+
+  return body
+}
+
+function isPublicAttestationPayload(value: unknown): value is PublicAttestationPayload {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  return (
+    typeof value.shareId === "string" &&
+    typeof value.publicDisplayName === "string" &&
+    typeof value.fileName === "string" &&
+    typeof value.activeReportId === "string" &&
+    typeof value.contentHash === "string" &&
+    typeof value.sizeBytes === "number" &&
+    typeof value.scannerVersion === "string" &&
+    typeof value.schemaVersion === "string" &&
+    typeof value.scannedAt === "string" &&
+    typeof value.headline === "string" &&
+    typeof value.summary === "string" &&
+    typeof value.blockingRecommended === "boolean" &&
+    typeof value.findingCount === "number" &&
+    (value.canonicalSourceUrl === null || typeof value.canonicalSourceUrl === "string") &&
+    (value.primaryThreatFamilyId === null || typeof value.primaryThreatFamilyId === "string") &&
+    (value.publishedAt === null || typeof value.publishedAt === "string") &&
+    (value.revokedAt === null || typeof value.revokedAt === "string") &&
+    Array.isArray(value.threatFamilies) &&
+    Array.isArray(value.findings) &&
+    isVerificationTier(value.verificationTier) &&
+    isPublicationStatus(value.publicationStatus) &&
+    isSourceBindingStatus(value.sourceBindingStatus) &&
+    isAttestationBadgeStyle(value.badgeStyle) &&
+    isThreatDispositionClassification(value.classification)
+  )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function isVerificationTier(value: unknown): value is PublicAttestationPayload["verificationTier"] {
+  return value === "self_submitted" || value === "source_verified"
+}
+
+function isPublicationStatus(value: unknown): value is PublicAttestationPayload["publicationStatus"] {
+  return value === "draft" || value === "published" || value === "revoked"
+}
+
+function isSourceBindingStatus(
+  value: unknown,
+): value is PublicAttestationPayload["sourceBindingStatus"] {
+  return value === "none" || value === "declared" || value === "verified" || value === "stale" || value === "failed"
+}
+
+function isAttestationBadgeStyle(value: unknown): value is PublicAttestationPayload["badgeStyle"] {
+  return value === "ledger-strip" || value === "split-pill" || value === "classic-shield" || value === "signature-bar"
+}
+
+function isThreatDispositionClassification(
+  value: unknown,
+): value is PublicAttestationPayload["classification"] {
+  return value === "Clean" || value === "Suspicious" || value === "KnownThreat"
 }

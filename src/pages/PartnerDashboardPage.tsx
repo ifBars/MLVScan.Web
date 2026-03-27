@@ -2,6 +2,7 @@ import {
   startTransition,
   useEffect,
   useEffectEvent,
+  useRef,
   useState,
 } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -47,6 +48,7 @@ import {
   listPartnerApiKeys,
   listPartnerAttestations,
   loginWithSharedKey,
+  PartnerNotFoundError,
   logoutPartner,
   PartnerUnauthorizedError,
   publishPartnerAttestation,
@@ -152,6 +154,8 @@ export default function PartnerDashboardPage() {
   )
   const [publishFile, setPublishFile] = useState<File | null>(null)
   const [publishError, setPublishError] = useState("")
+  const publishFlowAbortControllerRef = useRef<AbortController | null>(null)
+  const publishFlowRunIdRef = useRef(0)
 
   const selectedAttestation =
     attestations.find((attestation) => attestation.id === selectedAttestationId) ??
@@ -193,6 +197,7 @@ export default function PartnerDashboardPage() {
   }
 
   function resetWorkspaceState(): void {
+    cancelPublishFlowRun()
     setKeys([])
     setAttestations([])
     setSelectedAttestationId(null)
@@ -347,6 +352,8 @@ export default function PartnerDashboardPage() {
     return () => controller.abort()
   }, [location.search])
 
+  useEffect(() => () => cancelPublishFlowRun(), [])
+
   useEffect(() => {
     if (requestedWorkspaceView) {
       startTransition(() =>
@@ -410,6 +417,8 @@ export default function PartnerDashboardPage() {
   }
 
   async function handleLogout(): Promise<void> {
+    cancelPublishFlowRun()
+
     try {
       await logoutPartner()
     } catch (error) {
@@ -421,6 +430,54 @@ export default function PartnerDashboardPage() {
       setAuthMessage("")
       toast.success("Signed out")
     }
+  }
+
+  async function refreshKeysBestEffort(successContext: string): Promise<void> {
+    try {
+      const nextKeys = await listPartnerApiKeys()
+      setKeys(nextKeys)
+    } catch (error) {
+      console.error(`Unable to refresh partner API keys after ${successContext}.`, error)
+      toast.error(`${successContext}, but the key list could not be refreshed.`)
+    }
+  }
+
+  function cancelPublishFlowRun(): void {
+    publishFlowRunIdRef.current += 1
+    publishFlowAbortControllerRef.current?.abort()
+    publishFlowAbortControllerRef.current = null
+  }
+
+  function beginPublishFlowRun(): { runId: number; signal: AbortSignal } {
+    cancelPublishFlowRun()
+
+    const controller = new AbortController()
+    publishFlowAbortControllerRef.current = controller
+
+    return {
+      runId: publishFlowRunIdRef.current,
+      signal: controller.signal,
+    }
+  }
+
+  function isCurrentPublishFlowRun(runId: number): boolean {
+    return publishFlowRunIdRef.current === runId
+  }
+
+  function finishPublishFlowRun(runId: number): void {
+    if (!isCurrentPublishFlowRun(runId)) {
+      return
+    }
+
+    publishFlowAbortControllerRef.current = null
+  }
+
+  function assertActivePublishFlowRun(runId: number, signal: AbortSignal): void {
+    if (!signal.aborted && isCurrentPublishFlowRun(runId)) {
+      return
+    }
+
+    throw createAbortError()
   }
 
   async function handleRefreshWorkspace(): Promise<void> {
@@ -467,22 +524,19 @@ export default function PartnerDashboardPage() {
     input: PartnerCreateKeyInput,
   ): Promise<PartnerCreateKeyResponse> {
     const response = await createPartnerApiKey(input)
-    const nextKeys = await listPartnerApiKeys()
-    setKeys(nextKeys)
+    await refreshKeysBestEffort("API key created")
     return response
   }
 
   async function handleRotateKey(id: string): Promise<PartnerRotateKeyResponse> {
     const response = await rotatePartnerApiKey(id)
-    const nextKeys = await listPartnerApiKeys()
-    setKeys(nextKeys)
+    await refreshKeysBestEffort("API key rotated")
     return response
   }
 
   async function handleRevokeKey(id: string): Promise<void> {
     await revokePartnerApiKey(id)
-    const nextKeys = await listPartnerApiKeys()
-    setKeys(nextKeys)
+    await refreshKeysBestEffort("API key revoked")
   }
 
   function upsertAttestationRecord(nextAttestation: PartnerAttestationSummary): void {
@@ -580,6 +634,9 @@ export default function PartnerDashboardPage() {
       return
     }
 
+    const file = publishFile
+    const { runId, signal } = beginPublishFlowRun()
+
     setPublishError("")
     setPublishFlow({
       stage: "uploading",
@@ -590,7 +647,8 @@ export default function PartnerDashboardPage() {
     })
 
     try {
-      const submissionId = await uploadSubmission(publishFile)
+      const submissionId = await uploadSubmission(file, signal)
+      assertActivePublishFlowRun(runId, signal)
 
       setPublishFlow({
         stage: "polling",
@@ -600,12 +658,14 @@ export default function PartnerDashboardPage() {
         reportId: null,
       })
 
-      const report = await waitForCompletedReport(submissionId)
+      const report = await waitForCompletedReport(submissionId, runId, signal)
+      assertActivePublishFlowRun(runId, signal)
 
       const nextDraft = await createPartnerAttestationDraft({
         submissionId,
-        publicDisplayName: fileStem(publishFile.name),
+        publicDisplayName: fileStem(file.name),
       })
+      assertActivePublishFlowRun(runId, signal)
 
       upsertAttestationRecord(nextDraft)
       setPublishFile(null)
@@ -622,22 +682,33 @@ export default function PartnerDashboardPage() {
 
       toast.success("Draft attestation created")
     } catch (error) {
+      if (isAbortError(error) || !isCurrentPublishFlowRun(runId)) {
+        return
+      }
+
       setPublishFlow(initialPublishFlow())
       setPublishError(
         error instanceof Error ? error.message : "Unable to complete the scan flow.",
       )
+    } finally {
+      finishPublishFlowRun(runId)
     }
   }
 
   async function waitForCompletedReport(
     submissionId: string,
+    runId: number,
+    signal: AbortSignal,
   ): Promise<Awaited<ReturnType<typeof getPartnerReport>>> {
     const startedAt = Date.now()
     let lastStatus = "pending"
 
     while (Date.now() - startedAt < REPORT_POLL_TIMEOUT_MS) {
+      assertActivePublishFlowRun(runId, signal)
+
       try {
-        const report = await getPartnerReport(submissionId)
+        const report = await getPartnerReport(submissionId, signal)
+        assertActivePublishFlowRun(runId, signal)
 
         if (report.status === "completed") {
           return report
@@ -659,8 +730,7 @@ export default function PartnerDashboardPage() {
         }))
       } catch (error) {
         if (
-          error instanceof Error &&
-          /404/.test(error.message) &&
+          isTransientMissingReportError(error) &&
           Date.now() - startedAt < REPORT_POLL_TIMEOUT_MS
         ) {
           setPublishFlow((current) => ({
@@ -669,14 +739,14 @@ export default function PartnerDashboardPage() {
             message:
               "Waiting for the submission record to appear. In local dev, keep LOCAL_FAST_UPLOADS=true.",
           }))
-          await sleep(REPORT_POLL_INTERVAL_MS)
+          await sleep(REPORT_POLL_INTERVAL_MS, signal)
           continue
         }
 
         throw error
       }
 
-      await sleep(REPORT_POLL_INTERVAL_MS)
+      await sleep(REPORT_POLL_INTERVAL_MS, signal)
     }
 
     throw new Error(
@@ -690,6 +760,7 @@ export default function PartnerDashboardPage() {
   }
 
   function handleResetPublishFlow(): void {
+    cancelPublishFlowRun()
     setPublishFlow(initialPublishFlow())
     setPublishFile(null)
     setPublishError("")
@@ -1184,9 +1255,46 @@ function initialPublishFlow(): PublishFlowState {
   }
 }
 
-function sleep(durationMs: number): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, durationMs)
+function createAbortError(): DOMException {
+  return new DOMException("The operation was aborted.", "AbortError")
+}
+
+function isAbortError(error: unknown): boolean {
+  return (
+    (error instanceof DOMException && error.name === "AbortError") ||
+    (error instanceof Error && error.name === "AbortError")
+  )
+}
+
+function isTransientMissingReportError(error: unknown): boolean {
+  return (
+    error instanceof PartnerNotFoundError ||
+    (error instanceof Error && /404/.test(error.message))
+  )
+}
+
+function sleep(durationMs: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(createAbortError())
+  }
+
+  return new Promise((resolve, reject) => {
+    if (!signal) {
+      window.setTimeout(resolve, durationMs)
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      signal.removeEventListener("abort", handleAbort)
+      resolve()
+    }, durationMs)
+
+    function handleAbort(): void {
+      window.clearTimeout(timeoutId)
+      reject(createAbortError())
+    }
+
+    signal.addEventListener("abort", handleAbort, { once: true })
   })
 }
 
