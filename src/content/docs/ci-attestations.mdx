@@ -25,11 +25,6 @@ export default function CiAttestationsContent() {
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li>Create an API key in the dashboard under <code>/dashboard/access</code>.</li>
         <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
-        <li>If you use explicit scopes, the key needs <code>uploads:write</code>, <code>reports:read</code>, and <code>attestations:write</code>.</li>
-        <li>
-          If you use a custom API domain, ensure the base URL your CI calls is reachable without interactive bot checks or browser challenges.
-          If needed, set a repository variable like <code>MLVSCAN_API_BASE_URL</code> to a CI-reachable hostname for your API.
-        </li>
         <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
         <li>Authenticated uploads become account-owned. Only the same account can read the private report or turn that submission into an attestation.</li>
       </ul>
