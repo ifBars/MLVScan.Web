@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
 import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
 import Hero from "@/components/layout/Hero"
@@ -16,6 +16,8 @@ import ParticleBackground from "@/components/layout/ParticleBackground"
 import { allDocs } from "@/docs/registry"
 
 import InspectorPage from "@/pages/InspectorPage"
+import PartnerDashboardPage from "@/pages/PartnerDashboardPage"
+import { Toaster } from "@/components/ui/sonner"
 
 function Home() {
   return (
@@ -35,14 +37,26 @@ function LoadingSpinner() {
   )
 }
 
+function MarketingShell() {
+  return (
+    <div className="min-h-screen bg-transparent">
+      <ParticleBackground />
+      <Navbar />
+      <main>
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <div className="min-h-screen bg-transparent">
-        <ParticleBackground />
-        <Navbar />
-        <main>
-          <Routes>
+      <>
+        <Routes>
+          <Route path="/dashboard/*" element={<PartnerDashboardPage />} />
+          <Route element={<MarketingShell />}>
             <Route path="/" element={<Home />} />
             <Route path="/scan" element={<ScanPage />} />
             <Route path="/attestations/:shareId" element={<AttestationPage />} />
@@ -65,10 +79,10 @@ function App() {
               <Route path="families/:slug" element={<ThreatFamiliesPage />} />
               <Route path=":slug" element={<AdvisoriesPage />} />
             </Route>
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+          </Route>
+        </Routes>
+        <Toaster />
+      </>
     </BrowserRouter>
   )
 }

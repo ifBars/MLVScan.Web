@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+/*
+  ---break---
+*/
+@custom-variant dark (&:is(.dark *));
 
 @plugin "tailwindcss-animate";
 
@@ -115,16 +119,60 @@
   --ring: 173 80% 44%;
 
   --radius: 0.75rem;
+
+  --sidebar: hsl(0 0% 98%);
+
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+
+  --sidebar-primary: hsl(240 5.9% 10%);
+
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+
+  --sidebar-border: hsl(220 13% 91%);
+
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 .dark {
   /* Dark mode overrides if any, but default is dark based on above */
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%)
 }
 
 /* Base styles */
 @layer base {
   * {
     @apply border-border;
+  }
+
+  :where(
+    a[href],
+    button,
+    label[for],
+    select,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="tab"]
+  ):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  :where(button:disabled, [aria-disabled="true"]) {
+    cursor: default;
   }
 
   body {
@@ -177,7 +225,7 @@
       radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
   }
 
-  /* Fade mesh in from top so section transition isn’t jarring */
+  /* Fade mesh in from top so section transition is not jarring */
   .features-mesh {
     opacity: 0.18;
     mask-image: linear-gradient(to bottom, transparent 0%, black 25%);
@@ -261,6 +309,90 @@
     transform: translateY(-100%);
     opacity: 0;
   }
+
+  .shadow-glow {
+    box-shadow: 0 18px 60px rgba(20, 184, 166, 0.16);
+  }
+
+  /* Sidebar CSS variables for dashboard */
+  .sidebar {
+    --sidebar: hsl(222.2 30% 6%);
+    --sidebar-foreground: hsl(210 30% 98%);
+    --sidebar-primary: hsl(173 80% 44%);
+    --sidebar-primary-foreground: hsl(222.2 30% 6%);
+    --sidebar-accent: hsl(217.2 25% 15%);
+    --sidebar-accent-foreground: hsl(210 30% 98%);
+    --sidebar-border: hsl(217.2 25% 20%);
+    --sidebar-ring: hsl(173 80% 44%);
+  }
+
+  .dashboard-shell {
+    background: linear-gradient(180deg, hsl(222.2 30% 6%) 0%, hsl(222.2 30% 4%) 100%);
+  }
+
+  .partner-workspace {
+    background:
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.09), transparent 30%),
+      radial-gradient(circle at top right, rgba(56, 189, 248, 0.06), transparent 24%),
+      linear-gradient(180deg, #090d13 0%, #070a10 100%);
+  }
+
+  .partner-explorer {
+    background: linear-gradient(180deg, rgba(10, 14, 20, 0.98) 0%, rgba(8, 11, 17, 0.98) 100%);
+  }
+
+  .partner-window-bar {
+    @apply flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-800/80 bg-slate-950/80 px-4 backdrop-blur-sm sm:px-6;
+  }
+
+  .partner-window-dots {
+    @apply items-center gap-1.5;
+  }
+
+  .partner-window-dots span {
+    @apply block h-2.5 w-2.5 rounded-full bg-slate-700;
+  }
+
+  .partner-workspace-frame {
+    @apply rounded-[22px] border border-slate-800/80 bg-slate-950/55;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .partner-pane {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  }
+
+  .partner-pane-header {
+    @apply border-b border-slate-800/80;
+  }
+
+  .dashboard-panel {
+    @apply rounded-xl border border-slate-800 bg-slate-900/80;
+  }
+
+  .dashboard-panel-solid {
+    @apply rounded-xl border border-slate-800 bg-slate-900;
+  }
+
+  .dashboard-stat {
+    @apply rounded-lg border border-slate-800 bg-slate-900 px-4 py-4;
+  }
+
+  .dashboard-kicker {
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500;
+  }
+
+  .dashboard-nav-item {
+    @apply flex rounded-lg border border-slate-800 bg-slate-900/60 px-4 py-3 text-left transition;
+  }
+
+  .dashboard-nav-item:hover {
+    @apply bg-slate-800/80 border-slate-700;
+  }
+
+  .dashboard-nav-item-active {
+    @apply bg-slate-800 border-slate-700;
+  }
 }
 
 @layer utilities {
@@ -296,4 +428,19 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
+
+/*
+  ---break---
+*/
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }

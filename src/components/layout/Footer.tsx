@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Github } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 
 type FooterLink = {
   name: string
@@ -50,7 +50,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-gray-400 hover:text-teal-300 transition-colors">
-                <Github className="w-5 h-5" />
+                <ExternalLink className="w-5 h-5" />
               </a>
               <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-gray-400 hover:text-teal-300 transition-colors">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

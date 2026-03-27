@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Github, Download } from "lucide-react"
+import { Menu, X, Download, ExternalLink } from "lucide-react"
 import DocsSearch from "@/components/docs/DocsSearch"
 
 const SCROLL_HIDE_THRESHOLD = 100
@@ -96,11 +96,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="ghost" size="sm" asChild>
               <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                <Github className="w-4 h-4 mr-2" />
+                <ExternalLink className="w-4 h-4 mr-2" />
                 GitHub
               </a>
             </Button>
-            <Button variant="accent" size="sm" className="hidden md:flex text-black" asChild>
+            <Button size="sm" className="hidden md:flex" asChild>
               <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -148,11 +148,11 @@ const Navbar = () => {
             <div className="pt-4 border-t dark:border-gray-800 space-y-2">
               <Button variant="outline" className="w-full" asChild>
                 <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-4 h-4 mr-2" />
+                  <ExternalLink className="w-4 h-4 mr-2" />
                   GitHub
                 </a>
               </Button>
-              <Button variant="accent" className="w-full text-black" asChild>
+              <Button className="w-full" asChild>
                 <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
                   <Download className="w-4 h-4 mr-2" />
                   Download

@@ -1,10 +1,10 @@
-import type { ReactNode } from "react"
+import { useMemo } from "react"
 import { motion } from "framer-motion"
 import {
   ArrowUpRight,
-  Fingerprint,
-  FileText,
+  CircleHelp,
   FileJson,
+  FileText,
   Link2,
   ShieldAlert,
   ShieldCheck,
@@ -14,6 +14,16 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { buildAttestationBadgeUrl, buildSignedAttestationUrl } from "@/lib/attestation-api"
 import {
   getAttestationTone,
@@ -27,30 +37,37 @@ import type { PublicAttestationPayload } from "@/types/attestation"
 
 const toneClasses = {
   clean: {
-    halo: "from-emerald-400/18 via-emerald-300/6 to-transparent",
-    panel: "border-emerald-400/30 bg-emerald-500/8",
-    label: "text-emerald-200",
+    badge: "border-emerald-600/40 bg-emerald-950/50 text-emerald-300",
+    banner: "border-emerald-600/30 bg-emerald-950/40 text-emerald-200",
+    scoreRing: "border-emerald-500/40",
     icon: ShieldCheck,
   },
   suspicious: {
-    halo: "from-amber-300/18 via-amber-200/6 to-transparent",
-    panel: "border-amber-300/28 bg-amber-400/8",
-    label: "text-amber-100",
+    badge: "border-amber-600/40 bg-amber-950/50 text-amber-300",
+    banner: "border-amber-600/30 bg-amber-950/40 text-amber-200",
+    scoreRing: "border-amber-500/40",
     icon: ShieldAlert,
   },
   threat: {
-    halo: "from-rose-400/18 via-rose-300/6 to-transparent",
-    panel: "border-rose-400/28 bg-rose-500/8",
-    label: "text-rose-100",
+    badge: "border-rose-600/40 bg-rose-950/50 text-rose-300",
+    banner: "border-rose-600/30 bg-rose-950/40 text-rose-200",
+    scoreRing: "border-rose-500/40",
     icon: ShieldOff,
   },
   revoked: {
-    halo: "from-slate-300/14 via-slate-200/6 to-transparent",
-    panel: "border-slate-300/18 bg-slate-400/8",
-    label: "text-slate-100",
+    badge: "border-slate-600/40 bg-slate-900/60 text-slate-300",
+    banner: "border-slate-600/30 bg-slate-900/60 text-slate-200",
+    scoreRing: "border-slate-500/40",
     icon: TriangleAlert,
   },
 } as const
+
+const severityWeights: Record<string, number> = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+  low: 1,
+}
 
 interface PublicAttestationReportProps {
   payload: PublicAttestationPayload
@@ -58,300 +75,469 @@ interface PublicAttestationReportProps {
 
 export default function PublicAttestationReport({ payload }: PublicAttestationReportProps) {
   const tone = getAttestationTone(payload.classification, payload.publicationStatus)
-  const verdictLabel = getAttestationVerdictLabel(payload.classification, payload.publicationStatus)
-  const sourceBindingLabel = getSourceBindingLabel(payload.sourceBindingStatus)
-  const verificationLabel = getVerificationTierLabel(payload.verificationTier)
   const tonePreset = toneClasses[tone]
   const VerdictIcon = tonePreset.icon
+  const verdictLabel = getAttestationVerdictLabel(payload.classification, payload.publicationStatus)
+  const verificationLabel = getVerificationTierLabel(payload.verificationTier)
+  const sourceBindingLabel = getSourceBindingLabel(payload.sourceBindingStatus)
+  const sourceDisplayLabel =
+    sourceBindingLabel === "No bound source" ? "Source unverified" : sourceBindingLabel
+  const sourceTooltip = getSourceTooltipText(payload.sourceBindingStatus, payload.canonicalSourceUrl)
   const badgeUrl = buildAttestationBadgeUrl(payload.shareId)
   const signedJsonUrl = buildSignedAttestationUrl(payload.shareId)
-  const publishedLabel = payload.revokedAt ? "Revoked" : payload.publishedAt ? "Published" : "Prepared"
-  const findingsLabel = `${payload.findingCount} retained finding${payload.findingCount === 1 ? "" : "s"}`
   const familyLabel = `${payload.threatFamilies.length} family match${payload.threatFamilies.length === 1 ? "" : "es"}`
+  const detectionLabel = `${payload.findingCount} retained finding${payload.findingCount === 1 ? "" : "s"}`
+  const publishedLabel = payload.revokedAt ? "Revoked at" : "Published at"
+  const statusChipClass =
+    "inline-flex h-9 items-center gap-2 rounded-lg border border-slate-700/70 bg-slate-900/65 px-3.5 text-sm font-medium text-slate-200"
+
+  const sortedFindings = useMemo(
+    () =>
+      [...payload.findings].sort((left, right) => {
+        const leftSeverity = severityWeights[left.severity.toLowerCase()] ?? 0
+        const rightSeverity = severityWeights[right.severity.toLowerCase()] ?? 0
+        if (rightSeverity !== leftSeverity) {
+          return rightSeverity - leftSeverity
+        }
+
+        return left.description.localeCompare(right.description)
+      }),
+    [payload.findings],
+  )
+  const hasRetainedFindings = sortedFindings.length > 0
+  const hasFamilyMatches = payload.threatFamilies.length > 0
+  const hasDetectionSignals = hasRetainedFindings || hasFamilyMatches
 
   return (
-    <div className="space-y-8 lg:space-y-10">
-      <motion.section
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/30 px-6 py-8 shadow-2xl shadow-black/30 sm:px-8 lg:min-h-[70vh] lg:px-10 lg:py-10"
-      >
-        <div className={cn("absolute inset-0 bg-gradient-to-br", tonePreset.halo)} />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-
-        <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-10">
-          <div className="flex flex-col justify-between gap-8">
-            <div className="space-y-6">
-              <div className="flex flex-wrap gap-3">
-                <Badge variant="outline" className="border-white/15 bg-white/5 text-[0.72rem] uppercase tracking-[0.18em] text-slate-200">
-                  {verificationLabel}
-                </Badge>
-                <Badge variant="outline" className="border-white/15 bg-white/5 text-[0.72rem] uppercase tracking-[0.18em] text-slate-400">
-                  Exact bytes only
-                </Badge>
-              </div>
-
-              <div className="space-y-4">
-                <p className="font-display text-xs uppercase tracking-[0.28em] text-slate-400">
-                  Public attestation
-                </p>
-                <h1 className="max-w-4xl font-display text-4xl leading-none tracking-tight text-white sm:text-5xl lg:text-6xl">
-                  {payload.publicDisplayName}
-                </h1>
-                <div className={cn("inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm", tonePreset.panel, tonePreset.label)}>
-                  <VerdictIcon className="h-4 w-4" />
-                  <span>{verdictLabel}</span>
-                </div>
-                <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-                  {payload.summary}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <a href={badgeUrl} target="_blank" rel="noreferrer">
-                    Badge SVG
-                    <FileText className="h-4 w-4" />
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5 text-white hover:bg-white/10">
-                  <a href={signedJsonUrl} target="_blank" rel="noreferrer">
-                    Signed JSON
-                    <FileJson className="h-4 w-4" />
-                  </a>
-                </Button>
-                {payload.canonicalSourceUrl && (
-                  <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5 text-white hover:bg-white/10">
-                    <a href={payload.canonicalSourceUrl} target="_blank" rel="noreferrer">
-                      Publisher-declared source
-                      <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {payload.verificationTier === "self_submitted" && (
-                <div className="rounded-[1.4rem] border border-amber-300/18 bg-amber-400/8 px-5 py-4 text-sm text-amber-50">
-                  MLVScan has not verified the current download source for this self-submitted scan.
-                </div>
-              )}
-              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-300">
-                This attestation applies to the submitted file and SHA-256 below. If the distributed file changes, the badge no longer applies.
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[1.75rem] border border-white/10 bg-black/25 p-6 backdrop-blur-sm">
-            <div className="grid gap-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Scan facts</p>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                  <Fact label="Share id" value={payload.shareId} mono />
-                  <Fact label={publishedLabel} value={formatDate(payload.revokedAt ?? payload.publishedAt ?? payload.scannedAt)} />
-                  <Fact label="Source binding" value={sourceBindingLabel} icon={<Link2 className="h-4 w-4" />} />
-                  <Fact label="Scanner" value={payload.scannerVersion} />
-                </div>
-              </div>
-
-              <div className="rounded-[1.25rem] border border-white/8 bg-white/4 p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Exact file identity</p>
-                <div className="mt-3 flex items-start gap-3">
-                  <Fingerprint className="mt-1 h-4 w-4 text-primary" />
-                  <div className="min-w-0">
-                    <p className="text-sm text-slate-400">Submitted file</p>
-                    <p className="mt-1 break-all font-mono text-xs text-slate-100">{payload.fileName}</p>
-                    <p className="text-sm text-slate-400">SHA-256</p>
-                    <p className="mt-1 break-all font-mono text-xs text-slate-100">{payload.contentHash}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <Fact label="Size" value={formatBytes(payload.sizeBytes)} />
-                <Fact label="Schema" value={payload.schemaVersion} />
-                <Fact label="Findings" value={findingsLabel} />
-                <Fact label="Family matches" value={familyLabel} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
+    <div className="space-y-6 lg:space-y-8">
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.08, ease: "easeOut" }}
-        className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="rounded-xl border border-slate-800 bg-slate-900/90 p-4 sm:p-6"
       >
-        <div className="rounded-[1.75rem] border border-white/10 bg-black/25 p-6">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Summary</p>
-          <div className="mt-5 grid gap-4">
-            <SummaryRow label="Headline" value={payload.headline} />
-            <SummaryRow label="Classification" value={verdictLabel} />
-            <SummaryRow
-              label="Blocking recommendation"
-              value={payload.blockingRecommended ? "Yes. Review before distributing." : "No blocking recommendation from this scan."}
-            />
-            <SummaryRow label="Scanned at" value={formatDate(payload.scannedAt)} />
-            <SummaryRow label="Short hash" value={shortenHash(payload.contentHash)} mono />
+        <div className="grid gap-4 xl:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="rounded-lg border border-slate-800 bg-slate-800/45 p-4">
+            <div
+              className={cn(
+                "mx-auto flex size-28 items-center justify-center rounded-full border-[10px] bg-slate-900/70",
+                tonePreset.scoreRing,
+              )}
+            >
+              <div className="text-center">
+                <p className="text-3xl font-semibold text-white">{payload.findingCount}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">
+                  Findings
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-xs uppercase tracking-[0.16em] text-slate-500">
+              Public attestation
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-800/35">
+            <div className={cn("flex items-center gap-2 border-b px-4 py-3 text-sm", tonePreset.banner)}>
+              <VerdictIcon className="h-4 w-4" />
+              <span className="font-medium">{verdictLabel}</span>
+            </div>
+
+            <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)]">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {payload.verificationTier === "self_submitted" ? (
+                    <TooltipProvider delayDuration={0}>
+                      <div className={cn(statusChipClass, "pr-2.5")}>
+                        <span>{verificationLabel}</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="Explain self-submitted attestation limits"
+                              className="inline-flex size-5 items-center justify-center rounded-full bg-slate-800 text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                            >
+                              <CircleHelp className="size-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs bg-slate-950 text-slate-100">
+                            This self-submitted attestation covers only the exact SHA-256 listed
+                            here. Compare your file&apos;s SHA-256 before treating this badge as a
+                            trust signal for the copy you downloaded.
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
+                  ) : (
+                    <div className={statusChipClass}>
+                      {verificationLabel}
+                    </div>
+                  )}
+                  <TooltipProvider delayDuration={0}>
+                    <div className={cn(statusChipClass, "pr-2.5")}>
+                      <Link2 className="size-4 text-slate-300" />
+                      <span>{sourceDisplayLabel}</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Explain source binding state"
+                            className="inline-flex size-5 items-center justify-center rounded-full bg-slate-800 text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                          >
+                            <CircleHelp className="size-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs bg-slate-950 text-slate-100">
+                          {sourceTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
+
+                <div>
+                  <h1 className="font-display text-3xl leading-tight text-white sm:text-4xl">
+                    {payload.publicDisplayName}
+                  </h1>
+                  <p className="mt-2 break-all font-mono text-xs text-slate-400">{payload.fileName}</p>
+                </div>
+
+                <p className="max-w-3xl text-sm leading-6 text-slate-300">{payload.summary}</p>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm">
+                    <a href={badgeUrl} target="_blank" rel="noreferrer">
+                      Badge SVG
+                      <FileText data-icon="inline-end" />
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  >
+                    <a href={signedJsonUrl} target="_blank" rel="noreferrer">
+                      Signed JSON
+                      <FileJson data-icon="inline-end" />
+                    </a>
+                  </Button>
+                  {payload.canonicalSourceUrl ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                    >
+                      <a href={payload.canonicalSourceUrl} target="_blank" rel="noreferrer">
+                        Declared source
+                        <ArrowUpRight data-icon="inline-end" />
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Metric label="SHA-256" value={shortenHash(payload.contentHash)} mono />
+                <Metric label="Size" value={formatBytes(payload.sizeBytes)} />
+                <Metric label="Scanned" value={formatDate(payload.scannedAt)} />
+                <Metric
+                  label={publishedLabel}
+                  value={formatDate(payload.revokedAt ?? payload.publishedAt ?? payload.scannedAt)}
+                />
+                <Metric label="Schema" value={payload.schemaVersion} />
+                <Metric label="Scanner" value={payload.scannerVersion} />
+                <Metric label="Detections" value={detectionLabel} />
+                <Metric label="Families" value={familyLabel} />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white/10 bg-black/25 p-6">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">What this proves</p>
-          <div className="mt-5 space-y-4 text-sm leading-7 text-slate-300">
-            <p>
-              MLVScan scanned the exact bytes identified by the SHA-256 above and published the current disposition for that file.
-            </p>
-            {payload.verificationTier === "self_submitted" && (
-              <p>
-                The current download page or file host has not been verified by MLVScan for this attestation.
-              </p>
-            )}
-            <p>
-              This is a {verificationLabel.toLowerCase()}. It does not prove that every file from the same mod page or archive is identical.
-            </p>
-            {payload.publicationStatus === "revoked" ? (
-              <p className="rounded-2xl border border-slate-300/18 bg-slate-400/8 px-4 py-3 text-slate-200">
-                This attestation has been revoked. Treat any previously embedded badge as historical only.
-              </p>
-            ) : (
-              <p className="rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-slate-200">
-                Static analysis can miss runtime behavior. Treat this report as evidence and context, not a blanket guarantee of safety.
-              </p>
-            )}
-          </div>
+        <div className="mt-4 grid gap-2">
+          {payload.publicationStatus === "revoked" ? (
+            <div className="rounded-md border border-slate-600/30 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
+              This attestation has been revoked and should be treated as historical record.
+            </div>
+          ) : null}
         </div>
       </motion.section>
 
-      <motion.details
-        initial={{ opacity: 0, y: 12 }}
+      <motion.section
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.14, ease: "easeOut" }}
-        className="group rounded-[1.75rem] border border-white/10 bg-black/25"
+        transition={{ duration: 0.3, delay: 0.05, ease: "easeOut" }}
       >
-        <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-4 px-6 py-5 text-left">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Evidence</p>
-            <h2 className="mt-2 font-display text-2xl text-white">Retained findings and family matches</h2>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
-            <span>{findingsLabel}</span>
-            <span className="text-slate-600">/</span>
-            <span>{familyLabel}</span>
-          </div>
-        </summary>
+        <Tabs defaultValue="detection" className="space-y-4">
+          <TabsList className="grid h-auto w-full grid-cols-2 rounded-md border border-slate-800 bg-slate-900 p-1 sm:max-w-[360px]">
+            <TabsTrigger value="detection" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white">
+              Detection
+            </TabsTrigger>
+            <TabsTrigger value="details" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white">
+              Details
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid gap-8 border-t border-white/10 px-6 py-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-4">
-            <SectionHeading
-              title="Retained findings"
-              subtitle="Default findings are shown here. Advanced diagnostics are intentionally excluded from public attestations."
-            />
-            {payload.findings.length > 0 ? (
-              <div className="space-y-3">
-                {payload.findings.map((finding, index) => (
-                  <div key={finding.id ?? `${finding.ruleId ?? "finding"}-${index}`} className="rounded-2xl border border-white/10 bg-white/4 p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="border-white/10 bg-white/4 text-slate-200">
-                        {finding.severity}
+          <TabsContent value="detection" className="mt-0 space-y-4">
+            {!hasDetectionSignals ? (
+              <div className="rounded-lg border border-slate-800 bg-slate-900/85">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
+                  <div>
+                    <p className="font-display text-xl text-white">Retained findings analysis</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Findings and threat-family evidence retained in the published attestation.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+                      {detectionLabel}
+                    </Badge>
+                    <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+                      {familyLabel}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="px-4 py-8 text-sm text-slate-400">
+                  No retained findings or family matches were published for this attestation.
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/85">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
+                    <div>
+                      <p className="font-display text-xl text-white">Retained findings analysis</p>
+                      <p className="mt-1 text-sm text-slate-400">
+                        Findings and threat-family evidence retained in the published attestation.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+                        {detectionLabel}
                       </Badge>
-                      {finding.ruleId && (
-                        <Badge variant="outline" className="border-white/10 bg-transparent font-mono text-slate-400">
-                          {finding.ruleId}
-                        </Badge>
-                      )}
+                      <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+                        {familyLabel}
+                      </Badge>
                     </div>
-                    <p className="mt-3 text-sm text-slate-100">{finding.description}</p>
-                    {finding.location && (
-                      <p className="mt-2 break-all font-mono text-xs text-slate-400">{finding.location}</p>
-                    )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyEvidence message="No retained findings were published for this attestation." />
-            )}
-          </div>
 
-          <div className="space-y-4">
-            <SectionHeading
-              title="Threat-family matches"
-              subtitle="Matches describe known malware families or behavior variants that influenced the current verdict."
-            />
-            {payload.threatFamilies.length > 0 ? (
-              <div className="space-y-3">
-                {payload.threatFamilies.map((family) => (
-                  <div key={`${family.familyId}-${family.variantId ?? "base"}`} className="rounded-2xl border border-white/10 bg-white/4 p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-base font-semibold text-white">{family.displayName}</p>
-                      {family.exactHashMatch && (
-                        <Badge className="bg-rose-500/12 text-rose-100">Exact hash match</Badge>
-                      )}
+                  {hasRetainedFindings ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-slate-800 hover:bg-transparent">
+                          <TableHead>Indicator</TableHead>
+                          <TableHead>Verdict</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedFindings.map((finding, index) => (
+                          <TableRow
+                            key={finding.id ?? `${finding.ruleId ?? "finding"}-${index}`}
+                            className="border-slate-800 hover:bg-slate-800/40"
+                          >
+                            <TableCell className="min-w-[320px]">
+                              <p className="text-sm text-white">{finding.description}</p>
+                              {finding.location ? (
+                                <p className="mt-1 break-all font-mono text-xs text-slate-500">{finding.location}</p>
+                              ) : null}
+                              {finding.ruleId ? (
+                                <p className="mt-1 font-mono text-xs text-slate-500">{finding.ruleId}</p>
+                              ) : null}
+                            </TableCell>
+                            <TableCell className="w-[220px]">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge className={cn("border", severityBadgeClass(finding.severity))}>
+                                  {finding.severity}
+                                </Badge>
+                                <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-400">
+                                  {finding.visibility}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="px-4 py-6 text-sm text-slate-400">
+                      No retained findings were published for this attestation.
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">{family.summary}</p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <Fact label="Match kind" value={family.matchKind} compact />
-                      <Fact label="Matched rules" value={family.matchedRules.length > 0 ? family.matchedRules.join(", ") : "None"} compact mono={family.matchedRules.length > 0} />
+                  )}
+                </div>
+
+                {hasFamilyMatches ? (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+                      <div>
+                        <p className="font-display text-xl text-white">Threat family matches</p>
+                        <p className="mt-1 text-sm text-slate-400">
+                          Higher-level malware family classification derived from retained evidence.
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+                        {familyLabel}
+                      </Badge>
                     </div>
+
+                    {payload.threatFamilies.map((family) => (
+                      <div
+                        key={`${family.familyId}-${family.variantId ?? "base"}`}
+                        className="rounded-lg border border-slate-800 bg-slate-900/85 p-4"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-display text-2xl text-white">{family.displayName}</p>
+                          {family.exactHashMatch ? (
+                            <Badge className="border-rose-600/40 bg-rose-950/50 text-rose-300">
+                              Exact hash match
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">{family.summary}</p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                          <Metric label="Family id" value={family.familyId} mono />
+                          <Metric label="Variant" value={family.variantId ?? "base"} />
+                          <Metric label="Match kind" value={family.matchKind} />
+                          <Metric
+                            label="Confidence"
+                            value={family.confidence === null ? "not provided" : `${Math.round(family.confidence * 100)}%`}
+                          />
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-[0.66rem] uppercase tracking-[0.16em] text-slate-500">
+                            Matched rules
+                          </p>
+                          {family.matchedRules.length > 0 ? (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {family.matchedRules.map((rule) => (
+                                <Badge
+                                  key={`${family.familyId}-${rule}`}
+                                  variant="outline"
+                                  className="border-slate-700 bg-slate-800 text-slate-300"
+                                >
+                                  {rule}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-2 text-sm text-slate-500">No matched rules were included.</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyEvidence message="No malware family matches were retained for this attestation." />
+                ) : null}
+              </>
             )}
-          </div>
-        </div>
-      </motion.details>
+          </TabsContent>
+
+          <TabsContent value="details" className="mt-0 space-y-4">
+            <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/85 p-4">
+                <p className="dashboard-kicker">Exact file identity</p>
+                <div className="mt-3 space-y-3">
+                  <DetailRow label="File name" value={payload.fileName} mono />
+                  <DetailRow label="SHA-256" value={payload.contentHash} mono />
+                  <DetailRow label="Share id" value={payload.shareId} mono />
+                  <DetailRow label="Short hash" value={shortenHash(payload.contentHash)} mono />
+                  <DetailRow label="Size" value={formatBytes(payload.sizeBytes)} />
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-800 bg-slate-900/85 p-4">
+                <p className="dashboard-kicker">Scan facts</p>
+                <div className="mt-3 space-y-3">
+                  <DetailRow label="Classification" value={verdictLabel} />
+                  <DetailRow label="Verification tier" value={verificationLabel} />
+                  <DetailRow label="Source binding" value={sourceBindingLabel} />
+                  <DetailRow label="Scanned at" value={formatDate(payload.scannedAt)} />
+                  <DetailRow label={publishedLabel} value={formatDate(payload.revokedAt ?? payload.publishedAt ?? payload.scannedAt)} />
+                  <DetailRow label="Scanner" value={payload.scannerVersion} />
+                  <DetailRow label="Schema" value={payload.schemaVersion} />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </motion.section>
     </div>
   )
 }
 
-interface FactProps {
+function severityBadgeClass(severity: string): string {
+  const normalized = severity.toLowerCase()
+  if (normalized === "critical" || normalized === "high") {
+    return "border-rose-600/40 bg-rose-950/50 text-rose-300"
+  }
+  if (normalized === "medium") {
+    return "border-amber-600/40 bg-amber-950/50 text-amber-300"
+  }
+  if (normalized === "low") {
+    return "border-emerald-600/40 bg-emerald-950/50 text-emerald-300"
+  }
+  return "border-slate-600/40 bg-slate-900/60 text-slate-300"
+}
+
+function Metric({
+  label,
+  value,
+  mono = false,
+}: {
   label: string
   value: string
   mono?: boolean
-  compact?: boolean
-  icon?: ReactNode
-}
-
-function Fact({ label, value, mono = false, compact = false, icon }: FactProps) {
+}) {
   return (
-    <div className={cn("rounded-[1.1rem] border border-white/8 bg-white/4 px-4 py-3", compact && "px-3 py-2.5")}>
-      <p className="text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">{label}</p>
-      <div className="mt-2 flex items-start gap-2">
-        {icon}
-        <p className={cn("text-sm text-slate-100", mono && "break-all font-mono text-xs")}>{value}</p>
-      </div>
+    <div className="rounded-md border border-slate-800 bg-slate-800/55 px-3 py-2">
+      <p className="text-[0.62rem] uppercase tracking-[0.14em] text-slate-500">{label}</p>
+      <p className={cn("mt-1 text-sm text-slate-100", mono && "break-all font-mono text-xs")}>
+        {value}
+      </p>
     </div>
   )
 }
 
-function SummaryRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function DetailRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string
+  value: string
+  mono?: boolean
+}) {
   return (
-    <div className="border-b border-white/8 pb-4 last:border-b-0 last:pb-0">
-      <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
-      <p className={cn("mt-2 text-sm leading-7 text-slate-100", mono && "break-all font-mono text-xs")}>{value}</p>
+    <div className="border-b border-slate-800 pb-3 last:border-b-0 last:pb-0">
+      <p className="text-[0.62rem] uppercase tracking-[0.14em] text-slate-500">{label}</p>
+      <p className={cn("mt-1 text-sm text-slate-200", mono && "break-all font-mono text-xs")}>
+        {value}
+      </p>
     </div>
   )
 }
 
-function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div>
-      <p className="font-display text-2xl text-white">{title}</p>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{subtitle}</p>
-    </div>
-  )
-}
-
-function EmptyEvidence({ message }: { message: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-white/10 bg-white/3 px-4 py-5 text-sm text-slate-400">
-      {message}
-    </div>
-  )
+function getSourceTooltipText(
+  status: PublicAttestationPayload["sourceBindingStatus"],
+  canonicalSourceUrl: string | null,
+): string {
+  switch (status) {
+    case "verified":
+      return canonicalSourceUrl
+        ? `MLVScan verified this attestation against the declared source: ${canonicalSourceUrl}`
+        : "MLVScan verified this attestation against a declared source URL."
+    case "declared":
+      return canonicalSourceUrl
+        ? `The publisher declared this source URL, but MLVScan has not verified it yet: ${canonicalSourceUrl}`
+        : "The publisher declared a source URL for this attestation, but MLVScan has not verified it yet."
+    case "stale":
+      return canonicalSourceUrl
+        ? `This attestation was linked to ${canonicalSourceUrl}, but that source is no longer current for verification.`
+        : "This attestation was linked to a source URL, but that source is no longer current for verification."
+    case "failed":
+      return canonicalSourceUrl
+        ? `MLVScan could not verify that the current file from ${canonicalSourceUrl} matches this attestation.`
+        : "MLVScan could not verify that the current source matches this attestation."
+    case "none":
+    default:
+      return "This attestation is not currently bound to a download source. Match the SHA-256 shown on this page against your file before assuming the badge applies to your copy."
+  }
 }

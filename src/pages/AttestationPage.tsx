@@ -18,16 +18,16 @@ type PageState =
 
 export default function AttestationPage() {
   const { shareId } = useParams()
-  const [state, setState] = useState<PageState>({ status: "loading" })
+  const [state, setState] = useState<PageState>(
+    shareId ? { status: "loading" } : { status: "not-found" },
+  )
 
   useEffect(() => {
     if (!shareId) {
-      setState({ status: "not-found" })
       return
     }
 
     const controller = new AbortController()
-    setState({ status: "loading" })
 
     fetchPublicAttestation(shareId, controller.signal)
       .then((payload) => {
@@ -100,17 +100,17 @@ function StatePanel({
   description: string
 }) {
   return (
-    <section className="mx-auto max-w-3xl rounded-[2rem] border border-white/10 bg-black/25 px-6 py-12 text-center shadow-2xl shadow-black/30 sm:px-10">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/4">
+    <section className="mx-auto max-w-2xl rounded-lg border border-slate-800 bg-slate-900/80 px-6 py-10 text-center sm:px-10">
+      <div className="mx-auto flex size-16 items-center justify-center rounded-lg border border-slate-700 bg-slate-800">
         {icon}
       </div>
-      <p className="mt-6 text-xs uppercase tracking-[0.24em] text-slate-400">{eyebrow}</p>
-      <h1 className="mt-4 font-display text-3xl text-white sm:text-4xl">{title}</h1>
-      <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300">{description}</p>
-      <div className="mt-8 flex justify-center">
+      <p className="mt-5 text-[0.65rem] uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p>
+      <h1 className="mt-3 font-display text-2xl text-white sm:text-3xl">{title}</h1>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">{description}</p>
+      <div className="mt-6 flex justify-center">
         <Link
           to="/scan"
-          className="inline-flex min-h-10 items-center rounded-full border border-white/12 bg-white/5 px-5 text-sm font-medium text-white transition hover:bg-white/10"
+          className="inline-flex min-h-9 items-center rounded-md border border-slate-700 bg-slate-800 px-5 text-sm font-medium text-white transition hover:bg-slate-700"
         >
           Open local browser scanner
         </Link>

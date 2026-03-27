@@ -1,4 +1,4 @@
-import { defineConfig, normalizePath, type Plugin, type ResolvedConfig } from 'vite'
+import { defineConfig, loadEnv, normalizePath, type Plugin, type ResolvedConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import mdx from '@mdx-js/rollup'
@@ -227,30 +227,55 @@ function getSchemaAssetPath(schemaFilePath: string): string {
 
 const frameworkGlob = normalizePath(path.join(wasmCoreDist, '_framework', '**', '*'))
 
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    mdx({
-      remarkPlugins: [],
-      rehypePlugins: [],
-    }),
-    serveWasmFrameworkPlugin(),
-    serveCoreSchemaPlugin(),
-    generatedReferenceDocsPlugin(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: frameworkGlob,
-          dest: '_framework',
-        },
-      ],
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, __dirname, '')
+  const partnerApiProxyTarget = env.PARTNER_API_PROXY_TARGET || 'http://localhost:8787'
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      mdx({
+        remarkPlugins: [],
+        rehypePlugins: [],
+      }),
+      serveWasmFrameworkPlugin(),
+      serveCoreSchemaPlugin(),
+      generatedReferenceDocsPlugin(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: frameworkGlob,
+            dest: '_framework',
+          },
+        ],
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-  },
-  base: '/',
+    server: {
+      proxy: {
+        '/partner': {
+          target: partnerApiProxyTarget,
+          changeOrigin: true,
+        },
+        '/files': {
+          target: partnerApiProxyTarget,
+          changeOrigin: true,
+        },
+        '/reports': {
+          target: partnerApiProxyTarget,
+          changeOrigin: true,
+        },
+        '/public/attestations': {
+          target: partnerApiProxyTarget,
+          changeOrigin: true,
+        },
+      },
+    },
+    base: '/',
+  }
 })

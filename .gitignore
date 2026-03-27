@@ -48,3 +48,4 @@ yarn.lock
 pnpm-lock.yaml
 
 docs/docfx/api/
+.bun-cache/
