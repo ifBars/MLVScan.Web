@@ -184,17 +184,6 @@ const docs: DocMeta[] = [
     keywords: ['--json', '--fail-on', 'msbuild', 'github actions', 'gitlab'],
   },
   {
-    id: 'devcli-commandline',
-    title: 'System.CommandLine',
-    description: 'Recommended command patterns from official System.CommandLine docs',
-    slug: 'libraries/devcli/system-commandline',
-    contentPath: 'libraries/devcli/system-commandline.mdx',
-    section: 'libraries',
-    library: 'devcli',
-    status: 'stable',
-    keywords: ['system.commandline', 'rootcommand', 'options', 'setaction', 'invokeasync'],
-  },
-  {
     id: 'mlvscan-overview',
     title: 'MLVScan Runtime',
     description: 'Runtime scanner for MelonLoader and BepInEx mod environments',
