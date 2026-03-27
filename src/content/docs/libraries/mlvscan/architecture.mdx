@@ -1,0 +1,62 @@
+import { Link } from "react-router-dom"
+
+export default function RuntimeArchitectureContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan is split into a shared analysis engine, runtime integrations, and authoring tools. The
+        runtime layer is responsible for environment-specific scanning, blocking, reporting, and consent
+        flows. Core stays environment-agnostic and provides the underlying findings, threat-family
+        matching, and disposition logic.
+      </p>
+
+      <h2 id="ecosystem-map">Ecosystem Map</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li><strong className="text-white">MLVScan.Core:</strong> shared static-analysis engine and scan-result contract.</li>
+        <li><strong className="text-white">MLVScan:</strong> runtime plugin for MelonLoader and BepInEx.</li>
+        <li><strong className="text-white">MLVScan.DevCLI:</strong> development-time scanner for builds and CI.</li>
+        <li><strong className="text-white">MLVScan.Web:</strong> browser scanner and docs surface.</li>
+        <li><strong className="text-white">MLVScan-API:</strong> optional backend for report handling and family research.</li>
+      </ul>
+
+      <h2 id="runtime-pipeline">Runtime Pipeline</h2>
+      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+        <li>The loader finds target assemblies in mods, plugins, or patcher locations.</li>
+        <li>MLVScan hashes the file and consults the whitelist before deeper analysis.</li>
+        <li>Core emits retained findings, call chains, data-flow evidence, threat-family matches, and disposition guidance.</li>
+        <li>The runtime maps that result into loader-facing <code>ThreatVerdictKind</code> and <code>ScanStatusKind</code> values.</li>
+        <li>The runtime then blocks, warns, or records manual review based on those loader-facing outcomes.</li>
+      </ol>
+
+      <h2 id="blocking-model">Blocking Model</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li><code>BlockKnownThreats</code> covers exact malicious sample matches and known malware-family matches.</li>
+        <li><code>BlockSuspicious</code> covers correlated suspicious behavior that may still be benign.</li>
+        <li><code>BlockIncompleteScans</code> covers files that require manual review because full analysis did not complete.</li>
+        <li><code>EnableAutoDisable</code> is the master switch that allows the runtime to enforce the active policy.</li>
+      </ul>
+
+      <h2 id="reporting-and-consent">Reporting And Consent</h2>
+      <p className="text-gray-300 mb-4">
+        Reports are saved locally first. Optional report upload is disabled by default and only starts after
+        explicit consent. That keeps the runtime aligned with the privacy model used by the rest of the
+        ecosystem.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>MelonLoader reports go under <code>UserData/MLVScan/Reports/</code>.</li>
+        <li>BepInEx reports go under <code>BepInEx/MLVScan/Reports/</code>.</li>
+        <li>Report uploads are controlled by <code>EnableReportUpload</code> and the consent flow.</li>
+        <li>Full IL dumps are optional in MelonLoader and controlled by <code>DumpFullIlReports</code>.</li>
+      </ul>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/mlvscan/getting-started" className="block hover:text-teal-300">Getting Started</Link>
+        <Link to="/docs/libraries/mlvscan/reports-and-triage" className="block hover:text-teal-300">Reports and Triage</Link>
+        <Link to="/docs/libraries/mlvscan/faq-and-troubleshooting" className="block hover:text-teal-300">FAQ and Troubleshooting</Link>
+        <Link to="/docs/libraries/core/scan-result-schema" className="block hover:text-teal-300">Core Scan Result Schema</Link>
+        <Link to="/docs/libraries/devcli/usage-and-ci" className="block hover:text-teal-300">DevCLI Usage and CI</Link>
+      </div>
+    </>
+  )
+}

@@ -1,0 +1,98 @@
+import { Link } from "react-router-dom"
+
+export default function RuntimeGettingStartedContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        MLVScan runtime packages scan mods before they execute, then block or report them based on the
+        current threat verdict and scan status. The first run creates configuration automatically, and the
+        defaults are intended to be safe for most users.
+      </p>
+
+      <h2 id="install">Install</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>MelonLoader: place the plugin in your game's <code>Plugins</code> folder.</li>
+        <li>BepInEx 5.x: place the patcher in <code>BepInEx/patchers</code>.</li>
+        <li>BepInEx 6.x Mono: place the plugin in <code>BepInEx/plugins</code>.</li>
+        <li>BepInEx 6.x IL2CPP: place the plugin in <code>BepInEx/plugins</code>.</li>
+      </ul>
+
+      <h2 id="first-run">First Run</h2>
+      <p className="text-gray-300 mb-4">
+        On first launch, MLVScan creates a default config and begins scanning automatically if
+        <code>EnableAutoScan</code> is enabled. Blocking is controlled separately by
+        <code>EnableAutoDisable</code>.
+      </p>
+      <p className="text-gray-300 mb-6">
+        The runtime also seeds a small default whitelist for known-safe false-positive cases such as
+        UnityExplorer and CustomTV, so your first saved config may already contain hashes before you add
+        any of your own.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">MelonLoader</h3>
+          <p className="text-sm text-gray-400 mb-2">File: <code>UserData/MelonPreferences.cfg</code></p>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code className="text-sm text-gray-300">{`[MLVScan]
+EnableAutoScan = true
+EnableAutoDisable = true
+EnableScanCache = true
+BlockKnownThreats = true
+BlockSuspicious = true
+BlockIncompleteScans = false
+WhitelistedHashes = ["<verified SHA256 hash>"]
+DumpFullIlReports = false
+EnableReportUpload = false`}</code>
+          </pre>
+        </div>
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">BepInEx</h3>
+          <p className="text-sm text-gray-400 mb-2">File: <code>BepInEx/config/MLVScan.json</code></p>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code className="text-sm text-gray-300">{`{
+  "EnableAutoScan": true,
+  "EnableAutoDisable": true,
+  "EnableScanCache": true,
+  "BlockKnownThreats": true,
+  "BlockSuspicious": true,
+  "BlockIncompleteScans": false,
+  "WhitelistedHashes": ["<verified SHA256 hash>"],
+  "DumpFullIlReports": false,
+  "EnableReportUpload": false
+}`}</code>
+          </pre>
+        </div>
+      </div>
+
+      <h2 id="what-the-keys-do">What The Keys Do</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li><code>EnableAutoScan</code> scans when the loader starts.</li>
+        <li><code>EnableAutoDisable</code> allows MLVScan to block based on the active policy.</li>
+        <li><code>EnableScanCache</code> reuses authenticated scan results for unchanged files.</li>
+        <li><code>BlockKnownThreats</code> blocks known threat families and exact malicious sample matches.</li>
+        <li><code>BlockSuspicious</code> blocks correlated suspicious behavior that may still be a false positive.</li>
+        <li><code>BlockIncompleteScans</code> controls whether incomplete scans are blocked or left as manual review.</li>
+        <li><code>WhitelistedHashes</code> skips exact SHA256 matches you have verified.</li>
+        <li><code>DumpFullIlReports</code> writes the full IL dump next to the report in MelonLoader when analysis is complete.</li>
+        <li><code>EnableReportUpload</code> enables optional report upload after explicit consent.</li>
+      </ul>
+
+      <h2 id="scan-limit">Scan Limit</h2>
+      <p className="text-gray-300 mb-6">
+        The runtime currently uses a <code>256 MB</code> in-memory scan limit for full IL analysis. Files
+        above that limit are still hashed and checked for exact known-malicious sample matches, but they
+        are reported as manual-review required unless you turn on <code>BlockIncompleteScans</code>.
+      </p>
+
+      <h2 id="next-steps">Next Steps</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/mlvscan/whitelisting" className="block hover:text-teal-300">Whitelisting</Link>
+        <Link to="/docs/libraries/mlvscan/reports-and-triage" className="block hover:text-teal-300">Reports and Triage</Link>
+        <Link to="/docs/libraries/mlvscan/architecture" className="block hover:text-teal-300">Architecture</Link>
+        <Link to="/docs/libraries/mlvscan/faq-and-troubleshooting" className="block hover:text-teal-300">FAQ and Troubleshooting</Link>
+        <Link to="/docs/libraries/devcli" className="block hover:text-teal-300">Developer CLI</Link>
+      </div>
+    </>
+  )
+}

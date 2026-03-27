@@ -4,5 +4,13 @@
   items:
   - name: Using MLVScan.Core
     href: guides/using-mlvscan-core.md
+  - name: Detection Pipeline
+    href: guides/detection-pipeline.md
+  - name: Call Chain Analysis
+    href: guides/call-chain-analysis.md
+  - name: Data Flow Analysis
+    href: guides/data-flow-analysis.md
+  - name: Extending MLVScan.Core
+    href: guides/extending-mlvscan-core.md
 - name: API Reference
   href: api/

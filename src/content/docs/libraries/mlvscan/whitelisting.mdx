@@ -1,10 +1,19 @@
+import { Link } from "react-router-dom"
+
 export default function RuntimeWhitelistingContent() {
   return (
     <>
+      <p className="text-gray-300 mb-6">
+        MLVScan uses SHA256 hashes for trust decisions so the whitelist follows the exact binary, not the
+        filename or install location. This keeps the runtime aligned with the verdict-first pipeline and
+        avoids coupling trust to a specific loader threshold.
+      </p>
+
       <h2 id="why-hash-based">Why Hash-Based</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
         <li>SHA256 detects tampering across file renames.</li>
         <li>Trust is pinned to exact binary content, not filename.</li>
+        <li>Hash-based allow lists work across MelonLoader and BepInEx installations.</li>
       </ul>
 
       <h2 id="workflow">Recommended Workflow</h2>
@@ -14,14 +23,56 @@ export default function RuntimeWhitelistingContent() {
         <li>Add hash to <code>WhitelistedHashes</code> only after verification.</li>
       </ol>
 
+      <p className="text-gray-300 mb-6">
+        MLVScan also merges a small built-in whitelist for known-safe false positives. Keep your own
+        additions narrow and exact instead of copying broad shared allow lists between communities.
+      </p>
+
       <h2 id="config-example">Config Example</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[MLVScan]
-WhitelistedHashes = ["3918e145...", "8e6dd194..."]
-DisableThreshold = Medium
-DumpFullIlReports = false`}</code></pre>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">MelonLoader</h3>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code>{`[MLVScan]
+EnableAutoScan = true
+EnableAutoDisable = true
+EnableScanCache = true
+BlockKnownThreats = true
+BlockSuspicious = true
+BlockIncompleteScans = false
+WhitelistedHashes = ["<verified SHA256 hash>"]
+DumpFullIlReports = false
+EnableReportUpload = false`}</code>
+          </pre>
+        </div>
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">BepInEx</h3>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code>{`{
+  "EnableAutoScan": true,
+  "EnableAutoDisable": true,
+  "EnableScanCache": true,
+  "BlockKnownThreats": true,
+  "BlockSuspicious": true,
+  "BlockIncompleteScans": false,
+  "WhitelistedHashes": ["<verified SHA256 hash>"],
+  "DumpFullIlReports": false,
+  "EnableReportUpload": false
+}`}</code>
+          </pre>
+        </div>
+      </div>
 
       <h2 id="manual-hash">Manual Hash Check</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto"><code>{`Get-FileHash -Algorithm SHA256 "path\\to\\mod.dll"`}</code></pre>
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`Get-FileHash -Algorithm SHA256 "path\\to\\mod.dll"`}</code></pre>
+
+      <p className="text-gray-300">
+        If you are building a mod or CI workflow, use the{" "}
+        <Link to="/docs/libraries/devcli" className="text-teal-400 hover:text-teal-300">
+          Developer CLI
+        </Link>{" "}
+        docs for scan-time automation instead of copying runtime settings into your build pipeline.
+      </p>
     </>
   )
 }

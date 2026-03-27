@@ -1,0 +1,68 @@
+import { Link } from "react-router-dom"
+
+export default function RuntimeFaqAndTroubleshootingContent() {
+  return (
+    <>
+      <p className="text-gray-300 mb-6">
+        This page collects the runtime questions that still matter after the move to verdict-first
+        blocking. If you need authoring or CI guidance, use the DevCLI docs instead of the runtime pages.
+      </p>
+
+      <h2 id="common-questions">Common Questions</h2>
+      <h3 id="does-it-execute-mods">Does MLVScan execute the mods it scans?</h3>
+      <p className="text-gray-300 mb-4">
+        No. The runtime uses static analysis for its core verdict pipeline. It hashes the file, runs the
+        shared analysis engine, and then applies the loader policy before the mod is allowed to execute.
+      </p>
+
+      <h3 id="why-was-it-blocked">Why was a trusted mod blocked?</h3>
+      <p className="text-gray-300 mb-4">
+        The most common causes are a known threat-family match, correlated suspicious behavior, or an
+        incomplete scan. Check the saved report first, then compare the outcome against the current
+        verdict and scan status before whitelisting anything.
+      </p>
+
+      <h3 id="manual-review">What does manual review required mean?</h3>
+      <p className="text-gray-300 mb-4">
+        Manual review means the loader could not complete full IL analysis. MLVScan still hashed the file
+        and checked exact known-malicious sample matches, but the result needs human review before it is
+        treated as suspicious or clean.
+      </p>
+
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+        <li>Read the saved report and check the top-level outcome first.</li>
+        <li>Confirm whether the result is <code>KnownThreat</code>, <code>Suspicious</code>, <code>Clean</code>, or manual review required.</li>
+        <li>Verify the SHA256 hash against the source you trust.</li>
+        <li>If the file is a false positive, add the exact hash to <code>WhitelistedHashes</code>.</li>
+        <li>Use report upload only if you want to submit the file for review and have already given consent.</li>
+      </ol>
+
+      <h2 id="report-paths">Where Are Reports Stored?</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>MelonLoader: <code>UserData/MLVScan/Reports/</code></li>
+        <li>BepInEx: <code>BepInEx/MLVScan/Reports/</code></li>
+        <li>MelonLoader prompt files: <code>Prompts/ModName.prompt.md</code></li>
+        <li>MelonLoader full IL dumps: <code>IL/ModName_timestamp.il.txt</code> when enabled</li>
+        <li>MelonLoader log: <code>MelonLoader/Latest.log</code></li>
+        <li>BepInEx log: <code>BepInEx/LogOutput.log</code></li>
+      </ul>
+
+      <h2 id="privacy">Privacy And Uploads</h2>
+      <p className="text-gray-300 mb-6">
+        Optional report upload is off by default and requires explicit consent. When enabled, it helps with
+        family coverage and false-positive review. If you do not want uploads, leave
+        <code>EnableReportUpload</code> disabled and keep everything local.
+      </p>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/mlvscan/getting-started" className="block hover:text-teal-300">Getting Started</Link>
+        <Link to="/docs/libraries/mlvscan/whitelisting" className="block hover:text-teal-300">Whitelisting</Link>
+        <Link to="/docs/libraries/mlvscan/reports-and-triage" className="block hover:text-teal-300">Reports and Triage</Link>
+        <Link to="/docs/libraries/mlvscan/architecture" className="block hover:text-teal-300">Architecture</Link>
+        <Link to="/docs/libraries/devcli" className="block hover:text-teal-300">Developer CLI</Link>
+      </div>
+    </>
+  )
+}

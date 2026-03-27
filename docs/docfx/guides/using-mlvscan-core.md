@@ -1,11 +1,8 @@
 # Using MLVScan.Core
 
-`MLVScan.Core` gives you two layers of output:
+`MLVScan.Core` is the shared analysis engine used by multiple consumers. It emits low-level `ScanFinding` evidence first, then layers threat-family matching and a final disposition on top of that evidence.
 
-1. Low-level scanner findings from individual rules and analysis passes.
-2. A higher-level result contract that adds threat-family matches and a final disposition.
-
-For most integrations, the recommended workflow is:
+For most integrations, the right order is:
 
 1. Create the built-in rules with `RuleFactory.CreateDefaultRules()`.
 2. Scan an assembly with `AssemblyScanner`.
@@ -27,7 +24,7 @@ dotnet add package MLVScan.Core
 | Threat-family matching only in a custom pipeline | `ThreatFamilyClassifier.Classify(...)` |
 | Final disposition only in a custom pipeline | `ThreatDispositionClassifier.Classify(...)` |
 
-If you are building a product surface, report format, API payload, or UI, prefer `ScanResultMapper`. It is the public contract used across Core consumers and already runs the family and disposition pipeline for you.
+If you are building a product surface, report format, API payload, or UI, prefer `ScanResultMapper`. It keeps you aligned with the shared contract and already runs the family and disposition pipeline for you.
 
 ## End-To-End Example
 
@@ -71,7 +68,7 @@ var result = ScanResultMapper.ToDto(
 
 Console.WriteLine($"Disposition: {result.Disposition?.Classification}");
 Console.WriteLine($"Threat families: {result.ThreatFamilies?.Count ?? 0}");
-Console.WriteLine($"Default findings: {result.Findings.Count(f => f.Visibility == \"Default\")}");
+Console.WriteLine($"Default findings: {result.Findings.Count(f => f.Visibility == FindingVisibility.Default.ToString())}");
 
 Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions
 {
@@ -100,7 +97,7 @@ foreach (var finding in findings)
 A `ScanFinding` can also carry:
 
 - `CallChain` when cross-method analysis has reconstructed an execution path.
-- `DataFlowChain` when the scanner has tracked source -> transform -> sink behavior.
+- `DataFlowChain` when the scanner has tracked source to transform to sink behavior.
 - `DeveloperGuidance` when a rule can explain a safer or more remediable alternative.
 - `RiskScore` for rules that expose a numeric score in addition to severity.
 

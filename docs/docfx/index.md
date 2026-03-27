@@ -7,4 +7,8 @@ Use this section for authoritative type and member documentation covering the sh
 ## Start Here
 
 - [Using MLVScan.Core](guides/using-mlvscan-core.md)
+- [Detection Pipeline](guides/detection-pipeline.md)
+- [Call Chain Analysis](guides/call-chain-analysis.md)
+- [Data Flow Analysis](guides/data-flow-analysis.md)
+- [Extending MLVScan.Core](guides/extending-mlvscan-core.md)
 - [API Reference](/docs/reference/core/api/)

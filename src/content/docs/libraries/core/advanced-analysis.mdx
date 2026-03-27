@@ -1,30 +1,34 @@
 export default function CoreAdvancedAnalysisContent() {
   return (
     <>
-      <h2 id="call-graph-analysis">Call Graph Analysis</h2>
-      <p className="text-gray-300 mb-4">
-        Call graph mode collapses declaration + call-site noise into one actionable finding rooted at an entry point.
+      <p className="text-gray-300 mb-6">
+        The deeper behavior material now lives in the DocFX guides. Use this page as a signpost into the
+        dedicated call-chain and data-flow documentation.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[ENTRY] ModEntry.OnInitializeMelon: calls InternalHelper
-  -> [CALL] InternalHelper.Execute:42
-    -> [DECL] NativeBridge.ShellExecuteA`}</code></pre>
+
+      <h2 id="call-chain-analysis">Call Chain Analysis</h2>
+      <p className="text-gray-300 mb-4">
+        See the full explanation of how `CallChain` nodes collapse declaration and call-site noise into one retained path.
+      </p>
+      <a href="/docs/reference/core/guides/call-chain-analysis.html" className="text-teal-400 hover:text-teal-300">
+        Open Call Chain Analysis
+      </a>
 
       <h2 id="data-flow-analysis">Data Flow Analysis</h2>
       <p className="text-gray-300 mb-4">
-        Data flow tracks source, transform, and sink operations to identify behavioral chains instead of isolated opcodes.
+        See the full explanation of how source, transform, and sink nodes describe behavioral chains.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`[SOURCE] WebClient.DownloadData
-  -> [TRANSFORM] Convert.FromBase64String
-  -> [SINK] File.WriteAllBytes
-  -> [SINK] Process.Start`}</code></pre>
+      <a href="/docs/reference/core/guides/data-flow-analysis.html" className="text-teal-400 hover:text-teal-300">
+        Open Data Flow Analysis
+      </a>
 
-      <h2 id="config-depth">Depth and Performance</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var config = new ScanConfig
-{
-    EnableCrossMethodAnalysis = true,
-    MaxCallChainDepth = 5,
-    EnableReturnValueTracking = true
-};`}</code></pre>
+      <h2 id="pipeline">Detection Pipeline</h2>
+      <p className="text-gray-300 mb-4">
+        For the higher-level signal flow from raw findings to threat families and disposition, read the detection pipeline guide.
+      </p>
+      <a href="/docs/reference/core/guides/detection-pipeline.html" className="text-teal-400 hover:text-teal-300">
+        Open Detection Pipeline
+      </a>
     </>
   )
 }

@@ -4,93 +4,45 @@ export default function RuntimeOverviewContent() {
   return (
     <>
       <p className="text-gray-300 mb-6">
-        MLVScan runtime packages run before mod execution and enforce policy from the Core threat
-        disposition. Known threat-family matches are treated as likely malware, while unknown correlated
-        behavior is surfaced separately as suspicious and may still be a false positive. Files that the
-        loader cannot fully analyze are reported as manual-review items instead of being mislabeled as
-        suspicious.
+        MLVScan runtime packages run before mod execution and enforce policy from the Core
+        threat-disposition pipeline. The plugin treats known threat-family matches as likely malware,
+        surfaces correlated suspicious behavior separately, and keeps incomplete scans in a manual-review
+        state instead of collapsing them into suspicious by default.
       </p>
 
       <h2 id="supported-loaders">Supported Loaders</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
         <li>MelonLoader (v0.6+)</li>
         <li>BepInEx 5.x (Patcher flow)</li>
-        <li>BepInEx 6.x (IL2CPP Plugin flow)</li>
+        <li>BepInEx 6.x Mono (Plugin flow)</li>
+        <li>BepInEx 6.x IL2CPP (Plugin flow)</li>
       </ul>
 
-      <h2 id="configuration">Configuration</h2>
-      <p className="text-gray-300 mb-4">
-        Configuration files are automatically generated on first run. You can customize scanning behavior,
-        scan scope, automatic blocking, and whitelist settings.
-      </p>
-      
-      <h3 id="melonloader-config">MelonLoader</h3>
-      <p className="text-gray-400 text-sm mb-2">File: <code>UserData/MelonPreferences.cfg</code></p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`[MLVScan]
-EnableAutoScan = true
-EnableAutoDisable = true
-BlockKnownThreats = true
-BlockSuspicious = true
-BlockIncompleteScans = false`}</code>
-      </pre>
+      <h2 id="what-it-controls">What It Controls</h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>Automatic scanning with <code>EnableAutoScan</code>.</li>
+        <li>Automatic blocking with <code>EnableAutoDisable</code>.</li>
+        <li>Authenticated local result reuse with <code>EnableScanCache</code>.</li>
+        <li>Verdict-based blocking with <code>BlockKnownThreats</code>, <code>BlockSuspicious</code>, and <code>BlockIncompleteScans</code>.</li>
+        <li>Hash-based trust decisions with <code>WhitelistedHashes</code>.</li>
+        <li>Optional full IL output in MelonLoader with <code>DumpFullIlReports</code>.</li>
+        <li>Optional report upload with <code>EnableReportUpload</code>.</li>
+      </ul>
 
-      <h3 id="bepinex-config">BepInEx</h3>
-      <p className="text-gray-400 text-sm mb-2">File: <code>BepInEx/config/MLVScan.json</code></p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`{
-  "EnableAutoScan": true,
-  "EnableAutoDisable": true,
-  "BlockKnownThreats": true,
-  "BlockSuspicious": true,
-  "BlockIncompleteScans": false
-}`}</code>
-      </pre>
-
-      <p className="text-gray-300 mb-8">
-        <code>EnableAutoDisable</code> remains the master switch. <code>BlockKnownThreats</code> controls
-        exact malicious sample matches and known malware-family matches. <code>BlockSuspicious</code>
-        controls unknown correlated behavior that is blocked as a precaution but may still be benign.
-        <code>BlockIncompleteScans</code> controls files that require manual review because the loader
-        could not finish full analysis.
-      </p>
-
-      <p className="text-gray-300 mb-8">
-        The current loader scan limit is <code>256 MB</code> per assembly. When a file exceeds that
-        limit, MLVScan still computes the SHA256 hash and checks exact known-malicious sample matches,
-        but it skips full IL analysis and reports the file as manual-review required unless you enable
-        <code>BlockIncompleteScans</code>.
-      </p>
-
-      <h2 id="logs-and-reports">Logs and Reports</h2>
-      <p className="text-gray-300 mb-4">
-        Scan results are saved locally to your game directory. Reports include the primary disposition,
-        any matched threat families, and the retained findings that support the verdict for each scanned mod.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
-          <h4 className="text-white font-semibold mb-2">MelonLoader</h4>
-          <ul className="space-y-2 text-sm text-gray-400">
-            <li><strong className="text-gray-300">Reports:</strong> <code>UserData/MLVScan/Reports/</code></li>
-            <li><strong className="text-gray-300">Logs:</strong> <code>MelonLoader/Latest.log</code></li>
-          </ul>
-        </div>
-        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
-          <h4 className="text-white font-semibold mb-2">BepInEx</h4>
-          <ul className="space-y-2 text-sm text-gray-400">
-            <li><strong className="text-gray-300">Reports:</strong> <code>BepInEx/MLVScan/Reports/</code></li>
-            <li><strong className="text-gray-300">Logs:</strong> <code>BepInEx/LogOutput.log</code></li>
-          </ul>
-        </div>
-      </div>
-
-      <h2 id="next-pages">Next Pages</h2>
+      <h2 id="where-to-go-next">Where To Go Next</h2>
       <div className="space-y-2 text-teal-400">
+        <Link to="/docs/libraries/mlvscan/getting-started" className="block hover:text-teal-300">Getting Started</Link>
+        <Link to="/docs/libraries/mlvscan/architecture" className="block hover:text-teal-300">Architecture</Link>
         <Link to="/docs/libraries/mlvscan/whitelisting" className="block hover:text-teal-300">Whitelisting</Link>
         <Link to="/docs/libraries/mlvscan/reports-and-triage" className="block hover:text-teal-300">Reports and Triage</Link>
-        <Link to="/docs/automated-reporting-data-handling" className="block hover:text-teal-300">Automated Reporting &amp; Data Handling</Link>
+        <Link to="/docs/libraries/mlvscan/faq-and-troubleshooting" className="block hover:text-teal-300">FAQ and Troubleshooting</Link>
+        <Link to="/docs/libraries/devcli" className="block hover:text-teal-300">Developer CLI</Link>
       </div>
+
+      <p className="text-gray-400 text-sm mt-6">
+        The runtime docs focus on loader behavior. If you are building a mod project or CI check, use the
+        DevCLI docs instead of treating the runtime plugin as the authoring path.
+      </p>
     </>
   )
 }

@@ -1,11 +1,39 @@
 export default function RuntimeReportsAndTriageContent() {
   return (
     <>
+      <p className="text-gray-300 mb-6">
+        Reports are designed around the current verdict model. Start with the top-level outcome, then use
+        the retained findings, family evidence, and manual-review status to decide whether the file should
+        be trusted, investigated, or whitelisted.
+      </p>
+
       <h2 id="report-locations">Report Locations</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`YourGame/UserData/MLVScan/Reports/
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">MelonLoader</h3>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code>{`UserData/MLVScan/Reports/
   ModName_timestamp.report.txt
   Prompts/ModName.prompt.md
-  IL/ModName_timestamp.il.txt`}</code></pre>
+  IL/ModName_timestamp.il.txt`}</code>
+          </pre>
+          <p className="mt-3 text-sm text-gray-400">
+            MelonLoader can also emit an LLM prompt file and an optional full IL dump when the scan
+            completed and <code>DumpFullIlReports</code> is enabled.
+          </p>
+        </div>
+        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
+          <h3 className="text-white font-semibold mb-2">BepInEx</h3>
+          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+            <code>{`BepInEx/MLVScan/Reports/
+  PluginName_timestamp.report.txt`}</code>
+          </pre>
+          <p className="mt-3 text-sm text-gray-400">
+            BepInEx currently writes the main report file under this folder. The prompt and IL-dump extras
+            are part of the MelonLoader reporting flow.
+          </p>
+        </div>
+      </div>
 
       <h2 id="disposition-triage">Outcome Triage</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
