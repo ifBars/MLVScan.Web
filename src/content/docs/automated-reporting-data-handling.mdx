@@ -2,7 +2,7 @@ export default function AutomatedReportingDataHandlingContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> February 22, 2026
+        <strong className="text-white">Last Updated:</strong> March 24, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -60,7 +60,7 @@ export default function AutomatedReportingDataHandlingContent() {
 
       <h2 id="web-scanner">Web Scanner and Other Components</h2>
       <p className="text-gray-300 mb-6">
-        <strong className="text-white">The web-based MLVScan scanner never uploads your files.</strong> All scanning happens in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API. Only the optional runtime report upload feature (when explicitly enabled) sends data to the MLVScan API.
+        <strong className="text-white">The public web-based MLVScan scanner never uploads your files.</strong> That scanner runs fully in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API by default. Two separate opt-in flows can send data to the MLVScan API: the optional runtime report upload feature, and the developer dashboard attestation workflow where submitting a draft uploads a DLL or EXE for private server-side analysis. Publishing a public attestation is a later, explicit step after that private draft exists.
       </p>
 
       <h2 id="api-retention">API Data Handling and Retention</h2>
@@ -70,6 +70,7 @@ export default function AutomatedReportingDataHandlingContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li>Stored for triage and false positive analysis</li>
         <li>Used to improve detection rules and reduce false positives</li>
+        <li>Kept private by default unless a dashboard user explicitly publishes a public attestation for a completed scan</li>
         <li>Subject to the MLVScan API privacy and retention policy</li>
       </ul>
       <p className="text-gray-300 mb-6">

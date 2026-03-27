@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Github } from "lucide-react"
+import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
 type FooterLink = {
   name: string
@@ -10,9 +10,10 @@ type FooterLink = {
 const Footer = () => {
   const links: Record<string, FooterLink[]> = {
     product: [
+      { name: "Developer Dashboard", href: getPartnerDashboardPath("home"), internal: true },
+      { name: "Scan Online", href: "/scan", internal: true },
       { name: "Download", href: "https://www.nexusmods.com/site/mods/1689?tab=files" },
       { name: "GitHub", href: "https://github.com/ifBars/MLVScan" },
-      { name: "Scan Online", href: "/scan", internal: true },
     ],
     resources: [
       { name: "Documentation", href: "/docs", internal: true },
@@ -33,7 +34,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="mb-4 flex items-center gap-2">
               <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
                 <img
                   src={`${import.meta.env.BASE_URL}icon.png`}
@@ -48,9 +49,11 @@ const Footer = () => {
             <p className="text-sm text-gray-400 mb-4">
               Security-focused scanner for Unity mods. Protect your gaming experience.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex gap-4">
               <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-gray-400 hover:text-teal-300 transition-colors">
-                <Github className="w-5 h-5" />
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.53.1.72-.23.72-.51v-2.02c-2.94.64-3.56-1.25-3.56-1.25-.48-1.2-1.16-1.52-1.16-1.52-.95-.65.07-.64.07-.64 1.05.07 1.6 1.07 1.6 1.07.94 1.6 2.47 1.14 3.08.87.09-.67.37-1.14.66-1.4-2.35-.27-4.82-1.16-4.82-5.18 0-1.14.41-2.08 1.08-2.82-.11-.26-.47-1.34.1-2.8 0 0 .88-.28 2.88 1.08a10.1 10.1 0 0 1 5.24 0c2-1.36 2.88-1.08 2.88-1.08.57 1.46.21 2.54.1 2.8.67.74 1.08 1.68 1.08 2.82 0 4.03-2.48 4.9-4.84 5.16.38.32.72.95.72 1.92v2.84c0 .28.19.62.73.51A10.5 10.5 0 0 0 12 1.5Z" />
+                </svg>
               </a>
               <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-gray-400 hover:text-teal-300 transition-colors">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -63,7 +66,7 @@ const Footer = () => {
           {/* Links */}
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Product</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.product.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -90,7 +93,7 @@ const Footer = () => {
 
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Resources</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.resources.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -117,7 +120,7 @@ const Footer = () => {
 
           <div>
             <h4 className="font-semibold text-gray-100 mb-4">Community</h4>
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {links.community.map((link) => (
                 <li key={link.name}>
                   {link.internal ? (
@@ -148,7 +151,7 @@ const Footer = () => {
             <p className="text-sm text-gray-500">
               © 2026 MLVScan. All rights reserved. Open source under GPL-3.0.
             </p>
-            <div className="flex items-center space-x-6 text-sm text-gray-500">
+            <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link to="/docs/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link to="/docs/terms" className="hover:text-white transition-colors">Terms</Link>
               <a href="https://github.com/ifBars/MLVScan/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">License</a>

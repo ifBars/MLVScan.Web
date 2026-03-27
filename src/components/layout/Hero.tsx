@@ -34,7 +34,7 @@ const Hero = () => {
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-6 text-base rounded-full border-white/10 hover:bg-white/5 hover:border-white/20 min-w-[180px] backdrop-blur-sm" asChild>
-              <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.nexusmods.com/site/mods/1689?tab=files" target="_blank" rel="noopener noreferrer">
                 Download MLVScan
                 <ExternalLink className="w-4 h-4 ml-2 opacity-60" aria-hidden="true" />
               </a>
