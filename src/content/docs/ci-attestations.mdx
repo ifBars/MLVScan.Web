@@ -4,18 +4,20 @@ export default function CiAttestationsContent() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
-        API keys can now drive private upload, report polling, draft creation, and public
-        attestation publishing from CI. The default pattern below publishes only on tagged release
-        runs.
+        API keys support private upload, report polling, draft creation, public
+        attestation publishing, and README badge updates from CI. The pattern below matches the
+        S1API workflow: build the Mono DLL, upload that exact DLL, publish the attestation,
+        and write a compact split-pill badge into the README.
       </p>
 
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
         <h3 className="text-teal-300 font-semibold mb-2">What this flow does</h3>
         <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
           <li>Uploads the exact release artifact to the MLVScan API with your API key.</li>
-          <li>Polls the private report until the scan is complete.</li>
+          <li>Polls the private report until the scan is complete, including the initial submission materialization delay.</li>
           <li>Creates or reuses a draft attestation bound to those exact bytes.</li>
-          <li>Publishes the attestation on release tags and writes the public URL and badge URL into the workflow summary.</li>
+          <li>Publishes the attestation and writes the public URL and badge URL into the workflow summary.</li>
+          <li>Updates an existing README attestation badge or inserts one after the current top badge block.</li>
         </ul>
       </div>
 
@@ -23,13 +25,15 @@ export default function CiAttestationsContent() {
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li>Create an API key in the dashboard under <code>/dashboard/access</code>.</li>
         <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
+        <li>If you use explicit scopes, the key needs <code>uploads:write</code>, <code>reports:read</code>, and <code>attestations:write</code>.</li>
+        <li>If your custom API domain is behind a Cloudflare challenge, set a repository variable such as <code>MLVSCAN_API_BASE_URL</code> to a non-challenged Worker hostname like your <code>workers.dev</code> URL.</li>
         <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
         <li>Authenticated uploads become account-owned. Only the same account can read the private report or turn that submission into an attestation.</li>
       </ul>
 
       <p className="text-gray-300 mb-6">
-        Dashboard-created keys currently work as full-access account keys in v1. You do not need to
-        configure scopes in the dashboard UI yet.
+        In v1, dashboard-created keys are treated as full-access account keys unless you explicitly
+        set scopes. You do not need to configure scopes in the dashboard UI to use this flow.
       </p>
 
       <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 mb-8">
@@ -45,49 +49,88 @@ export default function CiAttestationsContent() {
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`name: Publish MLVScan attestation
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+  release:
+    types:
+      - published
 
 jobs:
   attest:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     env:
-      MLVSCAN_API_BASE: https://api.mlvscan.com
-      ARTIFACT_PATH: ./dist/MyMod.dll
+      MLVSCAN_API_BASE_URL: \${{ vars.MLVSCAN_API_BASE_URL }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Build release artifact
+      - name: Resolve target ref
+        id: ref
         run: |
-          mkdir -p ./dist
-          cp ./bin/Release/netstandard2.1/MyMod.dll "$ARTIFACT_PATH"
+          if [ "\${{ github.event_name }}" = "release" ]; then
+            echo "target_ref=\${{ github.event.release.target_commitish }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "target_ref=\${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          token: \${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: \${{ steps.ref.outputs.target_ref }}
+
+      - name: Resolve API base URL
+        id: api-base
+        run: |
+          resolved_base_url="\${MLVSCAN_API_BASE_URL:-https://api.mlvscan.com}"
+          echo "base_url=$resolved_base_url" >> "$GITHUB_OUTPUT"
+
+      - name: Build Mono DLL
+        run: dotnet build S1API/S1API.csproj -c MonoMelon
 
       - name: Publish MLVScan attestation
         env:
           MLVSCAN_API_KEY: \${{ secrets.MLVSCAN_API_KEY }}
-          GITHUB_REF_NAME: \${{ github.ref_name }}
         run: |
           set -euo pipefail
+          artifact_path="S1API/bin/MonoMelon/netstandard2.1/S1API.dll"
 
-          if [ ! -f "$ARTIFACT_PATH" ]; then
-            echo "Artifact not found: $ARTIFACT_PATH" >&2
+          if [ ! -f "$artifact_path" ]; then
+            echo "Artifact not found: $artifact_path" >&2
             exit 1
           fi
 
-          upload_json=$(curl -fsS \
+          upload_status=$(curl -sS -o upload.json -w "%{http_code}" \
             -H "X-API-Key: $MLVSCAN_API_KEY" \
-            -F "file=@$ARTIFACT_PATH" \
-            "$MLVSCAN_API_BASE/files")
+            -F "file=@$artifact_path" \
+            "\${{ steps.api-base.outputs.base_url }}/files")
+
+          upload_json=$(cat upload.json)
+          if [ "$upload_status" -lt 200 ] || [ "$upload_status" -ge 300 ]; then
+            echo "$upload_json"
+            exit 1
+          fi
 
           submission_id=$(echo "$upload_json" | jq -r '.data.id')
+          version=$(grep -oPm1 '(?<=<Version>)[^<]+' S1API/S1API.csproj)
 
           for attempt in $(seq 1 60); do
-            report_json=$(curl -fsS \
+            report_status=$(curl -sS -o report.json -w "%{http_code}" \
               -H "X-API-Key: $MLVSCAN_API_KEY" \
-              "$MLVSCAN_API_BASE/reports/$submission_id")
+              "\${{ steps.api-base.outputs.base_url }}/reports/$submission_id")
+
+            report_json=$(cat report.json)
+
+            if [ "$report_status" = "404" ]; then
+              error_message=$(echo "$report_json" | jq -r '.error // empty')
+              if [ "$error_message" = "Submission not found" ] || [ "$error_message" = "Report not found" ]; then
+                sleep 10
+                continue
+              fi
+            fi
+
+            if [ "$report_status" -lt 200 ] || [ "$report_status" -ge 300 ]; then
+              echo "$report_json"
+              exit 1
+            fi
 
             status=$(echo "$report_json" | jq -r '.status')
 
@@ -100,25 +143,84 @@ jobs:
               exit 1
             fi
 
-            sleep 5
+            sleep 10
           done
+
+          if [ "\${{ github.event_name }}" = "release" ]; then
+            canonical_source_url="\${{ github.event.release.html_url }}"
+          else
+            canonical_source_url="https://github.com/\${{ github.repository }}/commit/\${{ github.sha }}"
+          fi
+
+          draft_payload=$(jq -n \
+            --arg submissionId "$submission_id" \
+            --arg publicDisplayName "S1API MonoMelon $version" \
+            --arg canonicalSourceUrl "$canonical_source_url" \
+            '{
+              submissionId: $submissionId,
+              publicDisplayName: $publicDisplayName,
+              canonicalSourceUrl: $canonicalSourceUrl
+            }')
 
           draft_json=$(curl -fsS \
             -X POST \
             -H "X-API-Key: $MLVSCAN_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\\"submissionId\\":\\"$submission_id\\",\\"publicDisplayName\\":\\"MyMod $GITHUB_REF_NAME\\"}" \
-            "$MLVSCAN_API_BASE/automation/attestations")
+            -d "$draft_payload" \
+            "\${{ steps.api-base.outputs.base_url }}/automation/attestations")
 
           attestation_id=$(echo "$draft_json" | jq -r '.id')
 
           published_json=$(curl -fsS \
             -X POST \
             -H "X-API-Key: $MLVSCAN_API_KEY" \
-            "$MLVSCAN_API_BASE/automation/attestations/$attestation_id/publish")
+            "\${{ steps.api-base.outputs.base_url }}/automation/attestations/$attestation_id/publish")
 
           public_url=$(echo "$published_json" | jq -r '.publicUrl')
           badge_url=$(echo "$published_json" | jq -r '.badgeUrl')
+          readme_badge="[![MLVScan Attestation]($badge_url?style=split-pill)]($public_url)"
+
+          if grep -q '^\[!\[MLVScan Attestation\]' README.md; then
+            badge_line=$(grep -n '^\[!\[MLVScan Attestation\]' README.md | head -1 | cut -d: -f1)
+            awk -v line="$badge_line" -v new_badge="$readme_badge" 'NR==line {print new_badge; next} {print}' README.md > README.md.tmp
+            mv README.md.tmp README.md
+          else
+            insert_after=$(awk '
+              NR == 1 { next }
+              /^[[:space:]]*$/ {
+                if (last_badge > 0) {
+                  print last_badge
+                  exit
+                }
+                next
+              }
+              /^\[!\[/ {
+                last_badge = NR
+                next
+              }
+              {
+                if (last_badge > 0) {
+                  print last_badge
+                } else {
+                  print 1
+                }
+                exit
+              }
+              END {
+                if (last_badge > 0) {
+                  print last_badge
+                } else {
+                  print 1
+                }
+              }
+            ' README.md | head -1)
+
+            awk -v line="$insert_after" -v new_badge="$readme_badge" '
+              { print }
+              NR == line { print new_badge }
+            ' README.md > README.md.tmp
+            mv README.md.tmp README.md
+          fi
 
           {
             echo "## MLVScan attestation"
@@ -129,19 +231,26 @@ jobs:
 
       <h2 id="every-run-variant">Every-Run Variant</h2>
       <p className="text-gray-300 mb-4">
-        The example above is release-only by default. If your team wants to publish on every
-        successful build, widen the workflow trigger and keep the same attestation steps.
+        The example above defaults to manual runs plus release publishing. If your team wants to
+        publish on every successful build, widen the workflow trigger and keep the same attestation
+        steps.
       </p>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`on:
   push:
     branches:
       - main
-  pull_request:`}</code></pre>
+  workflow_dispatch:`}</code></pre>
 
       <p className="text-gray-300 mb-6">
         That variant will create a new attestation whenever the artifact bytes change. If the bytes
         are identical to an existing non-revoked attestation owned by your account, the API
         reuses the existing record instead of publishing a duplicate.
+      </p>
+
+      <p className="text-gray-300 mb-6">
+        For badges, the public badge endpoint supports a style override query parameter. The S1API
+        workflow uses <code>?style=split-pill</code> for a compact README badge even though the
+        attestation itself may still store the default badge style server-side.
       </p>
 
       <h2 id="related-docs">Related Docs</h2>
