@@ -2,12 +2,12 @@ import type { ThreatFamilyMeta } from './types'
 
 const families: ThreatFamilyMeta[] = [
   {
-    id: 'family-resource-shell32-tempcmd-v1',
-    slug: 'resource-shell32-tempcmd-v1',
-    title: 'Embedded Resource ShellExecute Temp CMD Dropper',
+    id: 'family-resource-shell32-tempcmd-v2',
+    slug: 'resource-shell32-tempcmd-v2',
+    title: 'Embedded Resource Temp CMD Dropper',
     summary:
-      'Embedded resource payload is written to a random TEMP .cmd file and executed hidden via ShellExecuteEx.',
-    contentPath: 'resource-shell32-tempcmd-v1.mdx',
+      'Embedded resource payload is written to a random TEMP .cmd file and executed via ShellExecuteEx or Process.Start.',
+    contentPath: 'resource-shell32-tempcmd-v2.mdx',
     aliases: ['embedded resource temp CMD loader'],
     sampleNames: ['CustomTV_IL2CPP.dll.di', 'NoMoreTrash.dll.di', 'RealRadio.dll.di', 'S1API.Il2Cpp.MelonLoader.dll.di'],
     advisorySlugs: [

@@ -830,14 +830,7 @@ export default function PartnerDashboardPage() {
             </div>
 
             <div className="flex items-center justify-end gap-2">
-              {partner.status === "pending" ? (
-                <Badge
-                  variant="outline"
-                  className="h-7 border-amber-600/30 bg-amber-950/30 px-2.5 text-[0.72rem] text-amber-300"
-                >
-                  Pending approval
-                </Badge>
-              ) : partner.tierRestriction === "partner" ? (
+              {partner.tierRestriction === "partner" ? (
                 <Badge
                   variant="outline"
                   className="h-7 border-emerald-600/30 bg-emerald-950/40 px-2.5 text-[0.72rem] text-emerald-300"

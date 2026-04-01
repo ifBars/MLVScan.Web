@@ -3,7 +3,7 @@ import type {
   PublicAttestationPayload,
 } from "@/types/attestation"
 
-export type PartnerAccountStatus = "pending" | "active" | "suspended"
+export type PartnerAccountStatus = "active" | "suspended"
 export type PartnerAuthMethod = "discord" | "shared_key" | null
 export type PartnerTier = "free" | "partner"
 export type PartnerWorkspaceView = "home" | "publish" | "attestations" | "access"

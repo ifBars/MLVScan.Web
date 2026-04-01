@@ -101,7 +101,7 @@ export default function ApiKeysPanel({
   const [revokeKeyId, setRevokeKeyId] = useState<string | null>(null)
 
   const visibleKeys = showInactive ? keys : keys.filter((item) => item.active)
-  const canCreateKeys = partner.status === "active"
+  const canCreateKeys = partner.status !== "suspended"
 
   async function revealSecret(
     title: string,
@@ -234,12 +234,6 @@ export default function ApiKeysPanel({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4 px-5 py-5 sm:px-6">
-          {!canCreateKeys ? (
-            <div className="rounded-lg border border-amber-600/30 bg-amber-950/40 px-4 py-3 text-sm leading-6 text-amber-100">
-              API key creation becomes available after the account is approved.
-            </div>
-          ) : null}
-
           {isLoading && keys.length === 0 ? (
             <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-5 text-sm text-slate-400">
               Loading API keys...
