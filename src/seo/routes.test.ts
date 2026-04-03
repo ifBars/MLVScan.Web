@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest"
+
 import { allDocs } from "@/docs/registry"
 
 import { getDocSeoPage, getHomeSeoPage } from "./routes"
