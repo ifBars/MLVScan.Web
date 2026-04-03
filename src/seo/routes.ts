@@ -257,10 +257,6 @@ export function getDocSeoPage(doc: DocMeta): SeoPage {
     ]),
   ]
 
-  if (doc.id === "unity-mod-antivirus") {
-    schema.push(faqSchema())
-  }
-
   return {
     path,
     title:
@@ -271,7 +267,6 @@ export function getDocSeoPage(doc: DocMeta): SeoPage {
     description,
     keywords,
     schema,
-    faqs: doc.id === "unity-mod-antivirus" ? homeFaqs : undefined,
     fallbackParagraphs: [
       description,
       doc.id === "unity-mod-antivirus"

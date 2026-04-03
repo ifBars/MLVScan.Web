@@ -122,7 +122,7 @@ export function buildHeadMarkup(page: SeoPage): string {
   for (const schemaEntry of meta.schema ?? []) {
     const serializedSchema = JSON.stringify(schemaEntry).replaceAll("<", "\\u003c")
     lines.push(
-      `<script type="application/ld+json">${serializedSchema}</script>`,
+      `<script type="application/ld+json" data-mlvscan-seo-schema="true">${serializedSchema}</script>`,
     )
   }
 
