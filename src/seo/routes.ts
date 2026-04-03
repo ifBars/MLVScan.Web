@@ -17,6 +17,7 @@ function websiteSchema(): SchemaObject {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
+    alternateName: "MLV Scan",
     url: SITE_URL,
     description:
       "Unity mod antivirus and malware scanner for MelonLoader and BepInEx .NET assemblies.",
@@ -28,6 +29,7 @@ function organizationSchema(): SchemaObject {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
+    alternateName: "MLV Scan",
     url: SITE_URL,
     sameAs: [
       "https://github.com/ifBars/MLVScan",
@@ -41,6 +43,7 @@ function softwareSchema(name: string, description: string, urlPath: string): Sch
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name,
+    alternateName: "MLV Scan",
     applicationCategory: SOFTWARE_CATEGORY,
     operatingSystem: "Windows, Web",
     offers: {
@@ -83,7 +86,7 @@ function breadcrumbSchema(items: Array<{ name: string; path: string }>): SchemaO
 
 export function getHomeSeoPage(): SeoPage {
   const description =
-    "MLVScan is a Unity mod antivirus and malware scanner for MelonLoader and BepInEx mods. Scan .NET assemblies locally in your browser before you install them."
+    "MLVScan is a Unity mod antivirus and malware scanner for MelonLoader and BepInEx mods. Scan .NET assemblies locally before you install them."
 
   return {
     path: "/",
@@ -92,6 +95,7 @@ export function getHomeSeoPage(): SeoPage {
     description,
     keywords: [
       "MLVScan",
+      "MLV Scan",
       "unity mod antivirus",
       "mod malware scanner",
       "MelonLoader antivirus",
@@ -129,6 +133,7 @@ export function getScanSeoPage(): SeoPage {
     description,
     keywords: [
       "browser scanner",
+      "MLV Scan",
       "unity mod scanner",
       "MelonLoader malware scanner",
       "BepInEx malware scanner",

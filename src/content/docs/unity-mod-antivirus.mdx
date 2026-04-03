@@ -4,8 +4,12 @@ export default function UnityModAntivirusGuide() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
-        If someone asks what MLVScan does at a high level, the short answer is simple:
-        most malicious Unity mods follow the same pattern. In most cases they either
+        If someone asks what MLVScan does at a high level, the short answer is simple.
+        MLVScan is built around the pattern most malicious Unity mods follow:
+        they first get another file, then they try to run it quietly.
+      </p>
+      <p className="text-gray-300 mb-6">
+        In most cases they either
         download something from a random URL or carry an embedded payload inside the
         mod DLL, then they launch that payload as a hidden background process.
       </p>

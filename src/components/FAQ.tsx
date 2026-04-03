@@ -14,7 +14,7 @@ const FAQ = () => {
       <div className="container mx-auto max-w-3xl">
         <h2 className="text-3xl font-bold mb-4 text-center">Frequently Asked Questions</h2>
         <p className="text-center text-muted-foreground mb-12">
-          Quick answers for people looking for a Unity mod antivirus, local browser scans,
+          Quick answers for people looking for MLVScan, a Unity mod antivirus, local browser scans,
           and safer MelonLoader or BepInEx workflows.
         </p>
 
