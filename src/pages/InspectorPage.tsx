@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { Code, Download, Search, Shield, X, Zap } from "lucide-react"
+import Seo from "@/components/seo/Seo"
+import { getInspectorSeoPage } from "@/seo/routes"
 
 import "../components/inspector/inspector.css"
 
@@ -588,7 +590,9 @@ function InspectorPage() {
   }
 
   return (
-    <div className="inspector-page">
+    <>
+      <Seo page={getInspectorSeoPage()} />
+      <div className="inspector-page">
       <section className="inspector-hero">
         <div className="inspector-shell inspector-hero-grid">
           <div className="inspector-copy">
@@ -951,6 +955,7 @@ function InspectorPage() {
         </div>
       </section>
     </div>
+    </>
   )
 }
 

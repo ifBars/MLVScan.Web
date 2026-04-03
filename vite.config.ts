@@ -6,6 +6,8 @@ import path from 'path'
 import fs from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { buildRobotsTxt, buildSitemapXml, injectSeoIntoHtml } from './src/seo/site'
+import { getStaticSeoPages } from './src/seo/routes'
 
 const wasmCoreDist = path.resolve(__dirname, 'node_modules/@mlvscan/wasm-core/dist')
 const frameworkDir = path.join(wasmCoreDist, '_framework')
@@ -155,6 +157,46 @@ function generatedReferenceDocsPlugin(): Plugin {
   }
 }
 
+function staticSeoPagesPlugin(): Plugin {
+  let resolvedConfig: ResolvedConfig | null = null
+
+  return {
+    name: 'static-seo-pages',
+    configResolved(config) {
+      resolvedConfig = config
+    },
+    closeBundle() {
+      if (resolvedConfig === null) {
+        return
+      }
+
+      const outDir = path.resolve(resolvedConfig.root, resolvedConfig.build.outDir)
+      const indexHtmlPath = path.join(outDir, 'index.html')
+
+      if (!fs.existsSync(indexHtmlPath)) {
+        return
+      }
+
+      const template = fs.readFileSync(indexHtmlPath, 'utf8')
+      const pages = getStaticSeoPages()
+
+      for (const page of pages) {
+        const html = injectSeoIntoHtml(template, page)
+        const outputPath =
+          page.path === '/'
+            ? indexHtmlPath
+            : path.join(outDir, page.path.replace(/^\/+/, ''), 'index.html')
+
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+        fs.writeFileSync(outputPath, html)
+      }
+
+      fs.writeFileSync(path.join(outDir, 'robots.txt'), buildRobotsTxt(), 'utf8')
+      fs.writeFileSync(path.join(outDir, 'sitemap.xml'), buildSitemapXml(pages), 'utf8')
+    },
+  }
+}
+
 function resolveStaticRequest(rootDir: string, requestSubpath: string): string | null {
   if (!fs.existsSync(rootDir)) {
     return null
@@ -242,6 +284,7 @@ export default defineConfig(({ mode }) => {
       serveWasmFrameworkPlugin(),
       serveCoreSchemaPlugin(),
       generatedReferenceDocsPlugin(),
+      staticSeoPagesPlugin(),
       viteStaticCopy({
         targets: [
           {

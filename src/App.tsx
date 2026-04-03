@@ -6,6 +6,7 @@ import ScanPage from "@/pages/ScanPage"
 import AttestationPage from "@/pages/AttestationPage"
 import Footer from "@/components/layout/Footer"
 import Features from "@/components/Features"
+import FAQ from "@/components/FAQ"
 import TrustSection from "@/components/TrustSection"
 import DocsLayout from "@/components/docs/DocsLayout"
 import DocsPage from "@/pages/DocsPage"
@@ -13,7 +14,9 @@ import AdvisoriesPage from "@/pages/AdvisoriesPage"
 import ThreatFamiliesPage from "@/pages/ThreatFamiliesPage"
 import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
+import Seo from "@/components/seo/Seo"
 import { allDocs } from "@/docs/registry"
+import { getHomeSeoPage } from "@/seo/routes"
 
 import InspectorPage from "@/pages/InspectorPage"
 import PartnerDashboardPage from "@/pages/PartnerDashboardPage"
@@ -22,9 +25,11 @@ import { Toaster } from "@/components/ui/sonner"
 function Home() {
   return (
     <>
+      <Seo page={getHomeSeoPage()} />
       <Hero />
       <Features />
       <TrustSection />
+      <FAQ />
     </>
   )
 }

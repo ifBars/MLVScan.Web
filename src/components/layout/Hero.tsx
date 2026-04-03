@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
 import { Shield, ExternalLink, ChevronDown } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 
 const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex flex-col justify-center pt-32 pb-20 px-4 overflow-hidden">
       <div className="container mx-auto max-w-6xl relative z-10 md:-translate-y-6">
         <div className="flex flex-col items-center text-center">
-
-          {/* Headline with visual hierarchy */}
           <h1 className="font-display text-4xl sm:text-5xl md:text-[3.35rem] lg:text-6xl font-bold leading-[1.08] text-foreground text-balance max-w-4xl mb-4 animate-in fade-in slide-in-from-bottom-5 duration-200 delay-100">
             <span className="block text-3xl sm:text-4xl md:text-5xl font-medium text-muted-foreground mb-2">
               Safer modding, made simple.
@@ -19,13 +18,12 @@ const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl mb-8 leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-200 delay-200">
-            <span className="block">MLVScan scans any mod before it reaches your system.</span>
+            <span className="block">MLVScan is a Unity mod antivirus for MelonLoader and BepInEx mods.</span>
             <span className="mt-1 block text-base md:text-lg text-muted-foreground/70">
-              Fast and lightweight — so nothing slows you down.
+              Scan suspicious .NET assemblies locally before they ever run in-game.
             </span>
           </p>
 
-          {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
             <Button size="lg" className="h-12 px-6 text-base scan-button rounded-full group min-w-[180px] shadow-lg shadow-teal-500/20" asChild>
               <Link to="/scan">
@@ -41,7 +39,14 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Stats */}
+          <p className="mt-4 text-sm text-muted-foreground/70 animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
+            Need a guide first?{" "}
+            <Link to="/docs/unity-mod-antivirus" className="text-teal-300 hover:text-teal-200 underline underline-offset-4">
+              Learn how MLVScan checks Unity mods for malware
+            </Link>
+            .
+          </p>
+
           <div className="mt-12 pt-6 border-t border-white/5 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
             <p className="text-xs font-medium text-muted-foreground/50 uppercase tracking-widest mb-4">Trusted by the modding community</p>
             <div className="grid grid-cols-2 gap-8 md:gap-16">

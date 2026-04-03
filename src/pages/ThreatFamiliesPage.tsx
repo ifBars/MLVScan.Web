@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { AlertTriangle, FileStack, Shield, Sparkles } from 'lucide-react'
-import { allThreatFamilies, getThreatFamilyBySlug } from '@/families/registry'
-import type { ThreatFamilyMeta } from '@/families/types'
-import { AdvisoryCard } from '@/components/advisories/AdvisoryCard'
-import { getAdvisoryBySlug } from '@/advisories/registry'
+import { useEffect, useState } from "react"
+import { Link, Navigate, useParams } from "react-router-dom"
+import { AlertTriangle, FileStack, Shield, Sparkles } from "lucide-react"
 
-const familyModules = import.meta.glob<{ default: React.ComponentType }>('../content/families/*.mdx')
+import { getAdvisoryBySlug } from "@/advisories/registry"
+import { AdvisoryCard } from "@/components/advisories/AdvisoryCard"
+import Seo from "@/components/seo/Seo"
+import { allThreatFamilies, getThreatFamilyBySlug } from "@/families/registry"
+import type { ThreatFamilyMeta } from "@/families/types"
+import { getThreatFamiliesSeoPage, getThreatFamilySeoPage } from "@/seo/routes"
+
+const familyModules = import.meta.glob<{ default: React.ComponentType }>("../content/families/*.mdx")
 
 function FamilyListCard({ family }: { family: ThreatFamilyMeta }) {
   return (
@@ -19,7 +22,7 @@ function FamilyListCard({ family }: { family: ThreatFamilyMeta }) {
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/60 px-3 py-1 text-xs text-gray-300">
             <FileStack className="h-3.5 w-3.5" />
-            {family.sampleNames.length} sample{family.sampleNames.length === 1 ? '' : 's'}
+            {family.sampleNames.length} sample{family.sampleNames.length === 1 ? "" : "s"}
           </span>
         </div>
 
@@ -30,7 +33,7 @@ function FamilyListCard({ family }: { family: ThreatFamilyMeta }) {
         <p className="text-sm text-gray-400 mb-4">{family.summary}</p>
 
         <div className="flex flex-wrap gap-2 text-xs text-gray-400">
-          {family.behaviorTags.slice(0, 4).map(tag => (
+          {family.behaviorTags.slice(0, 4).map((tag) => (
             <span key={tag} className="rounded-full border border-gray-700 bg-gray-800/50 px-2.5 py-1">
               {tag}
             </span>
@@ -44,6 +47,8 @@ function FamilyListCard({ family }: { family: ThreatFamilyMeta }) {
 function ThreatFamiliesList() {
   return (
     <div className="space-y-10">
+      <Seo page={getThreatFamiliesSeoPage()} />
+
       <div className="border-b border-gray-800 pb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center gap-3">
           <Sparkles className="w-10 h-10 text-teal-400" />
@@ -55,7 +60,7 @@ function ThreatFamiliesList() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {allThreatFamilies.map(family => (
+        {allThreatFamilies.map((family) => (
           <FamilyListCard key={family.id} family={family} />
         ))}
       </div>
@@ -81,11 +86,11 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
           const module = await loadComponent()
           setContent(() => module.default)
         } else {
-          setError('Family content not found.')
+          setError("Family content not found.")
         }
       } catch (err) {
-        console.error('Failed to load family content:', err)
-        setError('Failed to load family content.')
+        console.error("Failed to load family content:", err)
+        setError("Failed to load family content.")
       } finally {
         setLoading(false)
       }
@@ -117,18 +122,20 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
 
   const ContentComponent = Content
   const relatedAdvisories = meta.advisorySlugs
-    .map(slug => getAdvisoryBySlug(slug))
+    .map((slug) => getAdvisoryBySlug(slug))
     .filter((advisory): advisory is NonNullable<typeof advisory> => Boolean(advisory))
 
   return (
     <div className="space-y-8">
+      <Seo page={getThreatFamilySeoPage(meta)} />
+
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-200">
             <Shield className="h-3.5 w-3.5" />
             Threat Family
           </span>
-          {meta.aliases.map(alias => (
+          {meta.aliases.map((alias) => (
             <span key={alias} className="rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs text-gray-300">
               {alias}
             </span>
@@ -144,7 +151,7 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Behavior Tags</h2>
           <div className="flex flex-wrap gap-2">
-            {meta.behaviorTags.map(tag => (
+            {meta.behaviorTags.map((tag) => (
               <span key={tag} className="rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-xs text-gray-300">
                 {tag}
               </span>
@@ -161,7 +168,7 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
         <div className="space-y-4 border-t border-gray-800 pt-8">
           <h2 className="text-2xl font-semibold text-white">Linked Advisories</h2>
           <div className="space-y-4">
-            {relatedAdvisories.map(advisory => (
+            {relatedAdvisories.map((advisory) => (
               <AdvisoryCard key={advisory.id} advisory={advisory} />
             ))}
           </div>
@@ -170,7 +177,7 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
 
       <div className="border-t border-gray-800 pt-6">
         <Link to="/advisories/families" className="inline-flex items-center text-sm text-gray-400 hover:text-teal-400 transition-colors">
-          <span className="mr-2">←</span>
+          <span className="mr-2" aria-hidden="true">&lt;-</span>
           Back to all family clusters
         </Link>
       </div>
@@ -180,7 +187,7 @@ function ThreatFamilyDetail({ meta }: { meta: ThreatFamilyMeta }) {
 
 export default function ThreatFamiliesPage() {
   const params = useParams()
-  const slug = params['slug']
+  const slug = params["slug"]
 
   if (!slug) {
     return <ThreatFamiliesList />

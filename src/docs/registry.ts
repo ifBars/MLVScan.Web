@@ -56,6 +56,16 @@ const docs: DocMeta[] = [
     },
   },
   {
+    id: 'unity-mod-antivirus',
+    title: 'Unity Mod Antivirus Guide',
+    description: 'How to scan MelonLoader and BepInEx mods with MLVScan before they run',
+    slug: 'unity-mod-antivirus',
+    contentPath: 'unity-mod-antivirus.mdx',
+    section: 'getting-started',
+    status: 'stable',
+    keywords: ['unity mod antivirus', 'mod malware scanner', 'melonloader antivirus', 'bepinex antivirus', 'scan mods before installing'],
+  },
+  {
     id: 'core-overview',
     title: 'Core Overview',
     description: 'What MLVScan.Core provides and where it fits in the stack',

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { type DocMeta } from '@/docs/registry'
 import { DocChrome } from '@/components/docs/DocChrome'
 import { DocHeader, DocResources } from '@/components/docs/mdx'
+import Seo from '@/components/seo/Seo'
+import { getDocSeoPage } from '@/seo/routes'
 
 const docModules = import.meta.glob<{ default: React.ComponentType }>('../content/docs/**/*.mdx')
 
@@ -50,6 +52,7 @@ const DocsPage = ({ doc }: DocsPageProps) => {
 
   return (
     <div className="space-y-8">
+      <Seo page={getDocSeoPage(doc)} />
       <DocHeader meta={doc} />
       
       <DocChrome>

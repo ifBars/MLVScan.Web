@@ -1,0 +1,118 @@
+import { Link } from "react-router-dom"
+
+export default function UnityModAntivirusGuide() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        If someone asks what MLVScan does at a high level, the short answer is simple:
+        most malicious Unity mods follow the same pattern. In most cases they either
+        download something from a random URL or carry an embedded payload inside the
+        mod DLL, then they launch that payload as a hidden background process.
+      </p>
+
+      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
+        <h2 className="text-teal-300 font-semibold mb-2">High-Level Explanation</h2>
+        <p className="text-sm text-gray-300 mb-2">
+          MLVScan looks for that pattern first: get another file, then quietly start it.
+        </p>
+        <p className="text-sm text-gray-300 mb-2">
+          Behind the scenes that means a lot of low-level .NET and IL analysis, but for a
+          plain-English explanation, that is the right way to describe it. The scanner is
+          looking for downloader behavior, staged payloads, and hidden execution paths before
+          the mod gets a chance to run normally.
+        </p>
+        <p className="text-sm text-gray-300">
+          When the runtime side decides a mod is dangerous enough to block, it disables the
+          mod before load by changing the file extension instead of trying to do anything more
+          complicated than necessary.
+        </p>
+      </div>
+
+      <h2 id="common-patterns">The Common Malware Pattern</h2>
+      <p className="text-gray-300 mb-4">
+        In roughly the pattern MLVScan is built around, the suspicious mod does one of two things first:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">
+        <li>Downloads another file from a random domain such as <code>minecraftmods.xyz</code>.</li>
+        <li>Extracts an already-embedded payload from inside the DLL itself.</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        After that, the next step is usually the same: it starts the payload through a hidden or
+        background process using things like PowerShell, <code>cmd.exe</code>, <code>Process.Start</code>,
+        or similar launch chains. That is why MLVScan focuses so heavily on download-and-execute,
+        temp staging, and stealthy process creation behavior.
+      </p>
+
+      <h2 id="what-mlvscan-is-actually-doing">What MLVScan Is Actually Doing</h2>
+      <p className="text-gray-300 mb-4">
+        At a user level, MLVScan is trying to answer one question before the mod loads:
+        does this assembly look like it is preparing to fetch, unpack, or launch something it should not?
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>It inspects .NET assemblies without running them normally first.</li>
+        <li>It looks for downloader behavior and embedded payload extraction.</li>
+        <li>It checks for hidden process launch paths and suspicious staging into temp locations.</li>
+        <li>It tries to stop known-bad mods before load instead of waiting until after damage is done.</li>
+      </ul>
+
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h2 className="text-amber-300 font-semibold mb-2">What This Means In Practice</h2>
+        <p className="text-sm text-gray-300 mb-2">
+          MLVScan is not a generic signature-based antivirus replacement. It is a scanner aimed at the
+          kinds of mod malware patterns that keep showing up in MelonLoader and BepInEx ecosystems.
+        </p>
+        <p className="text-sm text-gray-300">
+          The value is not just that it says a mod looks bad. The value is that it can explain why
+          the mod looks bad in terms that map to real behavior like download, extract, and execute.
+        </p>
+      </div>
+
+      <h2 id="safe-download-habits">Where You Download Mods Matters</h2>
+      <p className="text-gray-300 mb-4">
+        A big part of staying safe is still basic download hygiene. Do not download mods from random
+        mirror sites just because they show up in search results.
+      </p>
+      <p className="text-gray-300 mb-4">
+        Reuploads on low-moderation sites can stay clean for a while and still become dangerous later.
+        That is the real problem: the absence of malware today does not mean the file or mirror stays safe tomorrow.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">
+        <li>Prefer established sources like Nexus Mods and Thunderstore when they support your game.</li>
+        <li>Treat random mod mirrors and scrape sites as higher risk, even if the file looks familiar.</li>
+        <li>If a mod was reuploaded under someone else&apos;s name, be extra cautious and scan it first.</li>
+      </ul>
+
+      <h2 id="extra-protection">Extra Protection Still Helps</h2>
+      <p className="text-gray-300 mb-4">
+        MLVScan should be part of a layered setup, not the only layer. Windows Defender alone is not a complete
+        answer for mod malware, especially when the threat is a small loader that fetches the real payload later.
+      </p>
+      <p className="text-gray-300 mb-4">
+        Use a reputable antivirus you actually trust, avoid security tools with a poor reputation for bloat or
+        misleading behavior, and keep your system protections current. The point is not to stack random products.
+        The point is to use tools you trust and understand.
+      </p>
+
+      <h2 id="where-to-start">Where To Start</h2>
+      <div className="space-y-2 text-teal-400 mb-8">
+        <Link to="/scan" className="block hover:text-teal-300">
+          Browser Scanner
+        </Link>
+        <Link to="/advisories" className="block hover:text-teal-300">
+          Security Advisories
+        </Link>
+        <Link to="/advisories/families" className="block hover:text-teal-300">
+          Threat Families
+        </Link>
+        <Link to="/docs/libraries/mlvscan/faq-and-troubleshooting" className="block hover:text-teal-300">
+          FAQ and Troubleshooting
+        </Link>
+      </div>
+
+      <p className="text-gray-400 text-sm">
+        If you only remember one thing, remember this: most malicious mods are trying to get or unpack another
+        file and then run it quietly. That is the pattern MLVScan is built to catch.
+      </p>
+    </>
+  )
+}
