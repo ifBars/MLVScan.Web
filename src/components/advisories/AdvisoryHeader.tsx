@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 
 interface AdvisoryHeaderProps {
   meta: AdvisoryMeta
+  headingLevel?: 1 | 2
 }
 
 function formatDate(dateString: string): string {
@@ -17,8 +18,9 @@ function formatDate(dateString: string): string {
   })
 }
 
-export function AdvisoryHeader({ meta }: AdvisoryHeaderProps) {
+export function AdvisoryHeader({ meta, headingLevel = 1 }: AdvisoryHeaderProps) {
   const family = getThreatFamilyById(meta.familyId)
+  const HeadingTag = headingLevel === 1 ? "h1" : "h2"
 
   return (
     <div className="space-y-4">
@@ -33,9 +35,9 @@ export function AdvisoryHeader({ meta }: AdvisoryHeaderProps) {
         )}
       </div>
       
-      <h1 className="text-3xl md:text-4xl font-bold text-white">
+      <HeadingTag className="text-3xl md:text-4xl font-bold text-white">
         {meta.title}
-      </h1>
+      </HeadingTag>
       
       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
         <span>

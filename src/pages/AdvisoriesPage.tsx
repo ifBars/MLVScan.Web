@@ -52,7 +52,7 @@ function FeaturedAdvisory({ advisory }: { advisory: AdvisoryMeta }) {
 
   return (
     <article className="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden p-8">
-      <AdvisoryHeader meta={advisory} />
+      <AdvisoryHeader meta={advisory} headingLevel={2} />
 
       <div className="mt-6 prose prose-invert prose-teal max-w-none line-clamp-6 [&_p]:mb-4 [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:mt-6 [&_h3]:mb-3 [&_ul]:mb-4 [&_li]:mb-1">
         {ContentComponent ? <ContentComponent /> : <p className="text-gray-400">{advisory.description}</p>}
