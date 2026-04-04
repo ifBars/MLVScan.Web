@@ -25,10 +25,10 @@ const createEvidence = (overrides: Partial<ThreatFamilyEvidence> = {}): ThreatFa
 })
 
 const createMatch = (overrides: Partial<ThreatFamily> = {}): ThreatFamily => ({
-  familyId: "family-webclient-stage-exec-v1",
+  familyId: "family-webdownload-stage-exec-v2",
   variantId: "variant-a",
-  displayName: "WebClient staged payload executor",
-  summary: "WebClient downloads a payload into TEMP and immediately launches it.",
+  displayName: "Web download staged payload executor",
+  summary: "A network client downloads a payload into TEMP and immediately launches it.",
   matchKind: "BehaviorVariant",
   confidence: 0.96,
   exactHashMatch: false,
@@ -36,7 +36,7 @@ const createMatch = (overrides: Partial<ThreatFamily> = {}): ThreatFamily => ({
   advisorySlugs: [],
   evidence: [
     createEvidence({ kind: "pattern", value: "DownloadAndExecute", pattern: "DownloadAndExecute" }),
-    createEvidence({ kind: "source", value: "WebClient download" }),
+    createEvidence({ kind: "source", value: "network download" }),
     createEvidence({ kind: "execution", value: "Hidden cmd.exe launch" }),
   ],
   ...overrides,
@@ -76,11 +76,11 @@ describe("ThreatFamilyMatches", () => {
     renderThreatFamilyMatches({ matches: [createMatch()], primaryThreatFamilyId: null })
 
     expect(screen.getByText("Known malware family match")).toBeTruthy()
-    expect(screen.getByText("WebClient staged payload executor")).toBeTruthy()
+    expect(screen.getByText("Web download staged payload executor")).toBeTruthy()
     expect(screen.getByText("Downloads and executes code")).toBeTruthy()
-    expect(screen.getByText("WebClient download")).toBeTruthy()
+    expect(screen.getByText("network download")).toBeTruthy()
     expect(screen.getByRole("link", { name: /open family page/i }).getAttribute("href")).toBe(
-      "/advisories/families/webclient-stage-exec-v1",
+      "/advisories/families/webdownload-stage-exec-v2",
     )
     expect(screen.queryByText("Hidden cmd.exe launch")).toBeNull()
   })
@@ -93,12 +93,12 @@ describe("ThreatFamilyMatches", () => {
     })
 
     expect(screen.getByText("Hidden cmd.exe launch")).toBeTruthy()
-    expect(screen.getByText("webclient")).toBeTruthy()
+    expect(screen.getByText("webdownload")).toBeTruthy()
   })
 
   it("emphasizes the disposition-linked family before higher-confidence secondary matches", () => {
     const lowerConfidencePrimary = createMatch({
-      familyId: "family-webclient-stage-exec-v1",
+      familyId: "family-webdownload-stage-exec-v2",
       displayName: "Primary family",
       confidence: 0.62,
     })
@@ -112,7 +112,7 @@ describe("ThreatFamilyMatches", () => {
 
     const { container } = renderThreatFamilyMatches({
       matches: [higherConfidenceSecondary, lowerConfidencePrimary],
-      primaryThreatFamilyId: "family-webclient-stage-exec-v1",
+      primaryThreatFamilyId: "family-webdownload-stage-exec-v2",
     })
 
     const primaryMatch = container.querySelector('[data-emphasis="primary"]')
