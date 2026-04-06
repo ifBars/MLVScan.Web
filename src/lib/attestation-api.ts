@@ -14,8 +14,25 @@ export function resolvePublicAttestationApiBaseUrl(): string {
   })
 }
 
+function trimTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, "")
+}
+
+export function resolvePublicAttestationSiteBaseUrl(): string {
+  const configured = import.meta.env.VITE_PUBLIC_SITE_URL?.trim()
+  if (configured) {
+    return trimTrailingSlashes(configured)
+  }
+
+  if (typeof window === "undefined") {
+    return ""
+  }
+
+  return trimTrailingSlashes(window.location.origin)
+}
+
 export function buildAttestationBadgeUrl(shareId: string): string {
-  return `${resolvePublicAttestationApiBaseUrl()}/public/attestations/${encodeURIComponent(shareId)}/badge.svg`
+  return `${resolvePublicAttestationSiteBaseUrl()}/attestations/${encodeURIComponent(shareId)}/badge.svg`
 }
 
 export function buildSignedAttestationUrl(shareId: string): string {
@@ -95,7 +112,32 @@ function isPublicAttestationPayload(value: unknown): value is PublicAttestationP
     isPublicationStatus(value.publicationStatus) &&
     isSourceBindingStatus(value.sourceBindingStatus) &&
     isAttestationBadgeStyle(value.badgeStyle) &&
+    (value.badge === undefined || isPublicAttestationBadgeMetadata(value.badge)) &&
     isThreatDispositionClassification(value.classification)
+  )
+}
+
+function isPublicAttestationBadgeMetadata(
+  value: unknown,
+): value is NonNullable<PublicAttestationPayload["badge"]> {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const brand = value.brand
+  return (
+    value.schemaVersion === "badge.v1"
+    && isAttestationBadgeStyle(value.style)
+    && isRecord(brand)
+    && brand.kind === "mlvscan-check"
+    && typeof brand.label === "string"
+    && isAttestationBadgeTone(value.tone)
+    && typeof value.statusLabel === "string"
+    && typeof value.fileLabel === "string"
+    && typeof value.verificationLabel === "string"
+    && (value.runtimeLabel === null || typeof value.runtimeLabel === "string")
+    && typeof value.scannedDateLabel === "string"
+    && typeof value.shortHashLabel === "string"
   )
 }
 
@@ -119,6 +161,12 @@ function isSourceBindingStatus(
 
 function isAttestationBadgeStyle(value: unknown): value is PublicAttestationPayload["badgeStyle"] {
   return value === "ledger-strip" || value === "split-pill" || value === "classic-shield" || value === "signature-bar"
+}
+
+function isAttestationBadgeTone(
+  value: unknown,
+): value is NonNullable<PublicAttestationPayload["badge"]>["tone"] {
+  return value === "clean" || value === "suspicious" || value === "known-threat" || value === "revoked"
 }
 
 function isThreatDispositionClassification(

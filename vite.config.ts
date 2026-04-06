@@ -317,6 +317,15 @@ export default defineConfig(({ mode }) => {
           target: partnerApiProxyTarget,
           changeOrigin: true,
         },
+        '^/attestations/[^/]+/badge\\.svg$': {
+          target: partnerApiProxyTarget,
+          changeOrigin: true,
+          rewrite: (requestPath) =>
+            requestPath.replace(
+              /^\/attestations\/([^/]+)\/badge\.svg$/,
+              "/public/attestations/$1/badge.svg",
+            ),
+        },
       },
     },
     base: '/',

@@ -7,6 +7,11 @@ export type AttestationBadgeStyle =
   | "split-pill"
   | "classic-shield"
   | "signature-bar"
+export type AttestationBadgeTone =
+  | "clean"
+  | "suspicious"
+  | "known-threat"
+  | "revoked"
 
 export interface PublicAttestationFinding {
   id: string | null
@@ -30,12 +35,29 @@ export interface PublicAttestationThreatFamily {
   evidence: Array<Record<string, unknown>>
 }
 
+export interface PublicAttestationBadgeMetadata {
+  schemaVersion: "badge.v1"
+  style: AttestationBadgeStyle
+  brand: {
+    kind: "mlvscan-check"
+    label: string
+  }
+  tone: AttestationBadgeTone
+  statusLabel: string
+  fileLabel: string
+  verificationLabel: string
+  runtimeLabel: string | null
+  scannedDateLabel: string
+  shortHashLabel: string
+}
+
 export interface PublicAttestationPayload {
   shareId: string
   verificationTier: VerificationTier
   publicationStatus: PublicationStatus
   sourceBindingStatus: SourceBindingStatus
   badgeStyle: AttestationBadgeStyle
+  badge?: PublicAttestationBadgeMetadata
   publicDisplayName: string
   fileName: string
   canonicalSourceUrl: string | null
