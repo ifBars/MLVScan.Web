@@ -1,7 +1,7 @@
 {
   "version": 1,
   "include": [
-    "/attestations/*/badge.svg"
+    "/attestations/*"
   ],
   "exclude": []
 }
