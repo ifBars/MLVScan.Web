@@ -92,27 +92,27 @@ const workspaceItems: Array<{
   icon: typeof Sparkles
   badge?: string
 }> = [
-  {
-    value: "home",
-    label: "Home",
-    icon: House,
-  },
-  {
-    value: "publish",
-    label: "Submit",
-    icon: Sparkles,
-  },
-  {
-    value: "attestations",
-    label: "Ledger",
-    icon: BadgeCheck,
-  },
-  {
-    value: "access",
-    label: "Access",
-    icon: KeyRound,
-  },
-]
+    {
+      value: "home",
+      label: "Home",
+      icon: House,
+    },
+    {
+      value: "publish",
+      label: "Submit",
+      icon: Sparkles,
+    },
+    {
+      value: "attestations",
+      label: "Ledger",
+      icon: BadgeCheck,
+    },
+    {
+      value: "access",
+      label: "Access",
+      icon: KeyRound,
+    },
+  ]
 
 export default function PartnerDashboardPage() {
   const location = useLocation()
@@ -709,7 +709,7 @@ export default function PartnerDashboardPage() {
             ...current,
             stage: "polling",
             message:
-              "Waiting for the submission record to appear. In local dev, keep LOCAL_FAST_UPLOADS=true.",
+              "Waiting for the submission record to appear.",
           }))
           await sleep(REPORT_POLL_INTERVAL_MS, signal)
           continue
@@ -833,7 +833,7 @@ export default function PartnerDashboardPage() {
               {partner.tierRestriction === "partner" ? (
                 <Badge
                   variant="outline"
-                  className="h-7 border-emerald-600/30 bg-emerald-950/40 px-2.5 text-[0.72rem] text-emerald-300"
+                  className="h-7 border-emerald-600/30 border bg-emerald-950/40 px-2.5 text-[0.72rem] text-emerald-300"
                 >
                   <ShieldCheck data-icon="inline-start" className="mr-1 size-3" />
                   Partner
@@ -908,7 +908,7 @@ export default function PartnerDashboardPage() {
                         </div>
                         <Button
                           variant="outline"
-                          className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                          className="border-slate-700 border bg-slate-900 text-slate-200 hover:bg-slate-800"
                           onClick={handleCloseAttestationDetail}
                         >
                           <ChevronLeft data-icon="inline-start" className="size-4" />
@@ -1020,7 +1020,7 @@ export default function PartnerDashboardPage() {
             <div className="flex justify-end">
               <Button
                 variant="outline"
-                className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                className="border-slate-700 border bg-slate-900 text-slate-200 hover:bg-slate-800"
                 onClick={() => setProfileSheetOpen(false)}
               >
                 Close
