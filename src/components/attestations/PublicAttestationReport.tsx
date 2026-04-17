@@ -29,6 +29,7 @@ import {
   getAttestationTone,
   getAttestationVerdictLabel,
   getSourceBindingLabel,
+  getVerificationTierDescription,
   getVerificationTierLabel,
   shortenHash,
 } from "@/lib/attestation-view"
@@ -79,6 +80,7 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
   const VerdictIcon = tonePreset.icon
   const verdictLabel = getAttestationVerdictLabel(payload.classification, payload.publicationStatus)
   const verificationLabel = getVerificationTierLabel(payload.verificationTier)
+  const verificationDescription = getVerificationTierDescription(payload.verificationTier)
   const sourceBindingLabel = getSourceBindingLabel(payload.sourceBindingStatus)
   const sourceDisplayLabel =
     sourceBindingLabel === "No bound source" ? "Source unverified" : sourceBindingLabel
@@ -255,6 +257,23 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
         </div>
 
         <div className="mt-4 grid gap-2">
+          {payload.publicationStatus === "superseded" ? (
+            <div className="rounded-md border border-slate-600/30 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
+              This attestation is historical. A newer current attestation now exists for{" "}
+              <span className="font-mono text-xs text-slate-200">{payload.artifactKey}</span>.
+              {payload.supersededByShareId ? (
+                <>
+                  {" "}
+                  <a
+                    href={`/attestations/${payload.supersededByShareId}`}
+                    className="text-primary transition hover:text-primary/80"
+                  >
+                    Open current replacement
+                  </a>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           {payload.publicationStatus === "revoked" ? (
             <div className="rounded-md border border-slate-600/30 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
               This attestation has been revoked and should be treated as historical record.
@@ -446,6 +465,8 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
               <div className="rounded-lg border border-slate-800 bg-slate-900/85 p-4">
                 <p className="dashboard-kicker">Scan facts</p>
                 <div className="mt-3 space-y-3">
+                  <DetailRow label="Artifact key" value={payload.artifactKey} mono />
+                  <DetailRow label="Artifact version" value={payload.artifactVersion ?? "Not set"} />
                   <DetailRow label="Classification" value={verdictLabel} />
                   <DetailRow label="Verification tier" value={verificationLabel} />
                   <DetailRow label="Source binding" value={sourceBindingLabel} />
@@ -454,6 +475,14 @@ export default function PublicAttestationReport({ payload }: PublicAttestationRe
                   <DetailRow label="Scanner" value={payload.scannerVersion} />
                   <DetailRow label="Schema" value={payload.schemaVersion} />
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-800 bg-slate-900/85 p-4">
+              <p className="dashboard-kicker">Trust model</p>
+              <div className="mt-3 space-y-3 text-sm leading-6 text-slate-400">
+                <p>{verificationDescription}</p>
+                <p>{sourceTooltip}</p>
               </div>
             </div>
           </TabsContent>

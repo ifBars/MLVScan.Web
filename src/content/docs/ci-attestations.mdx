@@ -1,32 +1,53 @@
 import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
 
 export default function CiAttestationsContent() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
         API keys support private upload, report polling, draft creation, public
-        attestation publishing, and README badge updates from CI. The pattern below matches the
-        typical workflow: build your release artifact, upload those exact bytes, publish the attestation,
-        and write a compact split-pill badge into the README.
+        attestation publishing, and README badge updates from CI. The production flow is:
+        build your release artifact, upload those exact bytes, create or reuse a draft for a stable
+        artifact lineage, publish the current attestation, and write the canonical badge URL into the README.
       </p>
 
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
         <h3 className="text-teal-300 font-semibold mb-2">What this flow does</h3>
-        <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
+      <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
           <li>Uploads the exact release artifact to the MLVScan API with your API key.</li>
           <li>Polls the private report until the scan is complete, including the initial submission materialization delay.</li>
-          <li>Creates or reuses a draft attestation bound to those exact bytes.</li>
+          <li>Creates or reuses a draft attestation for a stable <code>artifactKey</code> such as your package ID or mod slug.</li>
+          <li>Lets you correct the draft metadata before publish if the detected filename or version is not the final lineage label you want to ship.</li>
+          <li>Publishes the current attestation for that lineage. If the same account already has a current attestation for that <code>artifactKey</code>, the older one becomes <code>superseded</code>.</li>
           <li>Publishes the attestation and writes the public URL and badge URL into the workflow summary.</li>
-          <li>Updates an existing README attestation badge or inserts one after the current top badge block.</li>
+          <li>Updates an existing README attestation badge or inserts one after the current top badge block using the canonical badge URL.</li>
         </ul>
+      </div>
+
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h3 className="text-amber-200 font-semibold mb-2">Updating an existing workflow?</h3>
+        <p className="text-sm text-gray-300">
+          If you already publish MLVScan attestations from GitHub Actions, start with the{" "}
+          <a href="/docs/ci-attestations#migration-guide" className="text-amber-200 underline-offset-4 hover:underline">
+            migration guide
+          </a>
+          . It covers the new <code>artifactKey</code> field, current versus superseded records,
+          canonical badge URLs, and the temporary fallback for older CI payloads.
+        </p>
       </div>
 
       <h2 id="requirements">Requirements</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li>Create an API key in the dashboard under <code>/dashboard/access</code>.</li>
         <li>Store it as a GitHub secret such as <code>MLVSCAN_API_KEY</code>.</li>
+        <li>Choose a stable <code>artifactKey</code> for the artifact lineage you want to keep current. This is partner-scoped and should not change every build.</li>
+        <li>Optionally pass <code>artifactVersion</code> for display. Runtime and version metadata are also auto-detected from the scanned assembly when available.</li>
+        <li>Drafts can be edited or deleted from the dashboard ledger before publish. Published and superseded records remain historical state instead of being silently removed.</li>
         <li>Keep using the direct <code>POST /files</code> path only for artifacts under the API upload limit. Larger files should switch to <code>/files/upload_url</code>.</li>
         <li>Authenticated uploads become account-owned. Only the same account can read the private report or turn that submission into an attestation.</li>
+        <li>There is no active-attestation count cap. Abuse control is handled with rate limiting, while older lineage entries stay publicly reachable as <code>superseded</code>.</li>
+        <li>Legacy automation requests that omit <code>artifactKey</code> will temporarily infer one from the uploaded filename (and runtime when available), but explicit keys are still recommended for stable replacement behavior.</li>
+        <li>If GitHub runners hit a Cloudflare challenge on <code>api.mlvscan.com</code>, set <code>MLVSCAN_API_BASE_URL</code> to <code>https://mlvscan-api.ifbars.workers.dev</code>.</li>
       </ul>
 
       <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 mb-8">
@@ -39,7 +60,7 @@ export default function CiAttestationsContent() {
       </div>
 
       <h2 id="github-actions-template">GitHub Actions Example</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`name: Publish MLVScan attestation
+      <CodeBlock className="mb-6">{`name: Publish MLVScan attestation
 
 on:
   workflow_dispatch:
@@ -85,6 +106,9 @@ jobs:
         run: |
           set -euo pipefail
           artifact_path="path/to/your/artifact.dll"
+          artifact_key="your-mod-slug"
+          # For Mono/IL2CPP variants, run the same publish block once per DLL
+          # with distinct keys such as your-mod/mono and your-mod/il2cpp.
 
           if [ ! -f "$artifact_path" ]; then
             echo "Artifact not found: $artifact_path" >&2
@@ -103,7 +127,7 @@ jobs:
           fi
 
           submission_id=$(echo "$upload_json" | jq -r '.data.id')
-          version="\${{ github.ref_name }}"
+          artifact_version="\${{ github.ref_name }}"
 
           for attempt in $(seq 1 60); do
             report_status=$(curl -sS -o report.json -w "%{http_code}" \
@@ -147,10 +171,14 @@ jobs:
 
           draft_payload=$(jq -n \
             --arg submissionId "$submission_id" \
-            --arg publicDisplayName "Release artifact $version" \
+            --arg artifactKey "$artifact_key" \
+            --arg artifactVersion "$artifact_version" \
+            --arg publicDisplayName "Release artifact $artifact_version" \
             --arg canonicalSourceUrl "$canonical_source_url" \
             '{
               submissionId: $submissionId,
+              artifactKey: $artifactKey,
+              artifactVersion: $artifactVersion,
               publicDisplayName: $publicDisplayName,
               canonicalSourceUrl: $canonicalSourceUrl
             }')
@@ -163,6 +191,13 @@ jobs:
             "\${{ steps.api-base.outputs.base_url }}/automation/attestations")
 
           attestation_id=$(echo "$draft_json" | jq -r '.id')
+          resolved_artifact_key=$(echo "$draft_json" | jq -r '.artifactKey')
+          artifact_key_source=$(echo "$draft_json" | jq -r '.artifactKeySource // "explicit"')
+
+          if [ "$artifact_key_source" = "inferred" ]; then
+            echo "::warning::MLVScan inferred artifactKey as $resolved_artifact_key. Set artifactKey explicitly in CI for stable replacement behavior."
+            echo "$draft_json" | jq -r '.warnings[]?'
+          fi
 
           published_json=$(curl -fsS \
             -X POST \
@@ -171,7 +206,7 @@ jobs:
 
           public_url=$(echo "$published_json" | jq -r '.publicUrl')
           badge_url=$(echo "$published_json" | jq -r '.badgeUrl')
-          readme_badge="[![MLVScan Attestation]($badge_url?style=split-pill)]($public_url)"
+          readme_badge="[![MLVScan Attestation]($badge_url)]($public_url)"
 
           if grep -q '^\[!\[MLVScan Attestation\]' README.md; then
             badge_line=$(grep -n '^\[!\[MLVScan Attestation\]' README.md | head -1 | cut -d: -f1)
@@ -220,7 +255,17 @@ jobs:
             echo
             echo "- Public URL: $public_url"
             echo "- Badge URL: $badge_url"
-          } >> "$GITHUB_STEP_SUMMARY"`}</code></pre>
+            echo "- Artifact Key: \${resolved_artifact_key:-$artifact_key}"
+            echo "- Artifact Key Source: $artifact_key_source"
+          } >> "$GITHUB_STEP_SUMMARY"`}</CodeBlock>
+
+      <p className="text-gray-300 mb-6">
+        This example fits the common single-artifact release case. If your project ships multiple DLLs,
+        repeat the same upload, poll, draft, and publish sequence once per artifact with a distinct
+        explicit <code>artifactKey</code> for each lineage. A common pattern is
+        <code>your-mod/mono</code>, <code>your-mod/il2cpp</code>, and, if you intentionally publish it,
+        <code>your-mod/mono-debug</code>.
+      </p>
 
       <h2 id="every-run-variant">Every-Run Variant</h2>
       <p className="text-gray-300 mb-4">
@@ -235,16 +280,69 @@ jobs:
   workflow_dispatch:`}</code></pre>
 
       <p className="text-gray-300 mb-6">
-        That variant will create a new attestation whenever the artifact bytes change. If the bytes
-        are identical to an existing non-revoked attestation owned by your account, the API
-        reuses the existing record instead of publishing a duplicate.
+        That variant will publish a new current attestation whenever the artifact bytes change. If the
+        same account already has a published attestation for the same <code>artifactKey</code>, the
+        older current record becomes <code>superseded</code> and stays publicly reachable for propagation
+        windows and historical verification.
       </p>
 
       <p className="text-gray-300 mb-6">
-        For badges, the public badge endpoint supports a style override query parameter. This example uses
-        <code>?style=split-pill</code> for a compact README badge even though the
-        attestation itself may still store the default badge style server-side.
+        If the uploaded bytes are identical to an existing non-revoked attestation owned by your account
+        for the same <code>artifactKey</code>, the API reuses that record instead of creating a duplicate.
+        Badge density and metadata slots are part of the stored badge config, so the canonical README
+        snippet should use <code>badgeUrl</code> directly without a style override query parameter.
       </p>
+
+      <h2 id="migration-guide">Migration Guide</h2>
+      <p className="text-gray-300 mb-4">
+        Existing CI workflows should continue to function during the transition, but a few updates are
+        worth making now so publish and replacement behavior stays reliable.
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>
+          Add an explicit <code>artifactKey</code> to the draft creation payload. This is the stable
+          mod or package key MLVScan uses when deciding which attestation should become the current one.
+        </li>
+        <li>
+          Older automation requests that omit <code>artifactKey</code> still work for now because the
+          API falls back to an inferred key from the uploaded filename and runtime when available.
+          That fallback is there to avoid breaking existing workflows, not as the long-term model.
+        </li>
+        <li>
+          For separate Mono and IL2CPP outputs, use separate explicit keys such as{" "}
+          <code>your-mod/mono</code> and <code>your-mod/il2cpp</code>. Those are different DLLs with
+          different bytes, so they should not share the same current attestation slot.
+        </li>
+        <li>
+          Stop appending legacy badge style query parameters such as <code>?style=split-pill</code> in
+          README snippets. The canonical badge URL returned by the API is now the intended default.
+        </li>
+        <li>
+          If you want a visible migration signal in CI logs, read <code>artifactKeySource</code> and{" "}
+          <code>warnings</code> from the draft response. The API will tell you when it had to infer the
+          key instead of receiving one explicitly.
+        </li>
+        <li>
+          Publishing a new attestation for the same <code>artifactKey</code> no longer requires manual
+          cleanup. The older current record becomes <code>superseded</code> and stays publicly reachable
+          during mod propagation windows.
+        </li>
+        <li>
+          If GitHub runners hit a Cloudflare challenge on <code>api.mlvscan.com</code>, keep the same
+          workflow and point <code>MLVSCAN_API_BASE_URL</code> at{" "}
+          <code>https://mlvscan-api.ifbars.workers.dev</code>.
+        </li>
+      </ul>
+
+      <h2 id="workflow-notes">Workflow Notes</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li>Use one stable <code>artifactKey</code> per mod, package, or other artifact lineage you want to keep current.</li>
+        <li>For mods that ship separate Mono and IL2CPP builds, use separate explicit keys such as <code>your-mod/mono</code> and <code>your-mod/il2cpp</code>. Because attestations are tied to exact file bytes, those are two different DLLs with two different content hashes, so they should live in two different artifact lineages for now.</li>
+        <li>Use <code>artifactVersion</code> for display only. It does not define lineage grouping.</li>
+        <li>The dashboard submit flow now lets you declare key, version, display name, and canonical source URL up front, then revise those draft values from the ledger before publish.</li>
+        <li>There is one MLVScan badge family. Density and metadata slots can be configured, but README badges should normally consume the canonical published <code>badgeUrl</code>.</li>
+        <li>Superseded pages and badges stay reachable, which is useful while Thunderstore, r2modman, or other downstream surfaces are still propagating the new release.</li>
+      </ul>
 
       <h2 id="related-docs">Related Docs</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300">

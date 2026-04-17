@@ -16,10 +16,10 @@ describe("threat family registry", () => {
     expect(family?.slug).toBe("resource-shell32-tempcmd-v2")
     expect(family?.contentPath).toBe("resource-shell32-tempcmd-v2.mdx")
     expect(family?.sampleNames).toEqual([
-      "CustomTV_IL2CPP.dll.di",
-      "NoMoreTrash.dll.di",
-      "RealRadio.dll.di",
-      "S1API.Il2Cpp.MelonLoader.dll.di",
+      "CustomTV_IL2CPP.dll",
+      "NoMoreTrash.dll",
+      "RealRadio.dll",
+      "S1API.Il2Cpp.MelonLoader.dll",
     ])
     expect(family?.advisorySlugs).toEqual([
       "2025-12-malware-customtv-il2cpp",

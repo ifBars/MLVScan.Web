@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Download, ExternalLink } from "lucide-react"
+import { Menu, X, Download } from "lucide-react"
 import DocsSearch from "@/components/docs/DocsSearch"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
@@ -19,10 +19,7 @@ const Navbar = () => {
     const handleScroll = () => {
       const y = window.scrollY
       setScrolled(y > 50)
-      // On docs, always show navbar to avoid empty space. Elsewhere, hide on scroll down.
-      if (isDocs) {
-        setNavVisible(true)
-      } else if (y <= SCROLL_SHOW_THRESHOLD) {
+      if (y <= SCROLL_SHOW_THRESHOLD) {
         setNavVisible(true)
       } else if (y > SCROLL_HIDE_THRESHOLD) {
         setNavVisible(false)
@@ -95,12 +92,6 @@ const Navbar = () => {
 
           {/* CTAs */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                <ExternalLink data-icon="inline-start" />
-                GitHub
-              </a>
-            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to={getPartnerDashboardPath("home")}>Dashboard</Link>
             </Button>
@@ -154,12 +145,6 @@ const Navbar = () => {
                 <Link to={getPartnerDashboardPath("home")} onClick={() => setIsMenuOpen(false)}>
                   Dashboard
                 </Link>
-              </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink data-icon="inline-start" />
-                  GitHub
-                </a>
               </Button>
               <Button className="w-full" asChild>
                 <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">

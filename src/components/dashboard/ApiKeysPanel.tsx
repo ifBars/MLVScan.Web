@@ -25,13 +25,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -180,17 +173,14 @@ export default function ApiKeysPanel({
 
   return (
     <>
-      <Card className="partner-pane overflow-hidden border border-slate-800/80 bg-slate-950/55 shadow-none">
-        <CardHeader className="partner-pane-header flex flex-col gap-4 px-5 py-4 sm:px-6">
+      <div className="space-y-5">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
-              <Badge variant="outline" className="w-fit border-slate-700 bg-slate-800 text-slate-300">
-                API access
-              </Badge>
-              <CardTitle className="font-display text-[1.65rem] text-white">
+              <h2 className="font-display text-[1.65rem] text-white">
                 Manage API keys
-              </CardTitle>
-              <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
+              </h2>
+              <p className="max-w-3xl text-sm leading-6 text-slate-400">
                 Plaintext key material is only returned on create and rotate. Store it
                 immediately, because the API never serves it again after that response. Use these
                 keys for CI uploads and attestation automation, then follow the{" "}
@@ -201,7 +191,7 @@ export default function ApiKeysPanel({
                   CI attestation guide
                 </a>
                 {" "}for the GitHub Actions flow.
-              </CardDescription>
+              </p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -231,15 +221,39 @@ export default function ApiKeysPanel({
               </Button>
             </div>
           </div>
-        </CardHeader>
 
-        <CardContent className="flex flex-col gap-4 px-5 py-5 sm:px-6">
+          <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-amber-100">
+                  Need help updating an existing attestation workflow?
+                </p>
+                <p className="text-sm text-slate-300">
+                  The migration guide covers <code>artifactKey</code>, superseded history,
+                  canonical badge URLs, and the temporary fallback for older CI payloads.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="border-amber-800/60 bg-slate-950/40 text-amber-100 hover:bg-amber-950/30"
+                onClick={() =>
+                  window.open("/docs/ci-attestations#migration-guide", "_blank", "noopener,noreferrer")
+                }
+              >
+                Attestation migration guide
+                <ArrowUpRight data-icon="inline-end" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/55">
           {isLoading && keys.length === 0 ? (
-            <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-4 py-5 text-sm text-slate-400">
+            <div className="px-5 py-5 text-sm text-slate-400 sm:px-6">
               Loading API keys...
             </div>
           ) : visibleKeys.length > 0 ? (
-            <Table>
+            <Table className="w-full">
               <TableHeader>
                 <TableRow className="border-slate-800 hover:bg-transparent">
                   <TableHead>Key</TableHead>
@@ -329,12 +343,14 @@ export default function ApiKeysPanel({
               </TableBody>
             </Table>
           ) : (
-            <div className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-5 py-6 text-sm leading-6 text-slate-400">
-              No keys match the current filter. Create one when you need server-side API access.
+            <div className="px-5 py-6 text-sm leading-6 text-slate-400 sm:px-6">
+              <div className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-5 py-6">
+                No keys match the current filter. Create one when you need server-side API access.
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="border-slate-800 bg-slate-900 text-white">

@@ -21,6 +21,7 @@ import { toast } from "sonner"
 
 import ApiKeysPanel from "@/components/dashboard/ApiKeysPanel"
 import AttestationLedger from "@/components/dashboard/AttestationLedger"
+import DashboardBadgeDefaultsPanel from "@/components/dashboard/DashboardBadgeDefaultsPanel"
 import DashboardDetailPanel from "@/components/dashboard/DashboardDetailPanel"
 import DashboardHome from "@/components/dashboard/DashboardHome"
 import PartnerAuthScreen from "@/components/dashboard/PartnerAuthScreen"
@@ -41,6 +42,7 @@ import {
   clearPartnerDashboardSessionState,
   createPartnerApiKey,
   createPartnerAttestationDraft,
+  deletePartnerAttestationDraft,
   getPartnerAuthProviders,
   getPartnerSession,
   getPartnerReport,
@@ -55,27 +57,37 @@ import {
   revokePartnerApiKey,
   revokePartnerAttestation,
   rotatePartnerApiKey,
-  updatePartnerAttestationBadgeStyle,
+  updatePartnerAttestationBadgeConfig,
+  updatePartnerAttestationMetadata,
+  updatePartnerBadgePreferences,
   uploadSubmission,
 } from "@/lib/partner-dashboard-api"
+import { buildAttestationPublishMetadata, toAttestationUploadMetadata } from "@/lib/attestation-publish-metadata"
 import {
   getPartnerDashboardPath,
   getPartnerDashboardView,
 } from "@/lib/partner-dashboard-routes"
+import { scanAssembly } from "@/lib/scanner"
 import { cn, copyTextToClipboard } from "@/lib/utils"
 import type {
   PartnerApiKey,
+  PartnerAttestationBadgeConfigInput,
+  PartnerAttestationMetadataInput,
   PartnerAttestationSummary,
   PartnerAuthProviders,
+  PartnerBadgePreferencesInput,
   PartnerCreateKeyInput,
   PartnerCreateKeyResponse,
   PartnerProfile,
   PartnerRotateKeyResponse,
   PartnerWorkspaceView,
   PublishFlowState,
+  PublishFormState,
   ShareOutputs,
 } from "@/types/partner-dashboard"
-import type { AttestationBadgeStyle } from "@/types/attestation"
+import type {
+  PublicAttestationPayload,
+} from "@/types/attestation"
 
 const REPORT_POLL_INTERVAL_MS = 2_000
 const REPORT_POLL_TIMEOUT_MS = 3 * 60 * 1_000
@@ -85,6 +97,11 @@ const EMPTY_AUTH_PROVIDERS: PartnerAuthProviders = {
   devDiscordLoginEnabled: false,
 }
 const PARTNER_DASHBOARD_RETURN_PATH_KEY = "mlvscan.partner-dashboard.return-path"
+type PublishTextField =
+  | "publicDisplayName"
+  | "artifactKey"
+  | "artifactVersion"
+  | "canonicalSourceUrl"
 
 const workspaceItems: Array<{
   value: PartnerWorkspaceView
@@ -124,6 +141,7 @@ export default function PartnerDashboardPage() {
   const [refreshBusy, setRefreshBusy] = useState(false)
   const [detailSheetOpen, setDetailSheetOpen] = useState(false)
   const [profileSheetOpen, setProfileSheetOpen] = useState(false)
+  const [badgeDefaultsOpen, setBadgeDefaultsOpen] = useState(false)
 
   const [authProviders, setAuthProviders] =
     useState<PartnerAuthProviders>(EMPTY_AUTH_PROVIDERS)
@@ -144,8 +162,14 @@ export default function PartnerDashboardPage() {
   const [selectedAttestationId, setSelectedAttestationId] = useState<string | null>(
     null,
   )
-  const [badgeStyleBusyId, setBadgeStyleBusyId] = useState<string | null>(null)
+  const [badgeConfigBusyId, setBadgeConfigBusyId] = useState<string | null>(null)
+  const [metadataBusyId, setMetadataBusyId] = useState<string | null>(null)
+  const [draftDeleteBusyId, setDraftDeleteBusyId] = useState<string | null>(null)
+  const [partnerBadgePreferencesBusy, setPartnerBadgePreferencesBusy] = useState(false)
 
+  const [publishForm, setPublishForm] = useState<PublishFormState>(
+    initialPublishForm(),
+  )
   const [publishFlow, setPublishFlow] = useState<PublishFlowState>(
     initialPublishFlow(),
   )
@@ -157,6 +181,7 @@ export default function PartnerDashboardPage() {
   const selectedAttestation =
     attestations.find((attestation) => attestation.id === selectedAttestationId) ??
     null
+  const badgePreviewPayload = buildBadgePreviewPayload(selectedAttestation)
   const shareOutputs = buildShareOutputs(selectedAttestation)
   const activeWorkspace =
     workspaceItems.find((item) => item.value === workspaceView) ?? workspaceItems[0]
@@ -172,6 +197,8 @@ export default function PartnerDashboardPage() {
   ).length
 
   function handleSelectWorkspace(value: PartnerWorkspaceView): void {
+    setDetailSheetOpen(false)
+    setBadgeDefaultsOpen(false)
     setSidebarOpen(false)
     navigateToWorkspace(value)
   }
@@ -193,12 +220,22 @@ export default function PartnerDashboardPage() {
     setDetailSheetOpen(false)
   }
 
+  function handleOpenBadgeDefaults(): void {
+    setDetailSheetOpen(false)
+    setBadgeDefaultsOpen(true)
+  }
+
+  function handleCloseBadgeDefaults(): void {
+    setBadgeDefaultsOpen(false)
+  }
+
   function resetWorkspaceState(): void {
     cancelPublishFlowRun()
     setKeys([])
     setAttestations([])
     setSelectedAttestationId(null)
     setWorkspaceError("")
+    setPublishForm(initialPublishForm())
     setPublishFlow(initialPublishFlow())
     setPublishFile(null)
     setPublishError("")
@@ -520,7 +557,7 @@ export default function PartnerDashboardPage() {
     try {
       const nextAttestation = await refreshPartnerAttestation(id)
       upsertAttestationRecord(nextAttestation)
-      setDetailSheetOpen(true)
+      setBadgeDefaultsOpen(false)
       toast.success("Attestation refreshed to the newest report")
     } catch (error) {
       toast.error(
@@ -534,7 +571,8 @@ export default function PartnerDashboardPage() {
       const nextAttestation = await revokePartnerAttestation(id)
       upsertAttestationRecord(nextAttestation)
       navigateToWorkspace("attestations")
-      setDetailSheetOpen(true)
+      setBadgeDefaultsOpen(false)
+      setDetailSheetOpen(false)
       toast.success("Public attestation revoked")
     } catch (error) {
       toast.error(
@@ -543,22 +581,87 @@ export default function PartnerDashboardPage() {
     }
   }
 
-  async function handleUpdateBadgeStyle(
+  async function handleUpdateBadgeConfig(
     id: string,
-    badgeStyle: AttestationBadgeStyle,
+    input: PartnerAttestationBadgeConfigInput,
   ): Promise<void> {
-    setBadgeStyleBusyId(id)
+    setBadgeConfigBusyId(id)
 
     try {
-      const nextAttestation = await updatePartnerAttestationBadgeStyle(id, { badgeStyle })
+      const nextAttestation = await updatePartnerAttestationBadgeConfig(id, input)
       upsertAttestationRecord(nextAttestation)
-      toast.success("Badge design updated")
+      toast.success("Badge settings updated")
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Unable to update badge design.",
       )
     } finally {
-      setBadgeStyleBusyId((current) => (current === id ? null : current))
+      setBadgeConfigBusyId((current) => (current === id ? null : current))
+    }
+  }
+
+  async function handleUpdateAttestationMetadata(
+    id: string,
+    input: PartnerAttestationMetadataInput,
+  ): Promise<void> {
+    setMetadataBusyId(id)
+
+    try {
+      const nextAttestation = await updatePartnerAttestationMetadata(id, input)
+      upsertAttestationRecord(nextAttestation)
+      toast.success("Draft metadata updated")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to update draft metadata.",
+      )
+    } finally {
+      setMetadataBusyId((current) => (current === id ? null : current))
+    }
+  }
+
+  async function handleDeleteAttestationDraft(id: string): Promise<void> {
+    setDraftDeleteBusyId(id)
+
+    try {
+      await deletePartnerAttestationDraft(id)
+      let nextAttestations: PartnerAttestationSummary[] = []
+      setAttestations((current) => {
+        nextAttestations = current.filter((attestation) => attestation.id !== id)
+        return nextAttestations
+      })
+      setSelectedAttestationId((currentId) =>
+        currentId === id ? resolveSelectedAttestationId(nextAttestations, null) : currentId,
+      )
+      setDetailSheetOpen(false)
+      setBadgeDefaultsOpen(false)
+      setPublishFlow((current) =>
+        current.attestationId === id ? initialPublishFlow() : current,
+      )
+      toast.success("Draft attestation deleted")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to delete draft attestation.",
+      )
+    } finally {
+      setDraftDeleteBusyId((current) => (current === id ? null : current))
+    }
+  }
+
+  async function handleUpdatePartnerBadgePreferences(
+    input: PartnerBadgePreferencesInput,
+  ): Promise<void> {
+    setPartnerBadgePreferencesBusy(true)
+
+    try {
+      const nextPartner = await updatePartnerBadgePreferences(input)
+      setPartner(nextPartner)
+      toast.success("Default badge settings updated")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to update default badge settings.",
+      )
+    } finally {
+      setPartnerBadgePreferencesBusy(false)
     }
   }
 
@@ -581,6 +684,7 @@ export default function PartnerDashboardPage() {
       const nextAttestation = await publishPartnerAttestation(attestationId)
       upsertAttestationRecord(nextAttestation)
       navigateToWorkspace("attestations")
+      setBadgeDefaultsOpen(false)
       setDetailSheetOpen(true)
       setPublishFlow((current) => ({
         ...current,
@@ -602,7 +706,11 @@ export default function PartnerDashboardPage() {
 
   async function handleScanArtifact(): Promise<void> {
     if (!publishFile) {
-      setPublishError("Choose a DLL or EXE before starting the scan flow.")
+      setPublishError("Choose a DLL or EXE before starting the scan.")
+      return
+    }
+    if (!publishForm.artifactKey.trim()) {
+      setPublishError("Artifact key is required before creating the draft.")
       return
     }
 
@@ -610,21 +718,28 @@ export default function PartnerDashboardPage() {
     const { runId, signal } = beginPublishFlowRun()
 
     setPublishError("")
-    setPublishFlow({
-      stage: "uploading",
-      message: "Uploading the selected artifact to the scan pipeline...",
-      attestationId: null,
-      submissionId: null,
-      reportId: null,
-    })
+      setPublishFlow({
+        stage: "uploading",
+        message: "Inspecting your assembly and uploading your file...",
+        attestationId: null,
+        submissionId: null,
+        reportId: null,
+      })
 
-    try {
-      const submissionId = await uploadSubmission(file, signal)
+      try {
+      const publishMetadata = await inspectPublishAssembly(file, runId, signal)
+      assertActivePublishFlowRun(runId, signal)
+
+      const submissionId = await uploadSubmission(
+        file,
+        toAttestationUploadMetadata(publishMetadata),
+        signal,
+      )
       assertActivePublishFlowRun(runId, signal)
 
       setPublishFlow({
         stage: "polling",
-        message: "Upload accepted. Waiting for the scan report to complete...",
+        message: "Upload complete. Finalizing scan results...",
         attestationId: null,
         submissionId,
         reportId: null,
@@ -635,13 +750,18 @@ export default function PartnerDashboardPage() {
 
       const nextDraft = await createPartnerAttestationDraft({
         submissionId,
-        publicDisplayName: fileStem(file.name),
+        artifactKey: publishForm.artifactKey,
+        artifactVersion: publishForm.artifactVersion.trim() || (publishMetadata.artifactVersion ?? ""),
+        publicDisplayName: publishForm.publicDisplayName.trim() || fileStem(file.name),
+        canonicalSourceUrl: publishForm.canonicalSourceUrl,
       })
       assertActivePublishFlowRun(runId, signal)
 
       upsertAttestationRecord(nextDraft)
       setPublishFile(null)
+      setPublishForm(initialPublishForm())
       navigateToWorkspace("attestations")
+      setBadgeDefaultsOpen(false)
       setDetailSheetOpen(true)
 
       setPublishFlow({
@@ -660,7 +780,7 @@ export default function PartnerDashboardPage() {
 
       setPublishFlow(initialPublishFlow())
       setPublishError(
-        error instanceof Error ? error.message : "Unable to complete the scan flow.",
+        error instanceof Error ? error.message : "Unable to complete the scan.",
       )
     } finally {
       finishPublishFlowRun(runId)
@@ -697,8 +817,8 @@ export default function PartnerDashboardPage() {
           reportId: report.reportId,
           message:
             report.status === "processing"
-              ? "The scan pipeline is processing the uploaded artifact..."
-              : "Waiting for the scan report to materialize...",
+              ? "We're scanning your file..."
+              : "Waiting for scan results...",
         }))
       } catch (error) {
         if (
@@ -708,8 +828,7 @@ export default function PartnerDashboardPage() {
           setPublishFlow((current) => ({
             ...current,
             stage: "polling",
-            message:
-              "Waiting for the submission record to appear.",
+            message: "Preparing your submission...",
           }))
           await sleep(REPORT_POLL_INTERVAL_MS, signal)
           continue
@@ -721,31 +840,81 @@ export default function PartnerDashboardPage() {
       await sleep(REPORT_POLL_INTERVAL_MS, signal)
     }
 
-    throw new Error(
-      `Timed out waiting for the scan report after the last known status "${lastStatus}".`,
-    )
+      throw new Error(
+        `Timed out waiting for the scan report after the last known status "${lastStatus}".`,
+      )
+    }
+
+  async function inspectPublishAssembly(
+    file: File,
+    runId: number,
+    signal: AbortSignal,
+  ): Promise<ReturnType<typeof buildAttestationPublishMetadata>> {
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      assertActivePublishFlowRun(runId, signal)
+
+      const result = await scanAssembly(bytes, file.name)
+      assertActivePublishFlowRun(runId, signal)
+
+      return buildAttestationPublishMetadata(result)
+    } catch (error) {
+      console.warn("Unable to inspect publish assembly metadata before upload.", error)
+      return {
+        loaderType: null,
+        artifactVersion: null,
+      }
+    }
   }
 
   function handlePublishFileChange(file: File | null): void {
     setPublishFile(file)
     setPublishError("")
+    if (!file) {
+      return
+    }
+
+    const nextStem = fileStem(file.name)
+    setPublishForm((current) => ({
+      ...current,
+      artifactKey:
+        current.artifactKey.trim().length > 0
+          ? current.artifactKey
+          : nextStem.toLowerCase().replace(/[^a-z0-9._/-]+/g, "-"),
+      publicDisplayName:
+        current.publicDisplayName.trim().length > 0 ? current.publicDisplayName : nextStem,
+    }))
   }
 
   function handleResetPublishFlow(): void {
     cancelPublishFlowRun()
+    setPublishForm(initialPublishForm())
     setPublishFlow(initialPublishFlow())
     setPublishFile(null)
     setPublishError("")
   }
 
+  function handlePublishFormChange(
+    field: PublishTextField,
+    value: string,
+  ): void {
+    setPublishForm((current) => ({
+      ...current,
+      [field]: value,
+    }))
+    setPublishError("")
+  }
+
   function handleSelectAttestation(attestation: PartnerAttestationSummary): void {
     setSelectedAttestationId(attestation.id)
+    setBadgeDefaultsOpen(false)
     setDetailSheetOpen(true)
   }
 
   function handleReviewAttestation(attestation: PartnerAttestationSummary): void {
     setSelectedAttestationId(attestation.id)
     navigateToWorkspace("attestations")
+    setBadgeDefaultsOpen(false)
     setDetailSheetOpen(true)
   }
 
@@ -888,62 +1057,82 @@ export default function PartnerDashboardPage() {
                 {workspaceView === "publish" ? (
                   <PublishWorkspace
                     publishFile={publishFile}
+                    publishForm={publishForm}
                     publishFlow={publishFlow}
                     publishError={publishError}
                     onPublishFileChange={handlePublishFileChange}
+                    onPublishFormChange={handlePublishFormChange}
                     onReset={handleResetPublishFlow}
                     onScan={handleScanArtifact}
                   />
                 ) : null}
 
                 {workspaceView === "attestations" ? (
-                  detailSheetOpen && !shouldUseMobileDetailSheet() && selectedAttestation ? (
-                    <div className="space-y-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
-                        <div className="min-w-0">
-                          <p className="dashboard-kicker">Attestation management</p>
-                          <p className="mt-1 truncate text-sm font-medium text-white">
-                            {selectedAttestation.publicDisplayName}
-                          </p>
+                  <div className="space-y-5">
+                    {badgeDefaultsOpen ? (
+                      <DashboardBadgeDefaultsPanel
+                        partner={partner}
+                        payload={badgePreviewPayload}
+                        busy={partnerBadgePreferencesBusy}
+                        onBack={handleCloseBadgeDefaults}
+                        onSave={(value) => void handleUpdatePartnerBadgePreferences(value)}
+                      />
+                    ) : detailSheetOpen && !shouldUseMobileDetailSheet() && selectedAttestation ? (
+                      <div className="space-y-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                          <div className="min-w-0">
+                            <p className="dashboard-kicker">Attestation management</p>
+                            <p className="mt-1 truncate text-sm font-medium text-white">
+                              {selectedAttestation.publicDisplayName}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="border-slate-700 border bg-slate-900 text-slate-200 hover:bg-slate-800"
+                            onClick={handleCloseAttestationDetail}
+                          >
+                            <ChevronLeft data-icon="inline-start" className="size-4" />
+                            Back to ledger
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          className="border-slate-700 border bg-slate-900 text-slate-200 hover:bg-slate-800"
-                          onClick={handleCloseAttestationDetail}
-                        >
-                          <ChevronLeft data-icon="inline-start" className="size-4" />
-                          Back to ledger
-                        </Button>
-                      </div>
 
-                      <DashboardDetailPanel
-                        attestation={selectedAttestation}
-                        shareOutputs={shareOutputs}
-                        onPublish={handlePublishAttestation}
+                        <DashboardDetailPanel
+                          key={buildDetailPanelKey(selectedAttestation)}
+                          attestation={selectedAttestation}
+                          shareOutputs={shareOutputs}
+                          onPublish={handlePublishAttestation}
+                          onRefresh={handleRefreshAttestation}
+                          onRevoke={handleRevokeAttestation}
+                          onDeleteDraft={handleDeleteAttestationDraft}
+                          onMetadataChange={handleUpdateAttestationMetadata}
+                          onBadgeConfigChange={handleUpdateBadgeConfig}
+                          onOpenLink={handleOpenLink}
+                          onCopySnippet={handleCopySnippet}
+                          publishBusy={publishFlow.stage === "publishing"}
+                          metadataBusy={metadataBusyId === selectedAttestation.id}
+                          deleteBusy={draftDeleteBusyId === selectedAttestation.id}
+                          badgeConfigBusy={badgeConfigBusyId === selectedAttestation.id}
+                          publishOutcomeLabel={getPublishOutcomeLabel(attestations, selectedAttestation)}
+                        />
+                      </div>
+                    ) : (
+                      <AttestationLedger
+                        attestations={attestations}
+                        selectedAttestationId={selectedAttestationId}
+                        isLoading={attestationsLoading}
+                        errorMessage=""
+                        onSelect={handleSelectAttestation}
+                        onReview={handleReviewAttestation}
                         onRefresh={handleRefreshAttestation}
                         onRevoke={handleRevokeAttestation}
-                        onBadgeStyleChange={handleUpdateBadgeStyle}
+                        onDeleteDraft={handleDeleteAttestationDraft}
                         onOpenLink={handleOpenLink}
                         onCopySnippet={handleCopySnippet}
-                        publishBusy={publishFlow.stage === "publishing"}
-                        badgeStyleBusy={badgeStyleBusyId === selectedAttestation.id}
+                        onOpenDetails={() => setDetailSheetOpen(true)}
+                        onOpenBadgeDefaults={handleOpenBadgeDefaults}
                       />
-                    </div>
-                  ) : (
-                    <AttestationLedger
-                      attestations={attestations}
-                      selectedAttestationId={selectedAttestationId}
-                      isLoading={attestationsLoading}
-                      errorMessage=""
-                      onSelect={handleSelectAttestation}
-                      onReview={handleReviewAttestation}
-                      onRefresh={handleRefreshAttestation}
-                      onRevoke={handleRevokeAttestation}
-                      onOpenLink={handleOpenLink}
-                      onCopySnippet={handleCopySnippet}
-                      onOpenDetails={() => setDetailSheetOpen(true)}
-                    />
-                  )
+                    )}
+                  </div>
                 ) : null}
 
                 {workspaceView === "access" ? (
@@ -1043,16 +1232,22 @@ export default function PartnerDashboardPage() {
           </SheetHeader>
           <div className="h-full overflow-y-auto p-4">
             <DashboardDetailPanel
+              key={selectedAttestation ? buildDetailPanelKey(selectedAttestation) : "empty-detail"}
               attestation={selectedAttestation}
               shareOutputs={shareOutputs}
               onPublish={handlePublishAttestation}
               onRefresh={handleRefreshAttestation}
               onRevoke={handleRevokeAttestation}
-              onBadgeStyleChange={handleUpdateBadgeStyle}
+              onDeleteDraft={handleDeleteAttestationDraft}
+              onMetadataChange={handleUpdateAttestationMetadata}
+              onBadgeConfigChange={handleUpdateBadgeConfig}
               onOpenLink={handleOpenLink}
               onCopySnippet={handleCopySnippet}
               publishBusy={publishFlow.stage === "publishing"}
-              badgeStyleBusy={selectedAttestation ? badgeStyleBusyId === selectedAttestation.id : false}
+              metadataBusy={selectedAttestation ? metadataBusyId === selectedAttestation.id : false}
+              deleteBusy={selectedAttestation ? draftDeleteBusyId === selectedAttestation.id : false}
+              badgeConfigBusy={selectedAttestation ? badgeConfigBusyId === selectedAttestation.id : false}
+              publishOutcomeLabel={selectedAttestation ? getPublishOutcomeLabel(attestations, selectedAttestation) : null}
             />
           </div>
         </SheetContent>
@@ -1203,6 +1398,21 @@ function initialPublishFlow(): PublishFlowState {
   }
 }
 
+function initialPublishForm(): PublishFormState {
+  return {
+    publicDisplayName: "",
+    artifactKey: "",
+    artifactVersion: "",
+    canonicalSourceUrl: "",
+    badgeDensity: "compact",
+    badgeSlots: {
+      runtime: true,
+      leftDetail: "none",
+      rightDetail: "none",
+    },
+  }
+}
+
 function createAbortError(): DOMException {
   return new DOMException("The operation was aborted.", "AbortError")
 }
@@ -1321,6 +1531,100 @@ function resolveSelectedAttestationId(
   }
 
   return attestations[0]?.id ?? null
+}
+
+function getPublishOutcomeLabel(
+  attestations: PartnerAttestationSummary[],
+  attestation: PartnerAttestationSummary | null,
+): string | null {
+  if (!attestation || attestation.publicationStatus !== "draft") {
+    return null
+  }
+
+  const current = attestations.find((item) =>
+    item.id !== attestation.id
+    && item.publicationStatus === "published"
+    && item.isCurrent
+    && item.artifactKey === attestation.artifactKey
+  )
+
+  return current
+    ? `Replace current attestation for ${attestation.artifactKey}.`
+    : `Publish new current attestation for ${attestation.artifactKey}.`
+}
+
+function buildDetailPanelKey(attestation: PartnerAttestationSummary): string {
+  return [
+    attestation.id,
+    attestation.artifactKey,
+    attestation.artifactVersion ?? "",
+    attestation.publicDisplayName,
+    attestation.canonicalSourceUrl ?? "",
+  ].join(":")
+}
+
+function buildBadgePreviewPayload(
+  attestation: PartnerAttestationSummary | null,
+): PublicAttestationPayload {
+  if (attestation) {
+    return attestation
+  }
+
+  return {
+    shareId: "att_preview",
+    verificationTier: "self_submitted",
+    publicationStatus: "published",
+    sourceBindingStatus: "none",
+    badgeStyle: "split-pill",
+    badge: {
+      schemaVersion: "badge.v2",
+      style: "split-pill",
+      density: "compact",
+      slots: {
+        runtime: true,
+        leftDetail: "none",
+        rightDetail: "none",
+      },
+      brand: {
+        kind: "mlvscan-check",
+        label: "MLVScan attested",
+      },
+      tone: "clean",
+      statusLabel: "Clean",
+      fileLabel: "SampleMod.dll",
+      verificationLabel: "Self-submitted",
+      runtimeLabel: "IL2CPP",
+      sourceBindingLabel: "No source",
+      versionLabel: "1.0.0",
+      scannedDateLabel: "2026-04-06",
+      shortHashLabel: "89abcdef",
+    },
+    publicDisplayName: "Sample Mod",
+    artifactKey: "sample-mod",
+    artifactVersion: "1.0.0",
+    isCurrent: true,
+    supersededAt: null,
+    supersededByAttestationId: null,
+    supersededByShareId: null,
+    fileName: "SampleMod.dll",
+    canonicalSourceUrl: null,
+    activeReportId: "report-preview",
+    contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    sizeBytes: 12345,
+    scannerVersion: "1.2.3",
+    schemaVersion: "1.2.0",
+    scannedAt: "2026-04-06T12:00:00.000Z",
+    classification: "Clean",
+    headline: "No known threats detected",
+    summary: "No known malware evidence was retained for these bytes.",
+    blockingRecommended: false,
+    primaryThreatFamilyId: null,
+    threatFamilies: [],
+    findings: [],
+    findingCount: 0,
+    publishedAt: "2026-04-06T12:05:00.000Z",
+    revokedAt: null,
+  }
 }
 
 function buildShareOutputs(

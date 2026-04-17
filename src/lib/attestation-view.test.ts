@@ -4,6 +4,7 @@ import {
   getAttestationTone,
   getAttestationVerdictLabel,
   getSourceBindingLabel,
+  getVerificationTierDescription,
   getVerificationTierLabel,
   shortenHash,
 } from "@/lib/attestation-view"
@@ -24,6 +25,8 @@ describe("attestation-view", () => {
     expect(getSourceBindingLabel("stale")).toBe("Source stale")
     expect(getSourceBindingLabel("declared")).toBe("Publisher-declared source URL")
     expect(getVerificationTierLabel("self_submitted")).toBe("Self-submitted scan")
+    expect(getVerificationTierDescription("self_submitted")).toContain("exact SHA-256")
+    expect(getVerificationTierDescription("source_verified")).toContain("declared source")
   })
 
   it("shortens long hashes while preserving the ends", () => {

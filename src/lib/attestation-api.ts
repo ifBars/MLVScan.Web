@@ -91,6 +91,12 @@ function isPublicAttestationPayload(value: unknown): value is PublicAttestationP
   return (
     typeof value.shareId === "string" &&
     typeof value.publicDisplayName === "string" &&
+    typeof value.artifactKey === "string" &&
+    (value.artifactVersion === null || typeof value.artifactVersion === "string") &&
+    typeof value.isCurrent === "boolean" &&
+    (value.supersededAt === null || typeof value.supersededAt === "string") &&
+    (value.supersededByAttestationId === null || typeof value.supersededByAttestationId === "string") &&
+    (value.supersededByShareId === null || typeof value.supersededByShareId === "string") &&
     typeof value.fileName === "string" &&
     typeof value.activeReportId === "string" &&
     typeof value.contentHash === "string" &&
@@ -126,8 +132,10 @@ function isPublicAttestationBadgeMetadata(
 
   const brand = value.brand
   return (
-    value.schemaVersion === "badge.v1"
+    value.schemaVersion === "badge.v2"
     && isAttestationBadgeStyle(value.style)
+    && isBadgeDensity(value.density)
+    && isBadgeSlots(value.slots)
     && isRecord(brand)
     && brand.kind === "mlvscan-check"
     && typeof brand.label === "string"
@@ -136,9 +144,23 @@ function isPublicAttestationBadgeMetadata(
     && typeof value.fileLabel === "string"
     && typeof value.verificationLabel === "string"
     && (value.runtimeLabel === null || typeof value.runtimeLabel === "string")
+    && typeof value.sourceBindingLabel === "string"
+    && (value.versionLabel === null || typeof value.versionLabel === "string")
     && typeof value.scannedDateLabel === "string"
     && typeof value.shortHashLabel === "string"
+    && (value.display === undefined || isBadgeDisplay(value.display))
   )
+}
+
+function isBadgeDisplay(
+  value: unknown,
+): value is NonNullable<NonNullable<PublicAttestationPayload["badge"]>["display"]> {
+  return isRecord(value)
+    && typeof value.showRuntime === "boolean"
+    && typeof value.showVerification === "boolean"
+    && typeof value.showFile === "boolean"
+    && typeof value.showScannedDate === "boolean"
+    && typeof value.showShortHash === "boolean"
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -150,7 +172,7 @@ function isVerificationTier(value: unknown): value is PublicAttestationPayload["
 }
 
 function isPublicationStatus(value: unknown): value is PublicAttestationPayload["publicationStatus"] {
-  return value === "draft" || value === "published" || value === "revoked"
+  return value === "draft" || value === "published" || value === "superseded" || value === "revoked"
 }
 
 function isSourceBindingStatus(
@@ -160,7 +182,18 @@ function isSourceBindingStatus(
 }
 
 function isAttestationBadgeStyle(value: unknown): value is PublicAttestationPayload["badgeStyle"] {
-  return value === "ledger-strip" || value === "split-pill" || value === "classic-shield" || value === "signature-bar"
+  return value === "split-pill"
+}
+
+function isBadgeDensity(value: unknown): boolean {
+  return value === "compact" || value === "detailed"
+}
+
+function isBadgeSlots(value: unknown): boolean {
+  return isRecord(value)
+    && typeof value.runtime === "boolean"
+    && typeof value.leftDetail === "string"
+    && typeof value.rightDetail === "string"
 }
 
 function isAttestationBadgeTone(

@@ -6,6 +6,7 @@ import {
   getDefaultFindings,
   getDisplayedFindings,
   getResultClassification,
+  getResultPresentationClassification,
 } from "@/lib/scan-result-view"
 
 const createResult = (overrides: Partial<ScanResult> = {}): ScanResult => ({
@@ -92,5 +93,33 @@ describe("scan-result-view", () => {
     })
 
     expect(getResultClassification(result)).toBe("Suspicious")
+  })
+
+  it("surfaces incomplete scan warnings as manual review instead of clean", () => {
+    const result = createResult({
+      disposition: {
+        classification: "Clean",
+        headline: "No known threats detected",
+        summary: "No retained malicious verdict was produced.",
+        blockingRecommended: false,
+        primaryThreatFamilyId: null,
+        relatedFindingIds: [],
+      },
+      findings: [
+        createFinding({
+          id: "incomplete-scan-warning",
+          severity: "Low",
+          visibility: "Advanced",
+          description:
+            "Warning: Some parts of the assembly could not be scanned. Please ensure this is a valid Unity mod. This doesn't necessarily mean the mod is malicious.",
+        }),
+      ],
+    })
+
+    expect(getResultClassification(result)).toBe("Clean")
+    expect(getResultPresentationClassification(result)).toBe("ManualReviewRequired")
+    expect(getActionItems(result)[0]).toBe(
+      "Do not treat this file as clean until the incomplete scan warning is reviewed."
+    )
   })
 })

@@ -5,6 +5,8 @@ import {
   MoreHorizontal,
   RefreshCcw,
   ShieldBan,
+  SlidersHorizontal,
+  Trash2,
 } from "lucide-react"
 
 import {
@@ -19,13 +21,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,9 +61,11 @@ interface AttestationLedgerProps {
   onReview: (attestation: PartnerAttestationSummary) => void
   onRefresh: (id: string) => Promise<void>
   onRevoke: (id: string) => Promise<void>
+  onDeleteDraft: (id: string) => Promise<void>
   onOpenLink: (url: string) => void
   onCopySnippet: (text: string, successMessage: string) => void
   onOpenDetails: () => void
+  onOpenBadgeDefaults: () => void
 }
 
 export default function AttestationLedger({
@@ -80,9 +77,11 @@ export default function AttestationLedger({
   onReview,
   onRefresh,
   onRevoke,
+  onDeleteDraft,
   onOpenLink,
   onCopySnippet,
   onOpenDetails,
+  onOpenBadgeDefaults,
 }: AttestationLedgerProps) {
   const [showRevoked, setShowRevoked] = useState(false)
   const [revokeAttestationId, setRevokeAttestationId] = useState<string | null>(null)
@@ -105,39 +104,46 @@ export default function AttestationLedger({
 
   return (
     <>
-      <Card className="partner-pane overflow-hidden border border-slate-800/80 bg-slate-950/55 shadow-none">
-        <CardHeader className="partner-pane-header flex flex-col gap-4 px-5 py-4 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <Badge variant="outline" className="w-fit border-slate-700 bg-slate-800 text-slate-300">
-                Attestation ledger
-              </Badge>
-              <CardTitle className="font-display text-[1.65rem] text-white">
-                Review your publication history
-              </CardTitle>
-              <CardDescription className="max-w-3xl text-sm leading-6 text-slate-400">
-                Drafts, published records, and revoked attestations all live here. Review an item,
-                refresh it to the newest completed report for the same hash, or revoke a public page
-                without touching the API key surface.
-              </CardDescription>
-            </div>
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h2 className="font-display text-[1.65rem] text-white">
+              Review your publication history
+            </h2>
+            <p className="max-w-3xl text-sm leading-6 text-slate-400">
+              Drafts, current records, superseded history, and revoked attestations all live
+              here. Review an item, sync it to the latest completed report for the same bytes, or
+              revoke a public page without touching the API key surface.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+              onClick={onOpenBadgeDefaults}
+            >
+              <SlidersHorizontal data-icon="inline-start" className="size-4" />
+              Badge defaults
+            </Button>
 
             <div className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-2">
               <span className="text-sm text-slate-300">Show revoked</span>
               <Switch checked={showRevoked} onCheckedChange={setShowRevoked} />
             </div>
           </div>
+        </div>
 
-          {errorMessage ? (
-            <div className="rounded-lg border border-rose-600/30 bg-rose-950/50 px-4 py-3 text-sm text-rose-200">
-              {errorMessage}
-            </div>
-          ) : null}
-        </CardHeader>
+        {errorMessage ? (
+          <div className="rounded-lg border border-rose-600/30 bg-rose-950/50 px-4 py-3 text-sm text-rose-200">
+            {errorMessage}
+          </div>
+        ) : null}
 
-        <CardContent className="flex flex-col gap-4 px-5 py-5 sm:px-6">
+        <div className="overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/55">
           {isLoading && attestations.length === 0 ? (
-            <div className="grid gap-3">
+            <div className="grid gap-3 px-5 py-5 sm:px-6">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton
                   key={`attestation-skeleton-${index}`}
@@ -146,7 +152,7 @@ export default function AttestationLedger({
               ))}
             </div>
           ) : visibleAttestations.length > 0 ? (
-            <Table>
+            <Table className="w-full">
               <TableHeader>
                 <TableRow className="border-slate-800 hover:bg-transparent">
                   <TableHead>Name</TableHead>
@@ -198,9 +204,34 @@ export default function AttestationLedger({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
-                          {attestation.publicationStatus}
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="outline" className="w-fit border-slate-700 bg-slate-800 text-slate-300">
+                            {attestation.publicationStatus === "published" && attestation.isCurrent
+                              ? "current"
+                              : attestation.publicationStatus}
+                          </Badge>
+                          <p className="max-w-[240px] text-xs leading-5 text-slate-500">
+                            {attestation.publicationStatus === "draft"
+                              ? `Not public yet. Publish makes this the current record for ${attestation.artifactKey}.`
+                              : attestation.publicationStatus === "published" && attestation.isCurrent
+                                ? `Current attestation for ${attestation.artifactKey}.`
+                                : attestation.publicationStatus === "superseded"
+                                  ? "Historical public record kept reachable during propagation and verification windows."
+                                  : "No longer a valid public trust signal."}
+                          </p>
+                          {attestation.publicationStatus === "superseded" && attestation.supersededByShareId ? (
+                            <button
+                              type="button"
+                              className="w-fit text-left text-xs text-primary transition hover:text-primary/80"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                onOpenLink(`/attestations/${attestation.supersededByShareId}`)
+                              }}
+                            >
+                              Open current replacement
+                            </button>
+                          ) : null}
+                        </div>
                       </TableCell>
                       <TableCell className="text-slate-400">
                         {formatDate(attestation.refreshedAt ?? attestation.createdAt)}
@@ -264,9 +295,18 @@ export default function AttestationLedger({
                                   </DropdownMenuItem>
                                 </>
                               ) : null}
+                              {attestation.publicationStatus === "draft" ? (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => onDeleteDraft(attestation.id)}>
+                                    <Trash2 data-icon="inline-start" />
+                                    Delete draft
+                                  </DropdownMenuItem>
+                                </>
+                              ) : null}
                               <DropdownMenuItem onClick={() => onRefresh(attestation.id)}>
                                 <RefreshCcw data-icon="inline-start" />
-                                Refresh to newest report
+                                Sync latest report for these bytes
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -278,13 +318,15 @@ export default function AttestationLedger({
               </TableBody>
             </Table>
           ) : (
-            <div className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-5 py-6 text-sm leading-6 text-slate-400">
-              No attestations match the current filter yet. Submit an artifact from the draft
-              workspace to create the first ledger entry.
+            <div className="px-5 py-6 text-sm leading-6 text-slate-400 sm:px-6">
+              <div className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-5 py-6">
+                No attestations match the current filter yet. Submit an artifact from the draft
+                workspace to create the first ledger entry.
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <AlertDialog open={revokeAttestationId !== null} onOpenChange={(open) => !open && setRevokeAttestationId(null)}>
         <AlertDialogContent className="border-slate-800 bg-slate-900">

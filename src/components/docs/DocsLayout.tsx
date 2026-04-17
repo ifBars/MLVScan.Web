@@ -1,10 +1,33 @@
 import { Outlet } from "react-router-dom"
 import DocsSidebar from "./DocsSidebar"
 import { Menu, X } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+const SCROLL_HIDE_THRESHOLD = 100
+const SCROLL_SHOW_THRESHOLD = 30
 
 const DocsLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [navOffset, setNavOffset] = useState(true)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY
+      setNavOffset((current) => {
+        if (y <= SCROLL_SHOW_THRESHOLD) {
+          return true
+        }
+        if (y > SCROLL_HIDE_THRESHOLD) {
+          return false
+        }
+        return current
+      })
+    }
+
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -12,7 +35,11 @@ const DocsLayout = () => {
         <div className="grid lg:grid-cols-[280px_minmax(0,1fr)]">
           {/* Desktop: sidebar column */}
           <aside className="hidden lg:block border-r border-gray-800/80 bg-gray-900/40">
-            <div className="sticky top-16 h-[calc(100vh-4rem)]">
+            <div
+              className={`sticky transition-all duration-300 ${
+                navOffset ? "top-16 h-[calc(100vh-4rem)]" : "top-0 h-screen"
+              }`}
+            >
               <DocsSidebar />
             </div>
           </aside>
@@ -20,7 +47,11 @@ const DocsLayout = () => {
           {/* Main column */}
           <div className="min-w-0">
             {/* Mobile header */}
-            <div className="lg:hidden sticky top-16 z-30 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 px-4 py-4">
+            <div
+              className={`lg:hidden sticky z-30 border-b border-gray-800 bg-gray-900/95 px-4 py-4 backdrop-blur-md transition-all duration-300 ${
+                navOffset ? "top-16" : "top-0"
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white">Documentation</h2>
                 <button
@@ -50,7 +81,9 @@ const DocsLayout = () => {
 
       {/* Mobile sidebar */}
       <div
-        className={`lg:hidden fixed left-0 top-16 bottom-0 z-50 transform transition-transform w-72 ${
+        className={`lg:hidden fixed left-0 bottom-0 z-50 w-72 transform transition-all duration-300 ${
+          navOffset ? "top-16" : "top-0"
+        } ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

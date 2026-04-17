@@ -90,7 +90,7 @@ export default function AttestationBadgeStylePicker({
                 <img
                   src={buildAttestationBadgePreviewDataUri(attestation, option.value)}
                   alt={`${option.label} badge preview`}
-                  className="h-10 w-full object-contain object-left"
+                  className="block h-10 w-auto max-w-full object-contain object-left"
                 />
               </div>
             </button>

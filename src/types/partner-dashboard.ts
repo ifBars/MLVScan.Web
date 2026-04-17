@@ -1,5 +1,6 @@
 import type {
-  AttestationBadgeStyle,
+  AttestationBadgeSlots,
+  BadgeDensity,
   PublicAttestationPayload,
 } from "@/types/attestation"
 
@@ -19,6 +20,9 @@ export interface PartnerProfile {
   requestedTier: PartnerTier | null
   authMethod: PartnerAuthMethod
   discordUsername: string | null
+  defaultBadgeStyle: "split-pill"
+  defaultBadgeDensity: BadgeDensity
+  defaultBadgeSlots: AttestationBadgeSlots
 }
 
 export interface PartnerSessionResponse {
@@ -84,12 +88,33 @@ export interface PartnerAttestationSummary extends PublicAttestationPayload {
 
 export interface PartnerAttestationDraftInput {
   submissionId: string
+  artifactKey: string
+  artifactVersion?: string
+  publicDisplayName?: string
+  canonicalSourceUrl?: string
+  badgeDensity?: BadgeDensity
+  badgeSlots?: AttestationBadgeSlots | null
+}
+
+export interface PartnerAttestationBadgeStyleInput {
+  badgeStyle: string
+}
+
+export interface PartnerAttestationBadgeConfigInput {
+  badgeDensity: BadgeDensity
+  badgeSlots: AttestationBadgeSlots | null
+}
+
+export interface PartnerAttestationMetadataInput {
+  artifactKey: string
+  artifactVersion?: string
   publicDisplayName?: string
   canonicalSourceUrl?: string
 }
 
-export interface PartnerAttestationBadgeStyleInput {
-  badgeStyle: AttestationBadgeStyle
+export interface PartnerBadgePreferencesInput {
+  defaultBadgeDensity: BadgeDensity
+  defaultBadgeSlots: AttestationBadgeSlots | null
 }
 
 export interface PartnerUploadResponse {
@@ -100,6 +125,10 @@ export interface PartnerUploadResponse {
       self?: string
     }
   }
+}
+
+export interface PartnerSubmissionMetadata {
+  loaderType?: string
 }
 
 export interface PartnerUploadUrlResponse {
@@ -122,7 +151,11 @@ export interface PartnerReportResponse {
 
 export interface PublishFormState {
   publicDisplayName: string
+  artifactKey: string
+  artifactVersion: string
   canonicalSourceUrl: string
+  badgeDensity: BadgeDensity
+  badgeSlots: AttestationBadgeSlots
 }
 
 export interface PublishFlowState {

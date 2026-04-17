@@ -19,7 +19,9 @@ import {
   getAdvancedFindings,
   getDefaultFindings,
   getDisplayedFindings,
+  getIncompleteScanFinding,
   getResultClassification,
+  getResultPresentationClassification,
 } from "@/lib/scan-result-view"
 import { cn, formatBytes, formatDate, getSeverityBadgeColor } from "@/lib/utils"
 import { patternLabelMap } from "@/components/results/threat-family-match-utils"
@@ -45,6 +47,12 @@ const verdictPresets = {
     message: "This file was flagged as suspicious. It may be malicious, but it may also be a false positive.",
     icon: ShieldAlert,
     tone: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+  },
+  ManualReviewRequired: {
+    label: "Manual Review Required",
+    message: "MLVScan could not complete full analysis for this file. Review the scan warning before treating it as clean.",
+    icon: ShieldAlert,
+    tone: "bg-yellow-500/10 text-yellow-200 border-yellow-500/30",
   },
   KnownThreat: {
     label: "Likely Malware Detected",
@@ -74,12 +82,14 @@ const getFindingSummary = (finding: Finding) => {
 }
 
 const ScanReport = ({ result, onReset }: ScanReportProps) => {
-  const classification = getResultClassification(result)
-  const verdict = verdictPresets[classification]
+  const baseClassification = getResultClassification(result)
+  const presentationClassification = getResultPresentationClassification(result)
+  const verdict = verdictPresets[presentationClassification]
   const VerdictIcon = verdict.icon
   const familyMatches = result.threatFamilies ?? []
   const defaultFindings = useMemo(() => getDefaultFindings(result), [result])
   const advancedFindings = useMemo(() => getAdvancedFindings(result), [result])
+  const incompleteScanFinding = useMemo(() => getIncompleteScanFinding(result), [result])
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [activeSeverity, setActiveSeverity] = useState<Severity | "All">("All")
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
@@ -117,6 +127,10 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
   }, [effectiveSelectedKey, filteredFindings])
 
   const highlightedFindings = useMemo(() => {
+    if (presentationClassification === "ManualReviewRequired" && incompleteScanFinding) {
+      return [incompleteScanFinding]
+    }
+
     if (defaultFindings.length > 0) {
       return [...defaultFindings]
         .sort((a, b) => severityOrder[b.severity] - severityOrder[a.severity])
@@ -128,11 +142,20 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
     }
 
     return []
-  }, [defaultFindings, showAdvanced, sortedDisplayedFindings])
+  }, [defaultFindings, incompleteScanFinding, presentationClassification, showAdvanced, sortedDisplayedFindings])
 
-  const dispositionHeadline = result.disposition?.headline ?? verdict.label
-  const dispositionSummary = result.disposition?.summary ?? verdict.message
-  const blockingRecommended = result.disposition?.blockingRecommended ?? classification !== "Clean"
+  const dispositionHeadline =
+    presentationClassification === "ManualReviewRequired"
+      ? verdict.label
+      : result.disposition?.headline ?? verdict.label
+  const dispositionSummary =
+    presentationClassification === "ManualReviewRequired"
+      ? incompleteScanFinding?.description ?? verdict.message
+      : result.disposition?.summary ?? verdict.message
+  const blockingRecommended =
+    result.disposition?.blockingRecommended ?? baseClassification !== "Clean"
+  const dispositionStatLabel =
+    presentationClassification === "ManualReviewRequired" ? "Manual review" : presentationClassification
 
   return (
     <div className="space-y-6">
@@ -163,8 +186,8 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
         <CardContent>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-lg bg-muted/30 p-4">
-              <p className="text-sm text-muted-foreground">Disposition</p>
-              <p className="text-2xl font-bold text-foreground">{classification}</p>
+              <p className="text-sm text-muted-foreground">Outcome</p>
+              <p className="text-2xl font-bold text-foreground">{dispositionStatLabel}</p>
             </div>
             <div className="rounded-lg bg-emerald-500/5 p-4">
               <p className="text-sm text-emerald-300/80">Retained Findings</p>
@@ -182,6 +205,23 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
         </CardContent>
       </Card>
 
+      {presentationClassification === "ManualReviewRequired" && (
+        <Card className="border-yellow-500/30 bg-yellow-500/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-yellow-300" />
+              <div className="space-y-1">
+                <p className="font-semibold text-yellow-100">Analysis was incomplete</p>
+                <p className="text-sm text-yellow-100/80">
+                  {incompleteScanFinding?.description ??
+                    "The scanner could not complete full IL analysis for this file. Review it manually before treating it as clean."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <ThreatFamilyMatches
         matches={familyMatches}
         primaryThreatFamilyId={result.disposition?.primaryThreatFamilyId}
@@ -192,7 +232,9 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
           <CardHeader>
             <CardTitle>What it means</CardTitle>
             <CardDescription>
-              Retained findings support the primary verdict. Advanced diagnostics stay hidden unless you opt in.
+              {presentationClassification === "ManualReviewRequired"
+                ? "The scanner could not complete full analysis, so this file needs review before it can be treated as clean."
+                : "Retained findings support the primary verdict. Advanced diagnostics stay hidden unless you opt in."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

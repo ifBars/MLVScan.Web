@@ -59,8 +59,8 @@ export default function DashboardHome({
     : null
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-800/80 bg-slate-950/55">
-      <section className="border-b border-slate-800 px-5 py-8 sm:px-6 lg:px-8 lg:py-10">
+    <div className="space-y-8">
+      <section className="px-1 py-2 sm:px-0">
         <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="dashboard-kicker">Home</p>
@@ -77,8 +77,8 @@ export default function DashboardHome({
         </div>
       </section>
 
-      <section className="px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="flex flex-col gap-3 border-b border-slate-800 pb-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="border-t border-slate-800 pt-8">
+        <div className="flex flex-col gap-3 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-display text-3xl leading-tight text-white">
               Recent attestation activity
@@ -170,8 +170,8 @@ export default function DashboardHome({
                 Start the first attestation draft
               </h3>
               <p className="mt-3 text-sm leading-7 text-slate-400">
-                The home surface starts populating once you upload the first DLL or EXE into the
-                attestation flow.
+                This dashboard fills in once you upload your first DLL or EXE and create an
+                attestation draft.
               </p>
             </div>
 
@@ -184,19 +184,11 @@ export default function DashboardHome({
       </section>
 
       <section className="border-t border-slate-800">
-        <div className="border-b border-slate-800 px-5 py-4 sm:px-6 lg:px-8">
-          <p className="dashboard-kicker">Workspace lanes</p>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-            Each surface has one job. Start in Submit, operate from Ledger, and use Access only
-            when you need to rotate or issue API keys.
-          </p>
-        </div>
-
         <div className="divide-y divide-slate-800">
           <WorkspaceRow
             icon={Sparkles}
             title="Submit"
-            description="Upload a DLL or EXE, run the scan flow, and create a fresh draft attestation."
+            description="Upload a mod DLL, scan it, and create a new draft attestation."
             actionLabel="Create draft"
             onClick={() => onSelectWorkspace("publish")}
           />

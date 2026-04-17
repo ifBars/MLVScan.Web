@@ -1,17 +1,34 @@
 export type VerificationTier = "self_submitted" | "source_verified"
-export type PublicationStatus = "draft" | "published" | "revoked"
+export type PublicationStatus = "draft" | "published" | "superseded" | "revoked"
 export type SourceBindingStatus = "none" | "declared" | "verified" | "stale" | "failed"
 export type ThreatDispositionClassification = "Clean" | "Suspicious" | "KnownThreat"
-export type AttestationBadgeStyle =
-  | "ledger-strip"
-  | "split-pill"
-  | "classic-shield"
-  | "signature-bar"
+export type AttestationBadgeStyle = "split-pill"
+export type BadgeDensity = "compact" | "detailed"
+export type BadgeDetailSlot =
+  | "none"
+  | "verification"
+  | "source-binding"
+  | "version"
+  | "scanned-date"
 export type AttestationBadgeTone =
   | "clean"
   | "suspicious"
   | "known-threat"
   | "revoked"
+
+export interface AttestationBadgeSlots {
+  runtime: boolean
+  leftDetail: BadgeDetailSlot
+  rightDetail: BadgeDetailSlot
+}
+
+export interface AttestationBadgeDisplay {
+  showRuntime: boolean
+  showVerification: boolean
+  showFile: boolean
+  showScannedDate: boolean
+  showShortHash: boolean
+}
 
 export interface PublicAttestationFinding {
   id: string | null
@@ -36,8 +53,10 @@ export interface PublicAttestationThreatFamily {
 }
 
 export interface PublicAttestationBadgeMetadata {
-  schemaVersion: "badge.v1"
+  schemaVersion: "badge.v2"
   style: AttestationBadgeStyle
+  density: BadgeDensity
+  slots: AttestationBadgeSlots
   brand: {
     kind: "mlvscan-check"
     label: string
@@ -47,8 +66,11 @@ export interface PublicAttestationBadgeMetadata {
   fileLabel: string
   verificationLabel: string
   runtimeLabel: string | null
+  sourceBindingLabel: string
+  versionLabel: string | null
   scannedDateLabel: string
   shortHashLabel: string
+  display?: AttestationBadgeDisplay
 }
 
 export interface PublicAttestationPayload {
@@ -59,6 +81,12 @@ export interface PublicAttestationPayload {
   badgeStyle: AttestationBadgeStyle
   badge?: PublicAttestationBadgeMetadata
   publicDisplayName: string
+  artifactKey: string
+  artifactVersion: string | null
+  isCurrent: boolean
+  supersededAt: string | null
+  supersededByAttestationId: string | null
+  supersededByShareId: string | null
   fileName: string
   canonicalSourceUrl: string | null
   activeReportId: string

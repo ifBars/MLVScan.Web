@@ -82,7 +82,7 @@ export default function PartnerAuthScreen({
               <div className="mt-5 grid gap-y-3 text-sm leading-6 text-slate-300">
                 <FeatureRow
                   title="Submit exact build artifacts"
-                  description="Create draft attestations from the DLL or EXE that will back the public record."
+                  description="Create draft attestations from the mod DLL that will back the public record."
                 />
                 <FeatureRow
                   title="Review before publishing"

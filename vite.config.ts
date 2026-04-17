@@ -269,6 +269,40 @@ function getSchemaAssetPath(schemaFilePath: string): string {
 
 const frameworkGlob = normalizePath(path.join(wasmCoreDist, '_framework', '**', '*'))
 
+export function buildPartnerApiProxy(target: string) {
+  return {
+    '/account': {
+      target,
+      changeOrigin: true,
+    },
+    '/partner': {
+      target,
+      changeOrigin: true,
+    },
+    '/files': {
+      target,
+      changeOrigin: true,
+    },
+    '/reports': {
+      target,
+      changeOrigin: true,
+    },
+    '/public/attestations': {
+      target,
+      changeOrigin: true,
+    },
+    '^/attestations/[^/]+/badge\\.svg$': {
+      target,
+      changeOrigin: true,
+      rewrite: (requestPath: string) =>
+        requestPath.replace(
+          /^\/attestations\/([^/]+)\/badge\.svg$/,
+          "/public/attestations/$1/badge.svg",
+        ),
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '')
   const partnerApiProxyTarget = env.PARTNER_API_PROXY_TARGET || 'http://localhost:8787'
@@ -300,33 +334,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      proxy: {
-        '/partner': {
-          target: partnerApiProxyTarget,
-          changeOrigin: true,
-        },
-        '/files': {
-          target: partnerApiProxyTarget,
-          changeOrigin: true,
-        },
-        '/reports': {
-          target: partnerApiProxyTarget,
-          changeOrigin: true,
-        },
-        '/public/attestations': {
-          target: partnerApiProxyTarget,
-          changeOrigin: true,
-        },
-        '^/attestations/[^/]+/badge\\.svg$': {
-          target: partnerApiProxyTarget,
-          changeOrigin: true,
-          rewrite: (requestPath) =>
-            requestPath.replace(
-              /^\/attestations\/([^/]+)\/badge\.svg$/,
-              "/public/attestations/$1/badge.svg",
-            ),
-        },
-      },
+      proxy: buildPartnerApiProxy(partnerApiProxyTarget),
     },
     base: '/',
   }

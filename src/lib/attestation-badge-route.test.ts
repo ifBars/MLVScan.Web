@@ -10,8 +10,14 @@ const payload: PublicAttestationPayload = {
   sourceBindingStatus: "none",
   badgeStyle: "split-pill",
   badge: {
-    schemaVersion: "badge.v1",
+    schemaVersion: "badge.v2",
     style: "split-pill",
+    density: "compact",
+    slots: {
+      runtime: true,
+      leftDetail: "none",
+      rightDetail: "none",
+    },
     brand: {
       kind: "mlvscan-check",
       label: "MLVScan attested",
@@ -21,10 +27,18 @@ const payload: PublicAttestationPayload = {
     fileLabel: "SampleMod.dll",
     verificationLabel: "Self-submitted",
     runtimeLabel: "IL2CPP",
+    sourceBindingLabel: "No source",
+    versionLabel: "1.0.0",
     scannedDateLabel: "2026-04-06",
     shortHashLabel: "89abcdef",
   },
   publicDisplayName: "Sample Mod",
+  artifactKey: "sample-mod",
+  artifactVersion: "1.0.0",
+  isCurrent: true,
+  supersededAt: null,
+  supersededByAttestationId: null,
+  supersededByShareId: null,
   fileName: "SampleMod.dll",
   canonicalSourceUrl: null,
   activeReportId: "report-1",
@@ -83,7 +97,7 @@ describe("attestation badge route", () => {
     )
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toContain("image/svg+xml")
-    expect(await response.text()).toContain("MLVScan attested / IL2CPP")
+    expect(await response.text()).toContain("Attested / IL2CPP")
     expect(cacheMatch).toHaveBeenCalled()
     expect(cachePut).toHaveBeenCalled()
   })

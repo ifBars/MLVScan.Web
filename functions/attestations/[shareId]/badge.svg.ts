@@ -1,6 +1,6 @@
-import { normalizeAttestationBadgeStyle, renderAttestationBadgeSvg } from "../../../src/lib/attestation-badge"
+import { renderAttestationBadgeSvg, resolveBadgeDensityAlias } from "../../../src/lib/attestation-badge"
 import { resolvePublicApiBaseUrl } from "../../../src/lib/public-api-base-url"
-import type { AttestationBadgeStyle, PublicAttestationPayload } from "../../../src/types/attestation"
+import type { BadgeDensity, PublicAttestationPayload } from "../../../src/types/attestation"
 
 interface Env {
   PUBLIC_API_BASE_URL?: string
@@ -47,21 +47,14 @@ function requestMatchesEtag(request: Request, etag: string): boolean {
   })
 }
 
-function resolveRequestedBadgeStyle(value: string | null): AttestationBadgeStyle | undefined {
-  if (!value) {
-    return undefined
+function resolveRequestedBadgeDensity(value: string | null): BadgeDensity | undefined {
+  if (!value) return undefined
+  if (value === "compact" || value === "detailed") {
+    return value
   }
-
-  if (
-    value === "ledger-strip"
-    || value === "split-pill"
-    || value === "classic-shield"
-    || value === "signature-bar"
-    || LEGACY_BADGE_STYLE_ALIASES.has(value)
-  ) {
-    return normalizeAttestationBadgeStyle(value)
+  if (LEGACY_BADGE_STYLE_ALIASES.has(value) || value === "split-pill" || value === "ledger-strip" || value === "classic-shield" || value === "signature-bar") {
+    return resolveBadgeDensityAlias(value)
   }
-
   return undefined
 }
 
@@ -150,8 +143,8 @@ export const onRequest = async (context: FunctionContext): Promise<Response> => 
   }
 
   const payload = (await attestationResponse.json()) as PublicAttestationPayload
-  const badgeStyle = resolveRequestedBadgeStyle(new URL(context.request.url).searchParams.get("style"))
-  const etag = await createBadgeEtag(payload, badgeStyle)
+  const badgeDensity = resolveRequestedBadgeDensity(new URL(context.request.url).searchParams.get("style"))
+  const etag = await createBadgeEtag(payload, badgeDensity)
   const headers = withPublicCors(
     new Headers({
       "Content-Type": "image/svg+xml; charset=utf-8",
@@ -169,7 +162,7 @@ export const onRequest = async (context: FunctionContext): Promise<Response> => 
     return new Response(null, { status: 200, headers })
   }
 
-  const response = new Response(renderAttestationBadgeSvg(payload, badgeStyle), {
+  const response = new Response(renderAttestationBadgeSvg(payload, badgeDensity), {
     status: 200,
     headers,
   })

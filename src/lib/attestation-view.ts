@@ -47,6 +47,12 @@ export function getVerificationTierLabel(tier: VerificationTier): string {
   return tier === "source_verified" ? "Source-verified scan" : "Self-submitted scan"
 }
 
+export function getVerificationTierDescription(tier: VerificationTier): string {
+  return tier === "source_verified"
+    ? "MLVScan matched these exact bytes to the declared source at verification time."
+    : "This trust signal applies only to the exact SHA-256 listed on the attestation."
+}
+
 export function shortenHash(hash: string): string {
   if (hash.length <= 24) return hash
   return `${hash.slice(0, 14)}...${hash.slice(-10)}`

@@ -1,4 +1,7 @@
 import type {
+  PartnerBadgePreferencesInput,
+  PartnerAttestationBadgeConfigInput,
+  PartnerAttestationMetadataInput,
   PartnerAttestationBadgeStyleInput,
   PartnerAttestationDraftInput,
   PartnerAttestationSummary,
@@ -7,10 +10,12 @@ import type {
   PartnerCreateKeyResponse,
   PartnerReportResponse,
   PartnerRotateKeyResponse,
+  PartnerSubmissionMetadata,
   PartnerSessionResponse,
   PartnerUploadResponse,
   PartnerUploadUrlResponse,
   PartnerApiKey,
+  PartnerProfile,
 } from "@/types/partner-dashboard"
 import { resolvePublicApiBaseUrl } from "@/lib/public-api-base-url"
 
@@ -153,6 +158,39 @@ export async function logoutPartner(): Promise<void> {
   clearPartnerDashboardSessionState()
 }
 
+function normalizeOptionalString(value: string | undefined): string | undefined {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
+function sanitizeDraftInput(input: PartnerAttestationDraftInput): PartnerAttestationDraftInput {
+  const sanitizedMetadata = sanitizeAttestationMetadataInput(input)
+
+  return {
+    ...input,
+    ...sanitizedMetadata,
+  }
+}
+
+function sanitizeAttestationMetadataInput(
+  input: PartnerAttestationMetadataInput,
+): PartnerAttestationMetadataInput {
+  const artifactVersion = normalizeOptionalString(input.artifactVersion)
+  const publicDisplayName = normalizeOptionalString(input.publicDisplayName)
+  const canonicalSourceUrl = normalizeOptionalString(input.canonicalSourceUrl)
+
+  return {
+    artifactKey: input.artifactKey.trim(),
+    artifactVersion,
+    publicDisplayName,
+    canonicalSourceUrl,
+  }
+}
+
 export async function listPartnerApiKeys(signal?: AbortSignal): Promise<PartnerApiKey[]> {
   const response = await requestApi<{ keys: PartnerApiKey[] }>("/account/api-keys", { signal })
   return response.keys ?? []
@@ -189,9 +227,10 @@ export async function listPartnerAttestations(signal?: AbortSignal): Promise<Par
 export async function createPartnerAttestationDraft(
   input: PartnerAttestationDraftInput,
 ): Promise<PartnerAttestationSummary> {
+  const payload = sanitizeDraftInput(input)
   return requestApi<PartnerAttestationSummary>("/partner/attestations", {
     method: "POST",
-    body: JSON.stringify(input),
+    body: JSON.stringify(payload),
   })
 }
 
@@ -226,10 +265,67 @@ export async function updatePartnerAttestationBadgeStyle(
   )
 }
 
-export async function uploadSubmission(file: File, signal?: AbortSignal): Promise<string> {
+export async function updatePartnerAttestationBadgeConfig(
+  id: string,
+  input: PartnerAttestationBadgeConfigInput,
+): Promise<PartnerAttestationSummary> {
+  return requestApi<PartnerAttestationSummary>(
+    `/partner/attestations/${encodeURIComponent(id)}/badge-config`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  )
+}
+
+export async function updatePartnerAttestationMetadata(
+  id: string,
+  input: PartnerAttestationMetadataInput,
+): Promise<PartnerAttestationSummary> {
+  const payload = sanitizeAttestationMetadataInput(input)
+  return requestApi<PartnerAttestationSummary>(
+    `/partner/attestations/${encodeURIComponent(id)}/metadata`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  )
+}
+
+export async function deletePartnerAttestationDraft(id: string): Promise<void> {
+  await requestApi(`/partner/attestations/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  })
+}
+
+export async function updatePartnerBadgePreferences(
+  input: PartnerBadgePreferencesInput,
+): Promise<PartnerProfile> {
+  const response = await requestApi<{ partner: PartnerProfile }>("/partner/badge-preferences", {
+    method: "POST",
+    body: JSON.stringify(input),
+  })
+  return response.partner
+}
+
+function toBase64Url(value: string): string {
+  const encoded = typeof window !== "undefined" && typeof window.btoa === "function"
+    ? window.btoa(value)
+    : btoa(value)
+  return encoded.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "")
+}
+
+export async function uploadSubmission(
+  file: File,
+  metadata?: PartnerSubmissionMetadata | null,
+  signal?: AbortSignal,
+): Promise<string> {
   if (file.size <= FILES_SIZE_LIMIT_BYTES) {
     const formData = new FormData()
     formData.set("file", file, file.name)
+    if (metadata && Object.keys(metadata).length > 0) {
+      formData.set("metadata", JSON.stringify(metadata))
+    }
 
     const response = await requestUploadApi<PartnerUploadResponse>("/files", {
       method: "POST",
@@ -243,6 +339,9 @@ export async function uploadSubmission(file: File, signal?: AbortSignal): Promis
   const query = new URLSearchParams({ filename: file.name })
   if (file.type) {
     query.set("contentType", file.type)
+  }
+  if (metadata && Object.keys(metadata).length > 0) {
+    query.set("metadata", toBase64Url(JSON.stringify(metadata)))
   }
 
   const uploadUrlResponse = await requestUploadApi<PartnerUploadUrlResponse>(
