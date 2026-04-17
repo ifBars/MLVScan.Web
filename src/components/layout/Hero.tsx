@@ -51,8 +51,8 @@ const Hero = () => {
             <p className="text-xs font-medium text-muted-foreground/50 uppercase tracking-widest mb-4">Trusted by the modding community</p>
             <div className="grid grid-cols-2 gap-8 md:gap-16">
               {[
-                { label: "Downloads", value: "60k+" },
-                { label: "Endorsements", value: "400+" },
+                { label: "Downloads", value: "70k+" },
+                { label: "Endorsements", value: "450+" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center">
                   <div className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{stat.value}</div>
