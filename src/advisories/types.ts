@@ -4,6 +4,7 @@ export type AdvisoryMeta = {
   id: string
   title: string
   slug: string
+  aliases?: string[]
   type: AdvisoryType
   familyId?: string
   publishedDate: string

@@ -4,16 +4,17 @@ import type { AdvisoryMeta } from './types'
 const advisories: AdvisoryMeta[] = [
   {
     id: 'malware-unlimitedgraffiti-2026',
-    title: 'Malware Analysis: Malicious UnlimitedGraffiti Update',
+    title: 'Malware Analysis: UnlimitedGraffiti / No Art Limit Reupload',
     slug: '2026-03-malware-unlimitedgraffiti',
+    aliases: ['2026-04-malware-no-art-limit'],
     type: 'malware-analysis',
     familyId: 'family-webdownload-stage-exec-v2',
     publishedDate: '2026-03-03',
-    updatedDate: '2026-04-03',
+    updatedDate: '2026-04-17',
     affectedVersions: ['MLVScan.Core 1.3.7 and earlier', 'MLVScan 2.0.1 and earlier'],
-    description: 'Analysis of a malicious UnlimitedGraffiti update that staged a remote PowerShell script in TEMP and launched it hidden. Earlier MLVScan builds emitted rule findings for the sample but still surfaced a clean loader verdict until the family correlation fix shipped.',
+    description: 'Analysis of a malicious mod lineage first reuploaded as UnlimitedGraffiti in March 2026 and later resurfaced on April 3, 2026 as No Art Limit. The retained sample used for static analysis is the April No Art Limit reupload, which stages a remote PowerShell script in TEMP and launches it hidden.',
     contentPath: '2026-03-malware-unlimitedgraffiti.mdx',
-    keywords: ['malware', 'unlimitedgraffiti', 'httpclient', 'powershell', 'download-and-execute', 'temp-staging', 'detection-gap'],
+    keywords: ['malware', 'unlimitedgraffiti', 'no-art-limit', 'httpclient', 'powershell', 'download-and-execute', 'temp-staging', 'detection-gap', 'reupload'],
   },
   {
     id: 'malware-longlastingfertilizer-2026',
@@ -165,6 +166,9 @@ export const allAdvisories = advisories
 export const advisoriesBySlug: Record<string, AdvisoryMeta> = advisories.reduce(
   (acc, advisory) => {
     acc[advisory.slug] = advisory
+    advisory.aliases?.forEach((alias) => {
+      acc[alias] = advisory
+    })
     return acc
   },
   {} as Record<string, AdvisoryMeta>

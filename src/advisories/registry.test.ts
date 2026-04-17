@@ -41,6 +41,13 @@ describe('Advisory Registry', () => {
       expect(advisory?.title).toBe('False Positive: LethalLizard.ModManager Process.Start Usage')
     })
 
+    it('should return advisory for alias slug', () => {
+      const advisory = getAdvisoryBySlug('2026-04-malware-no-art-limit')
+      expect(advisory).toBeDefined()
+      expect(advisory?.slug).toBe('2026-03-malware-unlimitedgraffiti')
+      expect(advisory?.title).toBe('Malware Analysis: UnlimitedGraffiti / No Art Limit Reupload')
+    })
+
     it('should return undefined for invalid slug', () => {
       const advisory = getAdvisoryBySlug('non-existent-slug')
       expect(advisory).toBeUndefined()

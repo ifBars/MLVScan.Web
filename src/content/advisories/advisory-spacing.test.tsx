@@ -11,10 +11,7 @@ describe("advisory and family content spacing", () => {
   it("keeps explicit JSX spaces around inline verdict prose in the UnlimitedGraffiti advisory", () => {
     const source = readContentFile("src/content/advisories/2026-03-malware-unlimitedgraffiti.mdx")
 
-    expect(source).toContain('compromise of the original{" "}')
-    expect(source).toContain('could still surface as{" "}')
-    expect(source).toContain('This classification gap is fixed in{" "}')
-    expect(source).toContain('family, while{" "}')
+    expect(source).toContain('exposed.{" "}')
   })
 
   it("keeps explicit JSX spaces between observed variant filenames in the web download family page", () => {
