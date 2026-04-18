@@ -139,13 +139,32 @@ describe("AttestationLedger", () => {
       onOpenLink,
     })
 
-    expect(screen.getByText("Historical public record kept reachable during propagation and verification windows.")).toBeTruthy()
+    expect(screen.getByText("sample-mod · v1.0.0")).toBeTruthy()
+    expect(screen.getByText("Replaced by a newer current attestation for sample-mod.")).toBeTruthy()
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: /open current replacement/i }))
     })
 
     expect(onOpenLink).toHaveBeenCalledWith("/attestations/att_current")
+  })
+
+  it("keeps superseded rows actionable in the ledger", () => {
+    renderLedger({
+      attestations: [{
+        ...baseAttestation,
+        id: "attestation-2",
+        publicationStatus: "superseded",
+        isCurrent: false,
+        supersededAt: "2026-04-07T12:05:00.000Z",
+        supersededByAttestationId: "attestation-3",
+        supersededByShareId: "att_current",
+      }],
+    })
+
+    expect(screen.getByRole("button", { name: /open current replacement/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /details/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /attestation actions/i })).toBeTruthy()
   })
 
 })

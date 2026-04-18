@@ -73,11 +73,20 @@ const payload: PublicAttestationPayload = {
 describe("attestation-api", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    delete import.meta.env.VITE_PUBLIC_SITE_URL
   })
 
-  it("builds badge URLs on the site origin instead of the API origin", () => {
+  it("builds localhost badge URLs on the API fallback path", () => {
     expect(buildAttestationBadgeUrl("att_test")).toBe(
-      "http://localhost:3000/attestations/att_test/badge.svg",
+      "http://localhost:3000/public/attestations/att_test/badge.svg",
+    )
+  })
+
+  it("keeps hosted badge URLs on the public site origin", () => {
+    import.meta.env.VITE_PUBLIC_SITE_URL = "https://mlvscan.com"
+
+    expect(buildAttestationBadgeUrl("att_test")).toBe(
+      "https://mlvscan.com/attestations/att_test/badge.svg",
     )
   })
 

@@ -140,4 +140,25 @@ describe("DashboardDetailPanel", () => {
 
     expect(onDeleteDraft).toHaveBeenCalledWith("attestation-1")
   })
+
+  it("keeps public-history links visible for superseded attestations", () => {
+    renderDetailPanel({
+      attestation: {
+        ...baseAttestation,
+        publicationStatus: "superseded",
+        isCurrent: false,
+        publishedAt: "2026-04-06T12:05:00.000Z",
+        supersededAt: "2026-04-07T12:05:00.000Z",
+        supersededByAttestationId: "attestation-3",
+        supersededByShareId: "att_current",
+      },
+      shareOutputs: null,
+    })
+
+    expect(screen.getByRole("button", { name: /open current replacement/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /open public attestation/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /open badge svg/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /open signed json/i })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /revoke public attestation/i })).toBeTruthy()
+  })
 })

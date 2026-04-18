@@ -39,6 +39,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
+  getAttestationStatusDescription,
+  getAttestationStatusLabel,
+  isCurrentAttestation,
+  isPublicAttestation,
+} from "@/lib/attestation-lineage"
+import {
   getAttestationTone,
   getAttestationVerdictLabel,
 } from "@/lib/attestation-view"
@@ -168,6 +174,11 @@ export default function AttestationLedger({
                     attestation.classification,
                     attestation.publicationStatus,
                   )
+                  const isCurrent = isCurrentAttestation(attestation)
+                  const isPublic = isPublicAttestation(attestation)
+                  const canRevoke =
+                    attestation.publicationStatus !== "draft"
+                    && attestation.publicationStatus !== "revoked"
                   const isSelected = selectedAttestationId === attestation.id
 
                   return (
@@ -192,7 +203,11 @@ export default function AttestationLedger({
                       <TableCell className="min-w-[240px]">
                         <div className="flex flex-col gap-1">
                           <p className="font-medium text-white">{attestation.publicDisplayName}</p>
-                          <p className="text-xs text-slate-500">{attestation.fileName}</p>
+                          <p className="text-xs text-slate-500">
+                            {attestation.artifactKey}
+                            {attestation.artifactVersion ? ` · v${attestation.artifactVersion}` : ""}
+                          </p>
+                          <p className="text-xs text-slate-600">{attestation.fileName}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -206,18 +221,10 @@ export default function AttestationLedger({
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <Badge variant="outline" className="w-fit border-slate-700 bg-slate-800 text-slate-300">
-                            {attestation.publicationStatus === "published" && attestation.isCurrent
-                              ? "current"
-                              : attestation.publicationStatus}
+                            {getAttestationStatusLabel(attestation)}
                           </Badge>
                           <p className="max-w-[240px] text-xs leading-5 text-slate-500">
-                            {attestation.publicationStatus === "draft"
-                              ? `Not public yet. Publish makes this the current record for ${attestation.artifactKey}.`
-                              : attestation.publicationStatus === "published" && attestation.isCurrent
-                                ? `Current attestation for ${attestation.artifactKey}.`
-                                : attestation.publicationStatus === "superseded"
-                                  ? "Historical public record kept reachable during propagation and verification windows."
-                                  : "No longer a valid public trust signal."}
+                            {getAttestationStatusDescription(attestation)}
                           </p>
                           {attestation.publicationStatus === "superseded" && attestation.supersededByShareId ? (
                             <button
@@ -271,34 +278,44 @@ export default function AttestationLedger({
                                 <Eye data-icon="inline-start" />
                                 Open management panel
                               </DropdownMenuItem>
-                              {attestation.publicationStatus === "published" ? (
+                              {isPublic ? (
                                 <>
                                   <DropdownMenuItem onClick={() => onOpenLink(attestation.publicUrl)}>
                                     <ArrowUpRight data-icon="inline-start" />
                                     Open public page
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      onCopySnippet(
-                                        `[![MLVScan badge](${attestation.badgeUrl})](${attestation.publicUrl})`,
-                                        "Copied Markdown badge snippet",
-                                      )
-                                    }
-                                  >
+                                  <DropdownMenuItem onClick={() => onOpenLink(attestation.badgeUrl)}>
                                     <ArrowUpRight data-icon="inline-start" />
-                                    Copy Markdown snippet
+                                    Open badge SVG
                                   </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => setRevokeAttestationId(attestation.id)}>
-                                    <ShieldBan data-icon="inline-start" />
-                                    Revoke public attestation
-                                  </DropdownMenuItem>
+                                  {isCurrent ? (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        onCopySnippet(
+                                          `[![MLVScan badge](${attestation.badgeUrl})](${attestation.publicUrl})`,
+                                          "Copied Markdown badge snippet",
+                                        )
+                                      }
+                                    >
+                                      <ArrowUpRight data-icon="inline-start" />
+                                      Copy Markdown snippet
+                                    </DropdownMenuItem>
+                                  ) : null}
+                                  {canRevoke ? <DropdownMenuSeparator /> : null}
+                                  {canRevoke ? (
+                                    <DropdownMenuItem onClick={() => setRevokeAttestationId(attestation.id)}>
+                                      <ShieldBan data-icon="inline-start" />
+                                      Revoke public attestation
+                                    </DropdownMenuItem>
+                                  ) : null}
                                 </>
                               ) : null}
                               {attestation.publicationStatus === "draft" ? (
                                 <>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => onDeleteDraft(attestation.id)}>
+                                  <DropdownMenuItem
+                                    onClick={() => onDeleteDraft(attestation.id)}
+                                  >
                                     <Trash2 data-icon="inline-start" />
                                     Delete draft
                                   </DropdownMenuItem>

@@ -32,6 +32,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
+  getAttestationStatusDescription,
+  getAttestationStatusLabel,
+  isCurrentAttestation,
+  isPublicAttestation,
+} from "@/lib/attestation-lineage"
+import {
   getAttestationTone,
   getAttestationVerdictLabel,
   getSourceBindingLabel,
@@ -132,7 +138,11 @@ export default function DashboardDetailPanel({
   const toneStyle = toneStyles[tone]
   const VerdictIcon = toneStyle.icon
   const isDraft = attestation.publicationStatus === "draft"
-  const isPublished = attestation.publicationStatus === "published"
+  const isCurrent = isCurrentAttestation(attestation)
+  const isPublic = isPublicAttestation(attestation)
+  const canRevoke =
+    attestation.publicationStatus !== "draft"
+    && attestation.publicationStatus !== "revoked"
   const metadataDirty =
     artifactKeyDraft.trim() !== attestation.artifactKey
     || artifactVersionDraft.trim() !== (attestation.artifactVersion ?? "")
@@ -145,6 +155,9 @@ export default function DashboardDetailPanel({
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
             Attestation detail
+          </Badge>
+          <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+            {getAttestationStatusLabel(attestation)}
           </Badge>
           <Badge className={cn("border", toneStyle.badge)}>
             <VerdictIcon data-icon="inline-start" />
@@ -191,11 +204,22 @@ export default function DashboardDetailPanel({
           </div>
         </TooltipProvider>
 
-        {attestation.publicationStatus === "superseded" ? (
+        {!isDraft ? (
           <div className="rounded-lg border border-slate-700 bg-slate-900/55 px-4 py-3 text-sm leading-6 text-slate-300">
-            This attestation is historical. A newer current attestation now exists for{" "}
-            <span className="font-mono text-xs text-slate-200">{attestation.artifactKey}</span>.
-            {attestation.supersededByShareId ? (
+            {isCurrent ? (
+              <span>
+                This is the current public attestation for{" "}
+                <span className="font-mono text-xs text-slate-200">{attestation.artifactKey}</span>.
+              </span>
+            ) : attestation.publicationStatus === "superseded" ? (
+              <span>
+                This attestation is historical. A newer current attestation now exists for{" "}
+                <span className="font-mono text-xs text-slate-200">{attestation.artifactKey}</span>.
+              </span>
+            ) : (
+              <span>{getAttestationStatusDescription(attestation)}</span>
+            )}
+            {attestation.publicationStatus === "superseded" && attestation.supersededByShareId ? (
               <>
                 {" "}
                 <button
@@ -215,6 +239,7 @@ export default function DashboardDetailPanel({
               <section className="rounded-xl border border-slate-800 bg-slate-900/45 p-4">
                 <p className="dashboard-kicker">Snapshot</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+                  <Fact label="Lineage" value={getAttestationStatusLabel(attestation)} />
                   <Fact label="Artifact key" value={attestation.artifactKey} mono />
                   <Fact label="Artifact version" value={attestation.artifactVersion ?? "Not set"} />
                   <Fact label="Scanned at" value={formatDate(attestation.scannedAt)} />
@@ -359,7 +384,7 @@ export default function DashboardDetailPanel({
                     <ArrowUpRight data-icon="inline-end" />
                   </Button>
 
-                  {isPublished ? (
+                  {canRevoke ? (
                     <Button
                       variant="outline"
                       className="justify-between border-rose-700/60 bg-rose-950/30 text-rose-200 hover:bg-rose-950/45"
@@ -384,11 +409,11 @@ export default function DashboardDetailPanel({
                 </div>
               </section>
 
-              {isPublished || attestation.canonicalSourceUrl ? (
+              {isPublic || attestation.canonicalSourceUrl ? (
                 <section className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
                   <p className="dashboard-kicker">Links</p>
                   <div className="mt-3 flex flex-col gap-2">
-                    {isPublished ? (
+                    {isPublic ? (
                       <>
                         <Button className="justify-between" onClick={() => onOpenLink(attestation.publicUrl)}>
                           Open public attestation

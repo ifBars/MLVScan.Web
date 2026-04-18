@@ -10,6 +10,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
+  getAttestationStatusDescription,
+  getAttestationStatusLabel,
+} from "@/lib/attestation-lineage"
+import {
   getAttestationTone,
   getAttestationVerdictLabel,
   getSourceBindingLabel,
@@ -35,6 +39,7 @@ interface DashboardHomeProps {
   attestations: PartnerAttestationSummary[]
   publishedCount: number
   draftCount: number
+  supersededCount: number
   activeKeyCount: number
   onSelectWorkspace: (value: PartnerWorkspaceView) => void
   onReviewAttestation: (attestation: PartnerAttestationSummary) => void
@@ -45,6 +50,7 @@ export default function DashboardHome({
   attestations,
   publishedCount,
   draftCount,
+  supersededCount,
   activeKeyCount,
   onSelectWorkspace,
   onReviewAttestation,
@@ -69,9 +75,10 @@ export default function DashboardHome({
             </h2>
           </div>
 
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/70 sm:grid-cols-3">
-            <OverviewCell label="Published" value={`${publishedCount}`} />
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/70 sm:grid-cols-2 xl:grid-cols-4">
+            <OverviewCell label="Current" value={`${publishedCount}`} />
             <OverviewCell label="Drafts" value={`${draftCount}`} />
+            <OverviewCell label="Superseded" value={`${supersededCount}`} />
             <OverviewCell label="Active keys" value={`${activeKeyCount}/${partner.maxKeys}`} />
           </div>
         </div>
@@ -129,15 +136,19 @@ export default function DashboardHome({
                   </Badge>
                 ) : null}
                 <Badge variant="outline" className="border-slate-700 bg-slate-900/70 text-slate-300">
-                  {latestAttestation.publicationStatus}
+                  {getAttestationStatusLabel(latestAttestation)}
                 </Badge>
               </div>
 
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-300">
                 {latestAttestation.summary}
               </p>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                {getAttestationStatusDescription(latestAttestation)}
+              </p>
 
               <div className="mt-6 grid gap-x-12 gap-y-1 lg:grid-cols-2">
+                <MetricRow label="Artifact key" value={latestAttestation.artifactKey} mono />
                 <MetricRow label="Updated" value={formatDate(latestAttestation.refreshedAt ?? latestAttestation.createdAt)} />
                 <MetricRow label="Scanned at" value={formatDate(latestAttestation.scannedAt)} />
                 <MetricRow
@@ -195,7 +206,7 @@ export default function DashboardHome({
           <WorkspaceRow
             icon={BadgeCheck}
             title="Ledger"
-            description="Review draft and published records, then publish, refresh, revoke, or inspect the current release."
+            description="Review current, superseded, revoked, and draft records for each artifact lineage, then publish, refresh, revoke, or inspect the current release."
             actionLabel={latestAttestation ? "Review latest record" : "Open ledger"}
             onClick={() =>
               latestAttestation

@@ -64,6 +64,12 @@ import {
 } from "@/lib/partner-dashboard-api"
 import { buildAttestationPublishMetadata, toAttestationUploadMetadata } from "@/lib/attestation-publish-metadata"
 import {
+  countCurrentAttestations,
+  countSupersededAttestations,
+  findCurrentAttestationForArtifactKey,
+  isCurrentAttestation,
+} from "@/lib/attestation-lineage"
+import {
   getPartnerDashboardPath,
   getPartnerDashboardView,
 } from "@/lib/partner-dashboard-routes"
@@ -186,12 +192,11 @@ export default function PartnerDashboardPage() {
   const activeWorkspace =
     workspaceItems.find((item) => item.value === workspaceView) ?? workspaceItems[0]
 
-  const publishedCount = attestations.filter(
-    (attestation) => attestation.publicationStatus === "published",
-  ).length
+  const publishedCount = countCurrentAttestations(attestations)
   const draftCount = attestations.filter(
     (attestation) => attestation.publicationStatus === "draft",
   ).length
+  const supersededCount = countSupersededAttestations(attestations)
   const activeKeyCount = keys.filter(
     (keyRecord) => keyRecord.active && !keyRecord.revokedAt,
   ).length
@@ -972,6 +977,7 @@ export default function PartnerDashboardPage() {
             attestationsCount={attestations.length}
             publishedCount={publishedCount}
             draftCount={draftCount}
+            supersededCount={supersededCount}
             activeKeyCount={activeKeyCount}
             onSelectWorkspace={handleSelectWorkspace}
             onOpenProfile={handleOpenProfileSheet}
@@ -1048,6 +1054,7 @@ export default function PartnerDashboardPage() {
                     attestations={attestations}
                     publishedCount={publishedCount}
                     draftCount={draftCount}
+                    supersededCount={supersededCount}
                     activeKeyCount={activeKeyCount}
                     onSelectWorkspace={handleSelectWorkspace}
                     onReviewAttestation={handleReviewAttestation}
@@ -1166,6 +1173,7 @@ export default function PartnerDashboardPage() {
             attestationsCount={attestations.length}
             publishedCount={publishedCount}
             draftCount={draftCount}
+            supersededCount={supersededCount}
             activeKeyCount={activeKeyCount}
             onSelectWorkspace={handleSelectWorkspace}
             onOpenProfile={handleOpenProfileSheet}
@@ -1262,6 +1270,7 @@ interface PartnerSidebarNavProps {
   attestationsCount: number
   publishedCount: number
   draftCount: number
+  supersededCount: number
   activeKeyCount: number
   onSelectWorkspace: (value: PartnerWorkspaceView) => void
   onOpenProfile: () => void
@@ -1273,6 +1282,7 @@ function PartnerSidebarNav({
   attestationsCount,
   publishedCount,
   draftCount,
+  supersededCount,
   activeKeyCount,
   onSelectWorkspace,
   onOpenProfile,
@@ -1331,12 +1341,16 @@ function PartnerSidebarNav({
             </p>
             <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">Published</span>
+                <span className="text-slate-400">Current</span>
                 <span className="font-semibold text-white">{publishedCount}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
                 <span className="text-slate-400">Drafts</span>
                 <span className="font-semibold text-white">{draftCount}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span className="text-slate-400">Superseded</span>
+                <span className="font-semibold text-white">{supersededCount}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
                 <span className="text-slate-400">Active keys</span>
@@ -1541,11 +1555,10 @@ function getPublishOutcomeLabel(
     return null
   }
 
-  const current = attestations.find((item) =>
-    item.id !== attestation.id
-    && item.publicationStatus === "published"
-    && item.isCurrent
-    && item.artifactKey === attestation.artifactKey
+  const current = findCurrentAttestationForArtifactKey(
+    attestations,
+    attestation.artifactKey,
+    attestation.id,
   )
 
   return current
@@ -1630,7 +1643,7 @@ function buildBadgePreviewPayload(
 function buildShareOutputs(
   attestation: PartnerAttestationSummary | null,
 ): ShareOutputs | null {
-  if (!attestation || attestation.publicationStatus !== "published") {
+  if (!attestation || !isCurrentAttestation(attestation)) {
     return null
   }
 

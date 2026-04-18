@@ -106,7 +106,7 @@ describe("partner-dashboard-api", () => {
           createdAt: "2026-04-06T12:05:00.000Z",
           refreshedAt: null,
           publicUrl: "http://localhost:3000/attestations/att_test",
-          badgeUrl: "http://localhost:3000/attestations/att_test/badge.svg",
+          badgeUrl: "http://localhost:3000/public/attestations/att_test/badge.svg",
         }), {
           status: 200,
           headers: {
@@ -270,7 +270,7 @@ describe("partner-dashboard-api", () => {
           createdAt: "2026-04-06T12:05:00.000Z",
           refreshedAt: null,
           publicUrl: "http://localhost:3000/attestations/att_test",
-          badgeUrl: "http://localhost:3000/attestations/att_test/badge.svg",
+          badgeUrl: "http://localhost:3000/public/attestations/att_test/badge.svg",
         }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -398,7 +398,7 @@ describe("partner-dashboard-api", () => {
         createdAt: "2026-04-06T12:05:00.000Z",
         refreshedAt: null,
         publicUrl: "http://localhost:3000/attestations/att_test",
-        badgeUrl: "http://localhost:3000/attestations/att_test/badge.svg",
+        badgeUrl: "http://localhost:3000/public/attestations/att_test/badge.svg",
       }), {
         status: 201,
         headers: { "Content-Type": "application/json" },

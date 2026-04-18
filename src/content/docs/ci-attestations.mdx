@@ -318,6 +318,11 @@ jobs:
           README snippets. The canonical badge URL returned by the API is now the intended default.
         </li>
         <li>
+          Do not migrate workflow snippets to <code>badges.mlvscan.com</code>. The published{" "}
+          <code>badgeUrl</code> remains the stable public URL on <code>mlvscan.com</code>, and the
+          static asset host is an implementation detail behind that canonical link.
+        </li>
+        <li>
           If you want a visible migration signal in CI logs, read <code>artifactKeySource</code> and{" "}
           <code>warnings</code> from the draft response. The API will tell you when it had to infer the
           key instead of receiving one explicitly.
@@ -340,7 +345,8 @@ jobs:
         <li>For mods that ship separate Mono and IL2CPP builds, use separate explicit keys such as <code>your-mod/mono</code> and <code>your-mod/il2cpp</code>. Because attestations are tied to exact file bytes, those are two different DLLs with two different content hashes, so they should live in two different artifact lineages for now.</li>
         <li>Use <code>artifactVersion</code> for display only. It does not define lineage grouping.</li>
         <li>The dashboard submit flow now lets you declare key, version, display name, and canonical source URL up front, then revise those draft values from the ledger before publish.</li>
-        <li>There is one MLVScan badge family. Density and metadata slots can be configured, but README badges should normally consume the canonical published <code>badgeUrl</code>.</li>
+        <li>There is one MLVScan badge family. Density and metadata slots can be configured, but README badges should normally consume the canonical published <code>badgeUrl</code> exactly as returned.</li>
+        <li>The canonical <code>badgeUrl</code> stays on <code>mlvscan.com</code>. Production may redirect that URL to the static badge asset host, but clients and workflows should not hardcode the asset hostname.</li>
         <li>Superseded pages and badges stay reachable, which is useful while Thunderstore, r2modman, or other downstream surfaces are still propagating the new release.</li>
       </ul>
 

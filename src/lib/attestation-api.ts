@@ -18,6 +18,15 @@ function trimTrailingSlashes(value: string): string {
   return value.replace(/\/+$/, "")
 }
 
+function isLocalhostOrigin(value: string): boolean {
+  try {
+    const parsed = new URL(value)
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1"
+  } catch {
+    return false
+  }
+}
+
 export function resolvePublicAttestationSiteBaseUrl(): string {
   const configured = import.meta.env.VITE_PUBLIC_SITE_URL?.trim()
   if (configured) {
@@ -32,7 +41,12 @@ export function resolvePublicAttestationSiteBaseUrl(): string {
 }
 
 export function buildAttestationBadgeUrl(shareId: string): string {
-  return `${resolvePublicAttestationSiteBaseUrl()}/attestations/${encodeURIComponent(shareId)}/badge.svg`
+  const siteBaseUrl = resolvePublicAttestationSiteBaseUrl()
+  if (siteBaseUrl && isLocalhostOrigin(siteBaseUrl)) {
+    return `${resolvePublicAttestationApiBaseUrl()}/public/attestations/${encodeURIComponent(shareId)}/badge.svg`
+  }
+
+  return `${siteBaseUrl}/attestations/${encodeURIComponent(shareId)}/badge.svg`
 }
 
 export function buildSignedAttestationUrl(shareId: string): string {
