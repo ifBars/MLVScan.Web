@@ -82,7 +82,7 @@ describe("attestation badge metadata", () => {
     expect(svg).toContain("Attested / IL2CPP")
     expect(svg).toContain("Clean")
     expect(svg.indexOf(">Clean<")).toBeLessThan(svg.indexOf(">Attested / IL2CPP<"))
-    expect(svg).toContain('width="14" height="14"')
+    expect(svg).toContain('width="18" height="18"')
   })
 
   it("keeps the compact short-label badge tight", () => {
