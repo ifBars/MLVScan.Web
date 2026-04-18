@@ -161,4 +161,19 @@ describe("DashboardDetailPanel", () => {
     expect(screen.getByRole("button", { name: /open signed json/i })).toBeTruthy()
     expect(screen.getByRole("button", { name: /revoke public attestation/i })).toBeTruthy()
   })
+
+  it("disables publish for blocked draft classifications and shows the escalation message", () => {
+    renderDetailPanel({
+      attestation: {
+        ...baseAttestation,
+        classification: "Suspicious",
+        summary: "Potentially unsafe behavior was retained for review.",
+      },
+      publishBlockedReason:
+        "This draft cannot be published because MLVScan classified these exact bytes as suspicious. If you believe this is a false positive, contact ifbars on Discord.",
+    })
+
+    expect(screen.getByText(/contact ifbars on Discord/i)).toBeTruthy()
+    expect(screen.getByRole("button", { name: /publish attestation/i }).hasAttribute("disabled")).toBe(true)
+  })
 })

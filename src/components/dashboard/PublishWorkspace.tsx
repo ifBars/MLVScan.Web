@@ -190,7 +190,7 @@ export default function PublishWorkspace({
 
           <FieldBlock
             label="Version"
-            description="Optional publisher version label. You can override detected assembly metadata here."
+            description="Optional publisher version label. MLVScan auto-fills detected assembly metadata when available, and you can override it here."
           >
             <Input
               value={publishForm.artifactVersion}

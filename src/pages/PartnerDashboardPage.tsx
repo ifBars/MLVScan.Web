@@ -70,6 +70,10 @@ import {
   isCurrentAttestation,
 } from "@/lib/attestation-lineage"
 import {
+  applyDetectedPublishMetadata,
+  getDraftPublishBlockReason,
+} from "@/lib/partner-dashboard-publish"
+import {
   getPartnerDashboardPath,
   getPartnerDashboardView,
 } from "@/lib/partner-dashboard-routes"
@@ -183,6 +187,7 @@ export default function PartnerDashboardPage() {
   const [publishError, setPublishError] = useState("")
   const publishFlowAbortControllerRef = useRef<AbortController | null>(null)
   const publishFlowRunIdRef = useRef(0)
+  const publishFileInspectRunIdRef = useRef(0)
 
   const selectedAttestation =
     attestations.find((attestation) => attestation.id === selectedAttestationId) ??
@@ -671,10 +676,19 @@ export default function PartnerDashboardPage() {
   }
 
   async function handlePublishAttestation(): Promise<void> {
-    const attestationId = selectedAttestation?.id ?? publishFlow.attestationId ?? null
+    const nextSelectedAttestation =
+      selectedAttestation
+      ?? attestations.find((attestation) => attestation.id === publishFlow.attestationId)
+      ?? null
+    const attestationId = nextSelectedAttestation?.id ?? null
+    const publishBlockedReason = getDraftPublishBlockReason(nextSelectedAttestation)
 
     if (!attestationId) {
       setPublishError("Select or create a draft attestation before publishing.")
+      return
+    }
+    if (publishBlockedReason) {
+      setPublishError(publishBlockedReason)
       return
     }
 
@@ -763,6 +777,7 @@ export default function PartnerDashboardPage() {
       assertActivePublishFlowRun(runId, signal)
 
       upsertAttestationRecord(nextDraft)
+      publishFileInspectRunIdRef.current += 1
       setPublishFile(null)
       setPublishForm(initialPublishForm())
       navigateToWorkspace("attestations")
@@ -845,10 +860,10 @@ export default function PartnerDashboardPage() {
       await sleep(REPORT_POLL_INTERVAL_MS, signal)
     }
 
-      throw new Error(
-        `Timed out waiting for the scan report after the last known status "${lastStatus}".`,
-      )
-    }
+    throw new Error(
+      `Timed out waiting for the scan report after the last known status "${lastStatus}".`,
+    )
+  }
 
   async function inspectPublishAssembly(
     file: File,
@@ -872,7 +887,25 @@ export default function PartnerDashboardPage() {
     }
   }
 
+  async function inspectPublishAssemblyMetadataForPrefill(
+    file: File,
+  ): Promise<ReturnType<typeof buildAttestationPublishMetadata>> {
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      const result = await scanAssembly(bytes, file.name)
+
+      return buildAttestationPublishMetadata(result)
+    } catch (error) {
+      console.warn("Unable to inspect publish assembly metadata for form prefill.", error)
+      return {
+        loaderType: null,
+        artifactVersion: null,
+      }
+    }
+  }
+
   function handlePublishFileChange(file: File | null): void {
+    publishFileInspectRunIdRef.current += 1
     setPublishFile(file)
     setPublishError("")
     if (!file) {
@@ -889,10 +922,20 @@ export default function PartnerDashboardPage() {
       publicDisplayName:
         current.publicDisplayName.trim().length > 0 ? current.publicDisplayName : nextStem,
     }))
+
+    const inspectRunId = publishFileInspectRunIdRef.current
+    void inspectPublishAssemblyMetadataForPrefill(file).then((publishMetadata) => {
+      if (publishFileInspectRunIdRef.current !== inspectRunId) {
+        return
+      }
+
+      setPublishForm((current) => applyDetectedPublishMetadata(current, publishMetadata))
+    })
   }
 
   function handleResetPublishFlow(): void {
     cancelPublishFlowRun()
+    publishFileInspectRunIdRef.current += 1
     setPublishForm(initialPublishForm())
     setPublishFlow(initialPublishFlow())
     setPublishFile(null)
@@ -1120,6 +1163,7 @@ export default function PartnerDashboardPage() {
                           deleteBusy={draftDeleteBusyId === selectedAttestation.id}
                           badgeConfigBusy={badgeConfigBusyId === selectedAttestation.id}
                           publishOutcomeLabel={getPublishOutcomeLabel(attestations, selectedAttestation)}
+                          publishBlockedReason={getDraftPublishBlockReason(selectedAttestation)}
                         />
                       </div>
                     ) : (
@@ -1256,6 +1300,7 @@ export default function PartnerDashboardPage() {
               deleteBusy={selectedAttestation ? draftDeleteBusyId === selectedAttestation.id : false}
               badgeConfigBusy={selectedAttestation ? badgeConfigBusyId === selectedAttestation.id : false}
               publishOutcomeLabel={selectedAttestation ? getPublishOutcomeLabel(attestations, selectedAttestation) : null}
+              publishBlockedReason={getDraftPublishBlockReason(selectedAttestation)}
             />
           </div>
         </SheetContent>

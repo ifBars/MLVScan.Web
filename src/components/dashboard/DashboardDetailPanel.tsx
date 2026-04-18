@@ -88,6 +88,7 @@ interface DashboardDetailPanelProps {
   deleteBusy?: boolean
   badgeConfigBusy?: boolean
   publishOutcomeLabel?: string | null
+  publishBlockedReason?: string | null
   className?: string
 }
 
@@ -107,6 +108,7 @@ export default function DashboardDetailPanel({
   deleteBusy = false,
   badgeConfigBusy = false,
   publishOutcomeLabel = null,
+  publishBlockedReason = null,
   className,
 }: DashboardDetailPanelProps) {
   const [revokeConfirmAttestationId, setRevokeConfirmAttestationId] = useState<string | null>(null)
@@ -360,12 +362,14 @@ export default function DashboardDetailPanel({
                   {isDraft ? (
                     <>
                       <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-3 text-sm leading-6 text-slate-300">
-                        {publishOutcomeLabel
-                          ? publishOutcomeLabel
+                        {publishBlockedReason
+                          ? publishBlockedReason
+                          : publishOutcomeLabel
+                            ? publishOutcomeLabel
                           : `Publish new current attestation for ${attestation.artifactKey}.`}
                       </div>
                       <Button
-                        disabled={publishBusy}
+                        disabled={publishBusy || Boolean(publishBlockedReason)}
                         className="justify-between"
                         onClick={() => void onPublish()}
                       >
