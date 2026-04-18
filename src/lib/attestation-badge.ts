@@ -64,7 +64,7 @@ const BADGE_SVG_FONT_FAMILY = "Inter,Segoe UI,Arial,sans-serif"
 const BADGE_LAYOUT = {
   compact: {
     fontSize: 10,
-    iconSize: 14,
+    iconSize: 18,
     height: 22,
     leftMinWidth: 54,
     leftLabelPadding: 12,
@@ -75,7 +75,7 @@ const BADGE_LAYOUT = {
   },
   detailed: {
     fontSize: 11,
-    iconSize: 16,
+    iconSize: 20,
     height: 24,
     leftMinWidth: 72,
     leftLabelPadding: 14,
