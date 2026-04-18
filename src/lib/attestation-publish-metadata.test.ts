@@ -40,7 +40,7 @@ function createScanResult(overrides: Partial<ScanResultWithAssembly> = {}): Scan
 }
 
 describe("attestation publish metadata", () => {
-  it("detects IL2CPP assemblies from referenced assemblies and prefers informational version", () => {
+  it("detects IL2CPP assemblies from referenced assemblies and prefers normalized file version", () => {
     const metadata = buildAttestationPublishMetadata(createScanResult({
       assembly: {
         name: "Sample.Mod",
@@ -54,7 +54,7 @@ describe("attestation publish metadata", () => {
     }))
 
     expect(metadata.loaderType).toBe("detected-il2cpp")
-    expect(metadata.artifactVersion).toBe("1.0.0+build.4")
+    expect(metadata.artifactVersion).toBe("1.0.0.4")
     expect(toAttestationUploadMetadata(metadata)).toEqual({ loaderType: "detected-il2cpp" })
   })
 
@@ -73,6 +73,17 @@ describe("attestation publish metadata", () => {
 
     expect(metadata.loaderType).toBe("detected-mono")
     expect(metadata.artifactVersion).toBe("2.3.0")
+  })
+
+  it("drops a trailing zero from four-part file versions", () => {
+    const metadata = buildAttestationPublishMetadata(createScanResult({
+      assembly: {
+        fileVersion: "3.0.3.0",
+        informationalVersion: "3.0.3+594f848d676ad7fafb78988724947aa77b39f8bb",
+      },
+    }))
+
+    expect(metadata.artifactVersion).toBe("3.0.3")
   })
 
   it("returns null metadata when the assembly does not expose usable runtime hints", () => {

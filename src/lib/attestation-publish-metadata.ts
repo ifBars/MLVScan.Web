@@ -44,6 +44,20 @@ function normalizeMetadataLabel(value: string | null | undefined): string | null
   return trimmed.length > 0 ? trimmed : null
 }
 
+function normalizeScannedVersionLabel(value: string | null | undefined): string | null {
+  const normalized = normalizeMetadataLabel(value)
+  if (!normalized) {
+    return null
+  }
+
+  const match = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(normalized)
+  if (match && match[4] === "0") {
+    return `${match[1]}.${match[2]}.${match[3]}`
+  }
+
+  return normalized
+}
+
 function inferAssemblyRuntime(assembly: AssemblyMetadataLike | null | undefined): "mono" | "il2cpp" | null {
   if (!assembly) {
     return null
@@ -83,9 +97,9 @@ export function buildAttestationPublishMetadata(result: ScanResult): Attestation
           ? "detected-mono"
           : null,
     artifactVersion:
-      normalizeMetadataLabel(assembly?.informationalVersion)
-      ?? normalizeMetadataLabel(assembly?.fileVersion)
-      ?? normalizeMetadataLabel(assembly?.assemblyVersion),
+      normalizeScannedVersionLabel(assembly?.fileVersion)
+      ?? normalizeMetadataLabel(assembly?.informationalVersion)
+      ?? normalizeScannedVersionLabel(assembly?.assemblyVersion),
   }
 }
 
