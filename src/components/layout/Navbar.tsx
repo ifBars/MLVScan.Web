@@ -1,161 +1,162 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Download } from "lucide-react"
+import { Download, Menu, X } from "lucide-react"
 import DocsSearch from "@/components/docs/DocsSearch"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
-const SCROLL_HIDE_THRESHOLD = 100
-const SCROLL_SHOW_THRESHOLD = 30
+const NAV_LINKS = [
+  { name: "Scan", href: "/scan" },
+  { name: "Inspector", href: "/inspector" },
+  { name: "Docs", href: "/docs" },
+  { name: "Advisories", href: "/advisories" },
+  { name: "Threat Families", href: "/advisories/families" },
+]
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [navVisible, setNavVisible] = useState(true)
+  const [isElevated, setIsElevated] = useState(false)
   const location = useLocation()
   const isDocs = location.pathname.startsWith("/docs")
 
   useEffect(() => {
-    const handleScroll = () => {
-      const y = window.scrollY
-      setScrolled(y > 50)
-      if (y <= SCROLL_SHOW_THRESHOLD) {
-        setNavVisible(true)
-      } else if (y > SCROLL_HIDE_THRESHOLD) {
-        setNavVisible(false)
-      }
-    }
+    const handleScroll = () => setIsElevated(window.scrollY > 28)
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [isDocs])
-
-  const navLinks = [
-    { name: "Scan", href: "/scan", external: false },
-    { name: "Inspector", href: "/inspector", external: false },
-    { name: "Docs", href: "/docs", external: false },
-    { name: "Advisories", href: "/advisories", external: false },
-    { name: "Threat Families", href: "/advisories/families", external: false },
-  ]
+  }, [])
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 navbar-slide ${scrolled
-        ? "navbar-glass shadow-md"
-        : "bg-transparent"
-        } ${navVisible ? "navbar-visible" : "navbar-hidden"}`}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
+    <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
+      <div
+        className={`mx-auto max-w-[1380px] rounded-[1.6rem] border transition-all duration-500 ${
+          isElevated
+            ? "border-white/12 bg-[rgba(7,12,19,0.82)] shadow-[0_18px_80px_rgba(2,6,23,0.38)] backdrop-blur-2xl"
+            : "border-white/8 bg-[rgba(7,12,19,0.56)] backdrop-blur-xl"
+        }`}
+      >
+        <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-5">
+          <Link to="/" className="flex items-center gap-3" onClick={() => setIsMenuOpen(false)}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/12 bg-white/6 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
               <img
                 src={`${import.meta.env.BASE_URL}icon.png`}
                 alt="MLVScan"
-                className="w-10 h-10 object-contain"
+                className="h-9 w-9 object-contain"
               />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white font-display">
-              MLVScan
-            </span>
+            <div>
+              <div className="text-sm font-medium uppercase tracking-[0.24em] text-white/38">MLVScan</div>
+              <div className="text-sm text-white/72">Unity Mod Antivirus</div>
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              link.external === false ? (
+          <div className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 lg:flex">
+            {NAV_LINKS.map((link) => {
+              const active =
+                location.pathname === link.href ||
+                (link.href !== "/" && location.pathname.startsWith(link.href))
+
+              return (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="text-gray-300 hover:text-white transition-colors relative group"
+                  className={`rounded-full px-4 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-white/10 text-white"
+                      : "text-white/60 hover:bg-white/6 hover:text-white"
+                  }`}
                 >
                   {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-teal-400 transition-all duration-300 group-hover:w-full" />
                 </Link>
-              ) : (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors relative group"
-                >
-                  {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-teal-400 transition-all duration-300 group-hover:w-full" />
-                </a>
               )
-            ))}
-            {isDocs && (
-              <div className="w-64">
-                <DocsSearch />
-              </div>
-            )}
+            })}
           </div>
 
-          {/* CTAs */}
-          <div className="hidden md:flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild>
+          <div className="hidden items-center gap-3 lg:flex">
+            {isDocs ? (
+              <div className="w-72">
+                <DocsSearch />
+              </div>
+            ) : null}
+
+            <Button
+              variant="outline"
+              className="h-10 rounded-full border-white/12 bg-white/[0.03] px-4 text-white hover:bg-white/8 hover:text-white"
+              asChild
+            >
               <Link to={getPartnerDashboardPath("home")}>Dashboard</Link>
             </Button>
-            <Button size="sm" className="hidden md:flex" asChild>
+            <Button
+              className="h-10 rounded-full border border-teal-300/25 bg-[linear-gradient(135deg,#44e3cb,#16bfb1)] px-4 text-slate-950 shadow-[0_18px_40px_rgba(24,191,176,0.28)]"
+              asChild
+            >
               <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
-                <Download data-icon="inline-start" />
+                <Download className="h-4 w-4" />
                 Download
               </a>
             </Button>
           </div>
 
-          {/* Mobile menu button */}
           <button
+            type="button"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
-            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-white transition hover:bg-white/8 lg:hidden"
+            onClick={() => setIsMenuOpen((current) => !current)}
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden navbar-glass border-t border-white/10">
-          <div className="container mx-auto flex flex-col gap-4 px-4 py-4">
-            {navLinks.map((link) => (
-              link.external === false ? (
+        {isMenuOpen ? (
+          <div className="border-t border-white/10 px-4 pb-4 pt-3 lg:hidden">
+            <div className="grid gap-2">
+              {NAV_LINKS.map((link) => (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="block py-2 text-gray-300 hover:text-white"
+                  className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/76 transition hover:bg-white/8 hover:text-white"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.name}
                 </Link>
-              ) : (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="block py-2 text-gray-300 hover:text-white"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
-              )
-            ))}
-            <div className="flex flex-col gap-2 border-t pt-4 dark:border-gray-800">
-              <Button variant="outline" className="w-full" asChild>
+              ))}
+            </div>
+
+            {isDocs ? (
+              <div className="mt-3">
+                <DocsSearch />
+              </div>
+            ) : null}
+
+            <div className="mt-3 grid gap-2">
+              <Button
+                variant="outline"
+                className="h-11 rounded-full border-white/12 bg-white/[0.03] text-white hover:bg-white/8 hover:text-white"
+                asChild
+              >
                 <Link to={getPartnerDashboardPath("home")} onClick={() => setIsMenuOpen(false)}>
                   Dashboard
                 </Link>
               </Button>
-              <Button className="w-full" asChild>
-                <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
-                  <Download data-icon="inline-start" />
+              <Button
+                className="h-11 rounded-full border border-teal-300/25 bg-[linear-gradient(135deg,#44e3cb,#16bfb1)] text-slate-950"
+                asChild
+              >
+                <a
+                  href="https://github.com/ifBars/MLVScan/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Download className="h-4 w-4" />
                   Download
                 </a>
               </Button>
             </div>
           </div>
-        </div>
-      )}
+        ) : null}
+      </div>
     </nav>
   )
 }

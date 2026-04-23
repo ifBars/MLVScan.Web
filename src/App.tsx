@@ -1,37 +1,24 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom"
 import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
-import Hero from "@/components/layout/Hero"
 import ScanPage from "@/pages/ScanPage"
 import AttestationPage from "@/pages/AttestationPage"
 import Footer from "@/components/layout/Footer"
-import Features from "@/components/Features"
-import FAQ from "@/components/FAQ"
-import TrustSection from "@/components/TrustSection"
 import DocsLayout from "@/components/docs/DocsLayout"
 import DocsPage from "@/pages/DocsPage"
 import AdvisoriesPage from "@/pages/AdvisoriesPage"
 import ThreatFamiliesPage from "@/pages/ThreatFamiliesPage"
 import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
-import Seo from "@/components/seo/Seo"
 import { allDocs } from "@/docs/registry"
-import { getHomeSeoPage } from "@/seo/routes"
+import HomePage from "@/pages/HomePage"
 
 import InspectorPage from "@/pages/InspectorPage"
 import PartnerDashboardPage from "@/pages/PartnerDashboardPage"
 import { Toaster } from "@/components/ui/sonner"
 
 function Home() {
-  return (
-    <>
-      <Seo page={getHomeSeoPage()} />
-      <Hero />
-      <Features />
-      <TrustSection />
-      <FAQ />
-    </>
-  )
+  return <HomePage />
 }
 
 function LoadingSpinner() {
@@ -43,14 +30,17 @@ function LoadingSpinner() {
 }
 
 function MarketingShell() {
+  const location = useLocation()
+  const showFooter = !location.pathname.startsWith("/docs")
+
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-transparent text-white">
       <ParticleBackground />
       <Navbar />
       <main>
         <Outlet />
       </main>
-      <Footer />
+      {showFooter ? <Footer /> : null}
     </div>
   )
 }
