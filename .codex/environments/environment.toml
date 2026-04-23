@@ -6,34 +6,34 @@ name = "MLVScan.Web"
 script = ""
 
 [setup.win32]
-script = "& \"$CODEX_WORKTREE_PATH\\\\.codex\\\\scripts\\\\setup-worktree.ps1\""
+script = "& (Join-Path $env:CODEX_WORKTREE_PATH '.codex\\scripts\\setup-worktree.ps1')"
 
 [[actions]]
 name = "Dev"
 icon = "run"
-command = "cd \"$CODEX_WORKTREE_PATH\"; bun run dev"
+command = "Set-Location $env:CODEX_WORKTREE_PATH; bun run dev"
 
 [[actions]]
 name = "Build"
 icon = "tool"
-command = "cd \"$CODEX_WORKTREE_PATH\"; bun run build"
+command = "Set-Location $env:CODEX_WORKTREE_PATH; bun run build"
 
 [[actions]]
 name = "Lint"
 icon = "tool"
-command = "cd \"$CODEX_WORKTREE_PATH\"; bun run lint"
+command = "Set-Location $env:CODEX_WORKTREE_PATH; bun run lint"
 
 [[actions]]
 name = "Test"
 icon = "test"
-command = "cd \"$CODEX_WORKTREE_PATH\"; bun run test"
+command = "Set-Location $env:CODEX_WORKTREE_PATH; bun run test"
 
 [[actions]]
 name = "Doctor Worktree"
 icon = "tool"
-command = "& \"$CODEX_WORKTREE_PATH\\\\.codex\\\\scripts\\\\doctor-worktree.ps1\""
+command = "& (Join-Path $env:CODEX_WORKTREE_PATH '.codex\\scripts\\doctor-worktree.ps1')"
 
 [[actions]]
 name = "Cleanup Worktree"
 icon = "tool"
-command = "& \"$CODEX_WORKTREE_PATH\\\\.codex\\\\scripts\\\\cleanup-worktree.ps1\""
+command = "& (Join-Path $env:CODEX_WORKTREE_PATH '.codex\\scripts\\cleanup-worktree.ps1')"
