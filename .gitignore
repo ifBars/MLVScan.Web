@@ -34,7 +34,6 @@ build
 .agent/
 .agents/
 .claude/
-.codex/
 .cursor/
 .opencode/
 AGENTS.md
