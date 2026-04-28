@@ -2,7 +2,7 @@
 /docs/reference/* /docs/reference/:splat 200
 /schemas/*      /schemas/:splat      200
 /_framework/*   /_framework/:splat   200
-/attestations/:shareId/badge.svg https://badges.mlvscan.com/attestations/:shareId/badge.svg 302
+/attestations/:shareId/badge.svg https://api.mlvscan.com/public/attestations/:shareId/badge.svg 302
 
 # SPA fallback for Cloudflare Pages
 /*              /index.html          200
