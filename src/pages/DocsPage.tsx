@@ -18,7 +18,7 @@ const DocsPage = ({ doc }: DocsPageProps) => {
   useEffect(() => {
     const loadDoc = async () => {
       setLoading(true)
-      
+
       try {
         const importPath = `../content/docs/${doc.contentPath}`
         const loadComponent = docModules[importPath]
@@ -33,7 +33,7 @@ const DocsPage = ({ doc }: DocsPageProps) => {
         console.error('Failed to load doc:', error)
         setContent(null)
       }
-      
+
       setLoading(false)
     }
 
@@ -54,15 +54,15 @@ const DocsPage = ({ doc }: DocsPageProps) => {
     <div className="space-y-8">
       <Seo page={getDocSeoPage(doc)} />
       <DocHeader meta={doc} />
-      
+
       <DocChrome>
         <div className="border-l-4 border-teal-500 pl-6">
           {ContentComponent ? (
             <ContentComponent />
           ) : (
-            <p className="text-gray-400">Content loading failed.</p>
+            <p className="text-gray-400">Content loading failed. Try refreshing the page.</p>
           )}
-          
+
           {doc.links && (
             <>
               <h2 id="resources" className="text-2xl font-bold text-white mt-8 mb-4">Resources</h2>
