@@ -16,12 +16,27 @@ export default function CoreGettingStartedContent() {
         Create the default rule set, scan an assembly, and map the result when you need the shared schema contract.
       </p>
 
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`var assemblyBytes = File.ReadAllBytes("MyMod.dll");
+      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`using MLVScan;
+using MLVScan.Models.Dto;
+using MLVScan.Services;
+
+var assemblyPath = "MyMod.dll";
+var assemblyBytes = File.ReadAllBytes(assemblyPath);
 var rules = RuleFactory.CreateDefaultRules();
 var scanner = new AssemblyScanner(rules);
-var findings = scanner.Scan("MyMod.dll");
+var findings = scanner.Scan(assemblyPath).ToList();
 
-var result = ScanResultMapper.ToDto(findings, "MyMod.dll", assemblyBytes);`}</code></pre>
+var result = ScanResultMapper.ToDto(
+    findings,
+    Path.GetFileName(assemblyPath),
+    assemblyBytes,
+    new ScanResultOptions
+    {
+        Platform = "my-tool",
+        PlatformVersion = "1.0.0"
+    });
+
+Console.WriteLine(result.Disposition?.Classification);`}</code></pre>
 
       <h2 id="next-steps">Next Steps</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300">

@@ -2,19 +2,19 @@ export default function WasmIntegrationContent() {
   return (
     <>
       <p className="text-gray-300 mb-6">
-        The web app consumes the <strong className="text-white">@mlvscan/wasm-core</strong> npm package, which wraps the .NET 8 WASM runtime and MLVScan.WASM assembly. The package loads <code>dotnet.js</code> and the <code>_framework</code> assets for you; you do not copy <code>_framework</code> into your app’s <code>public</code> folder. Install from npm (<code>@mlvscan/wasm-core</code>); for local development you can use <code>file:../path/to/MLVScan.WASM/npm</code> and configure your bundler to serve or copy <code>_framework</code> from <code>node_modules/@mlvscan/wasm-core/dist/_framework</code>.
+        The web app consumes the <strong className="text-white">@mlvscan/wasm-core</strong> package, which wraps the .NET 8 WASM runtime and MLVScan.WASM assembly. Install <code>@mlvscan/wasm-core</code> from the npm registry with Bun; for local development you can use <code>file:../path/to/MLVScan.WASM/npm</code> and configure your bundler to serve or copy <code>_framework</code> from <code>node_modules/@mlvscan/wasm-core/dist/_framework</code>.
       </p>
 
       <h2 id="prerequisites">Prerequisites</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Add <code>@mlvscan/wasm-core</code> from npm (or <code>file:</code> link to the WASM repo’s <code>npm</code> folder for local development).</li>
-        <li>For local testing: build the MLVScan.WASM .NET project, then run <code>npm run copy:framework</code> in the package so <code>dist/_framework</code> is populated.</li>
-        <li>Configure your dev server and build to serve or copy <code>_framework</code> from the package (e.g. Vite plugin to serve <code>/_framework</code> from the package in dev and copy to output on build).</li>
+        <li>Add <code>@mlvscan/wasm-core</code> with <code>bun add @mlvscan/wasm-core</code> (or <code>file:</code> link to the WASM repo&apos;s <code>npm</code> folder for local development).</li>
+        <li>For local testing: build the MLVScan.WASM .NET project, then run <code>bun run copy:framework</code> in the package so <code>dist/_framework</code> is populated.</li>
+        <li>Configure your dev server and build to serve or copy <code>_framework</code> from the package.</li>
       </ul>
 
       <h2 id="api-overview">API Overview</h2>
       <p className="text-gray-300 mb-4">
-        The package exposes: <code>initScanner</code>, <code>scanAssembly</code>, <code>getScannerVersion</code>, <code>getSchemaVersion</code>, <code>isScannerReady</code>, <code>isMockScanner</code>, <code>getInitError</code>, and <code>getScannerStatus</code>. Call <code>initScanner</code> once (or let <code>scanAssembly</code> / <code>getScannerVersion</code> init on first use). Use the status and error APIs to show “Scanner unavailable” or “Mock mode” in the UI.
+        The package exposes: <code>initScanner</code>, <code>scanAssembly</code>, <code>scanAssemblyWithConfig</code>, <code>getScannerVersion</code>, <code>getSchemaVersion</code>, <code>isScannerReady</code>, <code>isMockScanner</code>, <code>getInitError</code>, and <code>getScannerStatus</code>. Call <code>initScanner</code> once, or let <code>scanAssembly</code> / <code>getScannerVersion</code> init on first use.
       </p>
 
       <div className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 mb-6">
@@ -32,9 +32,9 @@ export default function WasmIntegrationContent() {
         <code className="text-sm text-gray-300">{`import { initScanner, getScannerStatus } from '@mlvscan/wasm-core'
 
 await initScanner({
-  baseUrl: '/',                    // or your app base path, e.g. '/MLVScan.Web/'
-  useMock: false,                  // set true to force mock (e.g. for tests)
-  throwOnInitFailure: false,       // set true to throw instead of falling back to mock
+  baseUrl: '/',
+  useMock: false,
+  throwOnInitFailure: false,
 })
 
 const status = getScannerStatus()
@@ -48,7 +48,7 @@ if (status.isMock) {
 
       <h3 id="2-scanning-files">2. Scanning Files</h3>
       <p className="text-gray-300 mb-4">
-        <code>scanAssembly</code> accepts a <code>Uint8Array</code> and file name, and returns a typed <code>ScanResult</code>. It will initialize the scanner if needed. In mock mode it returns a result with zero findings and <code>scannerVersion: '1.0.0-mock'</code>.
+        <code>scanAssembly</code> accepts a <code>Uint8Array</code> and file name, and returns a typed <code>ScanResult</code>. It will initialize the scanner if needed. In mock mode it returns a result with zero findings and <code>scannerVersion: &apos;1.0.0-mock&apos;</code>.
       </p>
       <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
         <code className="text-sm text-gray-300">{`import { scanAssembly } from '@mlvscan/wasm-core'
@@ -58,7 +58,8 @@ export async function scanFile(file: File) {
   const fileBytes = new Uint8Array(arrayBuffer)
   const result = await scanAssembly(fileBytes, file.name)
 
-  // v1.1.0 examples
+  // Schema v1.2.0 examples
+  console.log(result.disposition?.classification)
   console.log(result.findings[0]?.riskScore)
   console.log(result.dataFlows?.[0]?.callDepth)
 
@@ -74,7 +75,6 @@ export async function scanFile(file: File) {
         <code className="text-sm text-gray-300">{`import { isScannerReady, isMockScanner, getInitError, getScannerVersion } from '@mlvscan/wasm-core'
 
 if (!isScannerReady()) {
-  // Still loading or init failed and not using mock
   return
 }
 const version = await getScannerVersion()
@@ -91,7 +91,7 @@ if (err) {
       <ul className="list-disc list-inside space-y-2 text-gray-300">
         <li><strong className="text-white">Caching:</strong> Browsers aggressively cache WASM files. Use cache-busting or versioned paths if you update the scanner frequently.</li>
         <li><strong className="text-white">MIME Types:</strong> If hosting on IIS or Azure Static Web Apps, ensure <code>.blat</code> and <code>.dat</code> MIME types are configured as <code>application/octet-stream</code>.</li>
-        <li><strong className="text-white">Github Pages:</strong> Works out of the box with the default <code>.nojekyll</code> file present.</li>
+        <li><strong className="text-white">GitHub Pages:</strong> Works with the default <code>.nojekyll</code> file present.</li>
       </ul>
     </>
   )

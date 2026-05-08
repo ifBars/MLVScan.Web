@@ -141,13 +141,13 @@ const docs: DocMeta[] = [
   {
     id: 'wasm-js-interop',
     title: 'JS Interop',
-    description: 'Blazor interop patterns for invoking scanner APIs safely',
+    description: 'Browser interop patterns for invoking scanner APIs safely',
     slug: 'libraries/wasm/js-interop',
     contentPath: 'libraries/wasm/js-interop.mdx',
     section: 'libraries',
     library: 'wasm',
     status: 'stable',
-    keywords: ['blazor', 'js interop', 'jsinvokable', 'dotnetobjectreference'],
+    keywords: ['wasm', 'js interop', 'dotnet runtime', 'browser scanner'],
   },
   {
     id: 'wasm-integration',
