@@ -4,10 +4,25 @@ This guide is for adding or changing Core analysis behavior without breaking the
 
 ## Add A New Rule
 
+Use this path when the rule should ship as part of MLVScan.Core's built-in scanner behavior.
+
 1. Add the rule under `Models/Rules/`.
 2. Implement `IScanRule` with a unique rule ID, severity, and description.
-3. Register the rule in `RuleFactory.CreateDefaultRules()`.
+3. Add the rule to the list returned by `RuleFactory.CreateDefaultRules()`.
 4. Add positive, false-positive, and edge-case tests.
+
+## Add Consumer-Supplied Rules
+
+External consumers can run their own rules alongside the built-in rules with `RuleFactory.CreateDefaultRulesWith(...)`:
+
+```csharp
+var rules = RuleFactory.CreateDefaultRulesWith(new MyCustomRule());
+var scanner = new AssemblyScanner(rules);
+```
+
+Additional rules run after the built-in rules. The factory validates that every rule is non-null, has a non-blank rule ID, and does not reuse a built-in or previously added rule ID.
+
+Custom rules can emit findings through the normal `IScanRule` hooks and those findings are included in mapped scan results. Curated threat-family matches and final disposition behavior are still owned by Core threat-intel logic; add or update `Services/ThreatIntel/` when a custom signal needs to become part of MLVScan's built-in family or blocking model.
 
 ## Keep Core Environment-Agnostic
 
