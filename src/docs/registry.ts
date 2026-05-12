@@ -281,6 +281,16 @@ const docs: DocMeta[] = [
     },
   },
   {
+    id: 'api-adoption',
+    title: 'API Adoption',
+    description: 'Developer and platform integration guide for direct scan reports with optional attestations',
+    slug: 'api-adoption',
+    contentPath: 'api-adoption.mdx',
+    section: 'for-developers',
+    status: 'stable',
+    keywords: ['api', 'platform', 'partner', 'uploads', 'reports', 'direct scan', 'attestations', 'badges', 'openapi'],
+  },
+  {
     id: 'ci-attestations',
     title: 'CI Attestations',
     description: 'Partner API-key automation for release attestations and GitHub Actions',

@@ -1,0 +1,233 @@
+import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
+export default function ApiAdoptionContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        The MLVScan API lets developers, CI systems, and mod distribution platforms submit exact
+        release artifacts for server-side analysis and read private scan reports. If an adopter wants
+        a public MLVScan-hosted verification record, the same submission can also be published as an
+        attestation.
+      </p>
+
+      <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
+        <h3 className="text-teal-300 font-semibold mb-2">Use the API when you need platform automation</h3>
+        <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
+          <li>Scan the exact DLL or EXE bytes your platform accepted, mirrored, or released.</li>
+          <li>Keep private reports account-owned for direct platform-side moderation, triage, or policy decisions.</li>
+          <li>Optionally expose public attestation pages, JSON documents, and badges when you want MLVScan-hosted verification.</li>
+          <li>Track current, superseded, and revoked attestations only for integrations that choose the publishing layer.</li>
+        </ul>
+      </div>
+
+      <h2 id="base-urls">Base URLs</h2>
+      <p className="text-gray-300 mb-4">
+        Production integrations should default to <code>https://api.mlvscan.com</code>. The Worker also
+        serves interactive reference docs at <code>/docs</code> and an OpenAPI document at{" "}
+        <code>/openapi.json</code>.
+      </p>
+      <p className="text-gray-300 mb-6">
+        Some CI networks may be challenged by the canonical domain. In that case, set a configurable
+        base URL and temporarily point automation at <code>https://mlvscan-api.ifbars.workers.dev</code>.
+      </p>
+
+      <h2 id="authentication">Authentication</h2>
+      <p className="text-gray-300 mb-4">
+        Create an API key from the partner dashboard under <code>/dashboard/access</code>. Automation
+        requests should send it as <code>X-API-Key</code>. Bearer tokens are accepted by the API middleware,
+        but <code>X-API-Key</code> is the documented header and matches the generated OpenAPI reference.
+      </p>
+      <CodeBlock className="mb-6">{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  https://api.mlvscan.com/automation/attestations`}</CodeBlock>
+
+      <p className="text-gray-300 mb-4">
+        Scoped keys should include only the capabilities the integration needs:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><code>uploads:write</code> for authenticated <code>/files</code> and <code>/files/upload_url</code> submissions.</li>
+        <li><code>reports:read</code> for private report polling on account-owned submissions.</li>
+        <li><code>attestations:read</code> for listing account-owned attestations.</li>
+        <li><code>attestations:write</code> for draft creation, metadata updates, publish, refresh, revoke, and draft deletion.</li>
+      </ul>
+
+      <h2 id="direct-scan-flow">Direct Scan Report Flow</h2>
+      <p className="text-gray-300 mb-4">
+        The minimum API adoption path is upload plus report polling. This is the right fit for platforms
+        that want to run MLVScan as part of their own review pipeline without creating public MLVScan
+        attestation records.
+      </p>
+      <ol className="list-decimal pl-6 space-y-2 text-gray-300 mb-8">
+        <li>Upload the exact artifact bytes with <code>POST /files</code> or request a large-file URL from <code>GET /files/upload_url</code>.</li>
+        <li>Poll <code>GET /reports/{"{submissionId}"}</code> until the report is <code>completed</code> or <code>failed</code>.</li>
+        <li>Use the completed report in your own moderation queue, release gate, or package metadata system.</li>
+      </ol>
+
+      <h2 id="optional-attestation-flow">Optional Attestation Flow</h2>
+      <p className="text-gray-300 mb-4">
+        Add attestations only when you want MLVScan to host a public verification page, signed JSON
+        document, and badge for the scanned artifact.
+      </p>
+      <ol className="list-decimal pl-6 space-y-2 text-gray-300 mb-8">
+        <li>Complete the direct scan report flow first.</li>
+        <li>Create a draft with <code>POST /automation/attestations</code> using the same <code>submissionId</code>.</li>
+        <li>Review or update draft metadata if the platform has a better package name, version, or source URL.</li>
+        <li>Publish with <code>POST /automation/attestations/{"{id}"}/publish</code>.</li>
+        <li>Store the returned <code>publicUrl</code> and <code>badgeUrl</code> on the package or release record.</li>
+      </ol>
+
+      <h2 id="uploading-files">Uploading Files</h2>
+      <p className="text-gray-300 mb-4">
+        Use direct multipart upload for artifacts under the API limit. Include <code>X-API-Key</code> so
+        the submission is owned by your account and can be read later with the same account key. Owned
+        submissions can also become attestations if you choose that publishing flow.
+      </p>
+      <CodeBlock className="mb-6">{`upload_json=$(curl -fsS \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -F "file=@dist/YourMod.dll" \\
+  -F 'metadata={"sourceHint":"https://example.com/mods/your-mod","loaderType":"BepInEx6Mono"}' \\
+  https://api.mlvscan.com/files)
+
+submission_id=$(echo "$upload_json" | jq -r '.data.id')`}</CodeBlock>
+
+      <p className="text-gray-300 mb-4">
+        For larger artifacts, create a one-time presigned URL and upload raw bytes with <code>PUT</code>.
+        The optional metadata query value is base64url-encoded JSON.
+      </p>
+      <CodeBlock className="mb-8">{`upload_url_json=$(curl -fsS \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  "https://api.mlvscan.com/files/upload_url?filename=YourMod.dll&contentType=application/octet-stream")
+
+upload_url=$(echo "$upload_url_json" | jq -r '.data.upload_url')
+submission_id=$(echo "$upload_url_json" | jq -r '.data.submission_id')
+
+curl -fsS -X PUT --data-binary "@dist/YourMod.dll" "$upload_url"`}</CodeBlock>
+
+      <h2 id="polling-reports">Polling Reports</h2>
+      <p className="text-gray-300 mb-4">
+        Authenticated submissions are private to the account that uploaded them. Poll with the same
+        account key and handle an initial <code>404</code> as a materialization delay for production
+        R2 event processing.
+      </p>
+      <CodeBlock className="mb-6">{`for attempt in $(seq 1 60); do
+  report_json=$(curl -sS \\
+    -H "X-API-Key: $MLVSCAN_API_KEY" \\
+    "https://api.mlvscan.com/reports/$submission_id")
+
+  status=$(echo "$report_json" | jq -r '.status // empty')
+  if [ "$status" = "completed" ] || [ "$status" = "failed" ]; then
+    break
+  fi
+
+  sleep 10
+done`}</CodeBlock>
+
+      <p className="text-gray-300 mb-8">
+        Completed reports include the shared MLVScan result payload. Consumers should prefer
+        <code> disposition</code>, <code>threatFamilies</code>, and the final classification over
+        isolated rule severities.
+      </p>
+
+      <h2 id="attestations">Attestations</h2>
+      <p className="text-gray-300 mb-4">
+        An attestation is optional. It is the public record for one exact artifact scan, useful when
+        you want MLVScan to host a verification page and badge instead of only returning a private
+        report to your system. The <code>artifactKey</code> defines the stable partner-scoped lineage,
+        such as <code>your-mod</code>, <code>your-mod/mono</code>, or <code>your-mod/il2cpp</code>.
+        Publishing a newer attestation for the same key makes the previous current record{" "}
+        <code>superseded</code> while keeping it reachable.
+      </p>
+      <CodeBlock className="mb-6">{`draft_json=$(curl -fsS \\
+  -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "submissionId": "'"$submission_id"'",
+    "artifactKey": "your-mod/mono",
+    "artifactVersion": "1.2.3",
+    "publicDisplayName": "Your Mod 1.2.3",
+    "canonicalSourceUrl": "https://example.com/mods/your-mod"
+  }' \\
+  https://api.mlvscan.com/automation/attestations)
+
+attestation_id=$(echo "$draft_json" | jq -r '.id')
+
+published_json=$(curl -fsS \\
+  -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  "https://api.mlvscan.com/automation/attestations/$attestation_id/publish")
+
+public_url=$(echo "$published_json" | jq -r '.publicUrl')
+badge_url=$(echo "$published_json" | jq -r '.badgeUrl')`}</CodeBlock>
+
+      <h2 id="platform-model">Platform Model</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li>For direct scan-report integrations, store the <code>submissionId</code> and completed report fields your platform needs for review, policy, or audit history.</li>
+        <li>For attestation integrations, keep your platform package identifier mapped to one or more explicit <code>artifactKey</code> values.</li>
+        <li>Use separate attestation keys when Mono, IL2CPP, debug, or loader-specific artifacts are different files.</li>
+        <li>Use <code>artifactVersion</code> for attestation display. It does not define lineage replacement.</li>
+        <li>Use <code>canonicalSourceUrl</code> for the package, release, or review URL you want users to trust.</li>
+        <li>Store <code>shareId</code>, <code>publicUrl</code>, and <code>badgeUrl</code> only after choosing to publish an attestation.</li>
+      </ul>
+
+      <h2 id="public-resources">Public Resources</h2>
+      <p className="text-gray-300 mb-4">
+        Direct scan reports are private and require the owning account key. Published attestations expose
+        optional public resources that do not require an API key:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
+        <li><code>GET /public/attestations/{"{shareId}"}</code> returns the public attestation payload.</li>
+        <li><code>GET /public/attestations/{"{shareId}"}/attestation.json</code> returns a signed attestation document.</li>
+        <li><code>GET /public/attestations/{"{shareId}"}/badge.svg</code> returns or redirects to the badge SVG.</li>
+      </ul>
+      <p className="text-gray-300 mb-8">
+        Use the returned <code>badgeUrl</code> as-is. Do not hardcode the static asset host or append
+        legacy badge style query parameters.
+      </p>
+
+      <h2 id="endpoint-summary">Endpoint Summary</h2>
+      <div className="overflow-x-auto mb-8">
+        <table className="min-w-full text-sm text-gray-300">
+          <thead className="text-left text-gray-100">
+            <tr>
+              <th className="border-b border-gray-700 py-2 pr-4">Endpoint</th>
+              <th className="border-b border-gray-700 py-2 pr-4">Purpose</th>
+              <th className="border-b border-gray-700 py-2">Scope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /files</code></td><td className="border-b border-gray-800 py-2 pr-4">Direct artifact upload</td><td className="border-b border-gray-800 py-2"><code>uploads:write</code> when authenticated</td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /files/upload_url</code></td><td className="border-b border-gray-800 py-2 pr-4">Large-file presigned upload URL</td><td className="border-b border-gray-800 py-2"><code>uploads:write</code> when authenticated</td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /reports/{"{submissionId}"}</code></td><td className="border-b border-gray-800 py-2 pr-4">Private report polling</td><td className="border-b border-gray-800 py-2"><code>reports:read</code> when authenticated</td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /automation/attestations</code></td><td className="border-b border-gray-800 py-2 pr-4">List account attestations</td><td className="border-b border-gray-800 py-2"><code>attestations:read</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations</code></td><td className="border-b border-gray-800 py-2 pr-4">Create or reuse a draft</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations/{"{id}"}/publish</code></td><td className="border-b border-gray-800 py-2 pr-4">Publish a draft</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations/{"{id}"}/metadata</code></td><td className="border-b border-gray-800 py-2 pr-4">Update draft metadata</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations/{"{id}"}/refresh</code></td><td className="border-b border-gray-800 py-2 pr-4">Refresh to the latest matching report</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations/{"{id}"}/revoke</code></td><td className="border-b border-gray-800 py-2 pr-4">Revoke a published attestation</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>DELETE /automation/attestations/{"{id}"}</code></td><td className="border-b border-gray-800 py-2 pr-4">Delete an unpublished draft</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>
+          <Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">
+            CI Attestations
+          </Link>
+        </li>
+        <li>
+          <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:text-teal-300">
+            Automated Reporting &amp; Data Handling
+          </Link>
+        </li>
+        <li>
+          <a href="https://api.mlvscan.com/docs" className="text-teal-400 hover:text-teal-300">
+            Interactive API Reference
+          </a>
+        </li>
+      </ul>
+    </>
+  )
+}

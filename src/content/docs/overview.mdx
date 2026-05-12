@@ -42,6 +42,18 @@ export default function OverviewContent() {
           <p className="text-sm text-gray-400">MelonLoader/BepInEx operations, whitelisting, and triage.</p>
         </Link>
       </div>
+
+      <h2 id="developer-and-platform-adoption">Developer and Platform Adoption</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Link to="/docs/api-adoption" className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 hover:border-teal-500 transition-colors">
+          <h3 className="text-lg text-white font-semibold">API Adoption</h3>
+          <p className="text-sm text-gray-400">Upload artifacts, poll private reports, and optionally publish attestations or badges.</p>
+        </Link>
+        <Link to="/docs/ci-attestations" className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 hover:border-teal-500 transition-colors">
+          <h3 className="text-lg text-white font-semibold">CI Attestations</h3>
+          <p className="text-sm text-gray-400">GitHub Actions workflow for release-time attestation publishing.</p>
+        </Link>
+      </div>
     </>
   )
 }
