@@ -64,6 +64,7 @@ import {
 } from "@/lib/partner-dashboard-api"
 import { buildAttestationPublishMetadata, toAttestationUploadMetadata } from "@/lib/attestation-publish-metadata"
 import { consumeBrowserScanAttestationHandoff } from "@/lib/browser-scan-attestation-handoff"
+import { getPartnerIdentityLabel } from "@/lib/partner-identity"
 import {
   countCurrentAttestations,
   countSupersededAttestations,
@@ -1325,7 +1326,7 @@ export default function PartnerDashboardPage() {
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate text-base font-semibold text-white">{partner.name}</p>
-                <p className="truncate text-sm text-slate-400">{partner.email}</p>
+                <p className="truncate text-sm text-slate-400">{getPartnerIdentityLabel(partner)}</p>
               </div>
             </div>
 
@@ -1499,7 +1500,7 @@ function PartnerSidebarNav({
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-white">{partner.name}</p>
-            <p className="truncate text-xs text-slate-500">{partner.email}</p>
+            <p className="truncate text-xs text-slate-500">{getPartnerIdentityLabel(partner)}</p>
           </div>
         </button>
       </div>

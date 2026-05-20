@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { getPartnerIdentityLabel } from "@/lib/partner-identity"
 import type { PartnerProfile } from "@/types/partner-dashboard"
 
 interface PartnerStatusScreenProps {
@@ -47,7 +48,7 @@ export default function PartnerStatusScreen({
             <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-5 py-4">
               <p className="dashboard-kicker">Signed in as</p>
               <p className="mt-2 text-base font-medium text-white">{partner.name}</p>
-              <p className="mt-1 text-sm text-slate-400">{partner.email}</p>
+              <p className="mt-1 text-sm text-slate-400">{getPartnerIdentityLabel(partner)}</p>
             </div>
 
             <div className="rounded-lg border border-slate-800 bg-slate-800/60 px-5 py-4 text-sm leading-6 text-slate-400">
