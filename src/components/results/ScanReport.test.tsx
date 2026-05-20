@@ -80,6 +80,24 @@ const renderScanReport = (result: ScanResult) => {
   return { container }
 }
 
+const renderPublishableScanReport = (result: ScanResult) => {
+  const container = document.createElement("div")
+  document.body.appendChild(container)
+
+  const root = createRoot(container)
+  mountedRoots.push({ container, root })
+
+  act(() => {
+    root.render(
+      <MemoryRouter>
+        <ScanReport result={result} onReset={() => {}} onCreateAttestation={() => {}} />
+      </MemoryRouter>,
+    )
+  })
+
+  return { container }
+}
+
 afterEach(() => {
   for (const { container, root } of mountedRoots.splice(0)) {
     act(() => {
@@ -104,5 +122,43 @@ describe("ScanReport", () => {
     ).toBeGreaterThan(0)
     expect(screen.getByText("Manual review")).toBeTruthy()
     expect(screen.queryByText("No Known Threats Detected")).toBeNull()
+  })
+
+  it("shows the attestation CTA for clean publishable scans", () => {
+    renderPublishableScanReport(createResult({
+      findings: [],
+      summary: {
+        totalFindings: 0,
+        countBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 },
+        triggeredRules: [],
+      },
+    }))
+
+    expect(screen.getByText("Publishing this mod?")).toBeTruthy()
+    expect(screen.getByText("Create Attestation")).toBeTruthy()
+    expect(screen.queryByText("Copy Nexus Markdown")).toBeNull()
+    expect(screen.getByText("Learn More")).toBeTruthy()
+    expect(screen.getByText(/Screenshot only/)).toBeTruthy()
+  })
+
+  it("does not show the attestation CTA for blocked results", () => {
+    renderPublishableScanReport(createResult({
+      findings: [],
+      summary: {
+        totalFindings: 0,
+        countBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 },
+        triggeredRules: [],
+      },
+      disposition: {
+        classification: "KnownThreat",
+        headline: "Likely malware detected",
+        summary: "Known threat sample.",
+        blockingRecommended: true,
+        primaryThreatFamilyId: null,
+        relatedFindingIds: [],
+      },
+    }))
+
+    expect(screen.queryByText("Publishing this mod?")).toBeNull()
   })
 })

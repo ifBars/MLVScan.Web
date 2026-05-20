@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react"
 import {
+  BadgeCheck,
+  BookOpen,
   CheckCircle,
   FileCode,
   ShieldAlert,
@@ -65,6 +67,7 @@ const verdictPresets = {
 interface ScanReportProps {
   result: ScanResult
   onReset: () => void
+  onCreateAttestation?: () => void
 }
 
 const getFindingKey = (finding: Finding, index: number) => finding.id ?? `${index}`
@@ -81,7 +84,7 @@ const getFindingSummary = (finding: Finding) => {
   return "Suspicious behavior detected"
 }
 
-const ScanReport = ({ result, onReset }: ScanReportProps) => {
+const ScanReport = ({ result, onReset, onCreateAttestation }: ScanReportProps) => {
   const baseClassification = getResultClassification(result)
   const presentationClassification = getResultPresentationClassification(result)
   const verdict = verdictPresets[presentationClassification]
@@ -156,6 +159,10 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
     result.disposition?.blockingRecommended ?? baseClassification !== "Clean"
   const dispositionStatLabel =
     presentationClassification === "ManualReviewRequired" ? "Manual review" : presentationClassification
+  const canCreateAttestation =
+    Boolean(onCreateAttestation) &&
+    presentationClassification === "Clean" &&
+    !blockingRecommended
 
   return (
     <div className="space-y-6">
@@ -216,6 +223,51 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
                   {incompleteScanFinding?.description ??
                     "The scanner could not complete full IL analysis for this file. Review it manually before treating it as clean."}
                 </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {canCreateAttestation && (
+        <Card className="border-emerald-500/25 bg-emerald-500/5">
+          <CardHeader className="gap-3 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <BadgeCheck className="h-5 w-5 text-emerald-300" />
+                Publishing this mod?
+              </CardTitle>
+              <CardDescription className="max-w-3xl text-sm leading-6">
+                Screenshots are useful for quick sharing, but they do not prove which exact file was scanned.
+                Create a verifiable attestation tied to this file&apos;s SHA256 hash and scanner version.
+              </CardDescription>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button size="sm" onClick={onCreateAttestation}>
+                <BadgeCheck data-icon="inline-start" />
+                Create Attestation
+              </Button>
+              <Button size="sm" variant="ghost" asChild>
+                <a href="/docs/ci-attestations">
+                  <BookOpen data-icon="inline-start" />
+                  Learn More
+                </a>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 text-sm md:grid-cols-3">
+              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
+                <p className="text-xs text-muted-foreground">Public proof</p>
+                <p className="mt-1 font-medium text-foreground">Attestation URL and badge</p>
+              </div>
+              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
+                <p className="text-xs text-muted-foreground">Share text</p>
+                <p className="mt-1 font-medium text-foreground">Nexus and Thunderstore-ready embeds</p>
+              </div>
+              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
+                <p className="text-xs text-muted-foreground">Verification summary</p>
+                <p className="mt-1 font-medium text-foreground">Hash, scanner version, date, and result</p>
               </div>
             </div>
           </CardContent>
@@ -313,6 +365,9 @@ const ScanReport = ({ result, onReset }: ScanReportProps) => {
             )}
             <div className="rounded-md border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
               Static analysis can miss runtime behavior. Treat this report as guidance, not a guarantee.
+            </div>
+            <div className="rounded-md border border-border/50 bg-muted/10 p-3 text-xs text-muted-foreground">
+              Screenshot only - for verifiable proof, create an MLVScan attestation tied to this file hash.
             </div>
           </CardContent>
         </Card>

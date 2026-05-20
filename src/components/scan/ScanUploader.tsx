@@ -1,18 +1,29 @@
 import { useState, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Upload, ShieldAlert, RefreshCw } from "lucide-react"
 import type { ScanResult, ScanStatus } from "@/types/mlvscan"
 import { scanAssembly } from "@/lib/scanner"
 import { isSupportedAssemblyFileName, resolveUploadFile } from "@/lib/upload-file"
+import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
+import { saveBrowserScanAttestationHandoff } from "@/lib/browser-scan-attestation-handoff"
 import ScanReport from "@/components/results/ScanReport"
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
 
+const toFileBlobPart = (bytes: Uint8Array): ArrayBuffer => {
+  const copy = new Uint8Array(bytes.byteLength)
+  copy.set(bytes)
+  return copy.buffer
+}
+
 const ScanUploader = () => {
+  const navigate = useNavigate()
   const [status, setStatus] = useState<ScanStatus>("idle")
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<ScanResult | null>(null)
+  const [attestationFile, setAttestationFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
@@ -49,6 +60,10 @@ const ScanUploader = () => {
       const scanResult = await scanAssembly(resolvedUpload.fileBytes, resolvedUpload.fileName)
 
       setResult(scanResult)
+      setAttestationFile(new File([toFileBlobPart(resolvedUpload.fileBytes)], resolvedUpload.fileName, {
+        type: "application/octet-stream",
+        lastModified: selectedFile.lastModified,
+      }))
       setStatus("complete")
       setProgress(100)
     } catch (err) {
@@ -90,7 +105,27 @@ const ScanUploader = () => {
     setStatus("idle")
     setProgress(0)
     setResult(null)
+    setAttestationFile(null)
     setError(null)
+  }
+
+  const handleCreateAttestation = async () => {
+    if (!attestationFile) {
+      return
+    }
+
+    try {
+      await saveBrowserScanAttestationHandoff(attestationFile)
+    } catch (error) {
+      console.warn("Unable to persist browser scan file for login handoff.", error)
+    }
+
+    navigate(getPartnerDashboardPath("publish"), {
+      state: {
+        source: "browser-scan",
+        publishFile: attestationFile,
+      },
+    })
   }
 
   return (
@@ -219,7 +254,11 @@ const ScanUploader = () => {
 
         {status === "complete" && result && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <ScanReport result={result} onReset={resetScan} />
+            <ScanReport
+              result={result}
+              onReset={resetScan}
+              onCreateAttestation={attestationFile ? handleCreateAttestation : undefined}
+            />
           </div>
         )}
       </div>

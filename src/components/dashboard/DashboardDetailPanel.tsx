@@ -45,6 +45,10 @@ import {
   getVerificationTierLabel,
   shortenHash,
 } from "@/lib/attestation-view"
+import {
+  getDisplayArtifactVersion,
+  shouldShowFullArtifactVersionTitle,
+} from "@/lib/artifact-version-display"
 import { cn, formatBytes, formatDate } from "@/lib/utils"
 import type {
   PartnerAttestationBadgeConfigInput,
@@ -89,6 +93,7 @@ interface DashboardDetailPanelProps {
   badgeConfigBusy?: boolean
   publishOutcomeLabel?: string | null
   publishBlockedReason?: string | null
+  variant?: "full" | "summary"
   className?: string
 }
 
@@ -109,6 +114,7 @@ export default function DashboardDetailPanel({
   badgeConfigBusy = false,
   publishOutcomeLabel = null,
   publishBlockedReason = null,
+  variant = "full",
   className,
 }: DashboardDetailPanelProps) {
   const [revokeConfirmAttestationId, setRevokeConfirmAttestationId] = useState<string | null>(null)
@@ -150,6 +156,31 @@ export default function DashboardDetailPanel({
     || artifactVersionDraft.trim() !== (attestation.artifactVersion ?? "")
     || displayNameDraft.trim() !== attestation.publicDisplayName
     || sourceUrlDraft.trim() !== (attestation.canonicalSourceUrl ?? "")
+
+  if (variant === "summary") {
+    return (
+      <DashboardDetailSummary
+        attestation={attestation}
+        shareOutputs={shareOutputs}
+        toneStyle={toneStyle}
+        VerdictIcon={VerdictIcon}
+        isDraft={isDraft}
+        isPublic={isPublic}
+        canRevoke={canRevoke}
+        publishBusy={publishBusy}
+        deleteBusy={deleteBusy}
+        publishOutcomeLabel={publishOutcomeLabel}
+        publishBlockedReason={publishBlockedReason}
+        className={className}
+        onPublish={onPublish}
+        onRefresh={onRefresh}
+        onRevoke={onRevoke}
+        onDeleteDraft={onDeleteDraft}
+        onOpenLink={onOpenLink}
+        onCopySnippet={onCopySnippet}
+      />
+    )
+  }
 
   return (
     <>
@@ -243,7 +274,15 @@ export default function DashboardDetailPanel({
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
                   <Fact label="Lineage" value={getAttestationStatusLabel(attestation)} />
                   <Fact label="Artifact key" value={attestation.artifactKey} mono />
-                  <Fact label="Artifact version" value={attestation.artifactVersion ?? "Not set"} />
+                  <Fact
+                    label="Artifact version"
+                    value={getDisplayArtifactVersion(attestation.artifactVersion) ?? "Not set"}
+                    title={
+                      shouldShowFullArtifactVersionTitle(attestation.artifactVersion)
+                        ? `Full version: ${attestation.artifactVersion}`
+                        : undefined
+                    }
+                  />
                   <Fact label="Scanned at" value={formatDate(attestation.scannedAt)} />
                   <Fact
                     label="Published"
@@ -534,6 +573,229 @@ export default function DashboardDetailPanel({
   )
 }
 
+function DashboardDetailSummary({
+  attestation,
+  shareOutputs,
+  toneStyle,
+  VerdictIcon,
+  isDraft,
+  isPublic,
+  canRevoke,
+  publishBusy,
+  deleteBusy,
+  publishOutcomeLabel,
+  publishBlockedReason,
+  className,
+  onPublish,
+  onRefresh,
+  onRevoke,
+  onDeleteDraft,
+  onOpenLink,
+  onCopySnippet,
+}: {
+  attestation: PartnerAttestationSummary
+  shareOutputs: ShareOutputs | null
+  toneStyle: (typeof toneStyles)[keyof typeof toneStyles]
+  VerdictIcon: typeof ShieldCheck
+  isDraft: boolean
+  isPublic: boolean
+  canRevoke: boolean
+  publishBusy: boolean
+  deleteBusy: boolean
+  publishOutcomeLabel: string | null
+  publishBlockedReason: string | null
+  className?: string
+  onPublish: () => Promise<void>
+  onRefresh: (id: string) => Promise<void>
+  onRevoke: (id: string) => Promise<void>
+  onDeleteDraft: (id: string) => Promise<void>
+  onOpenLink: (url: string) => void
+  onCopySnippet: (text: string, successMessage: string) => void
+}) {
+  const [revokeOpen, setRevokeOpen] = useState(false)
+
+  return (
+    <>
+      <aside className={cn("rounded-xl border border-slate-800 bg-slate-950/55", className)}>
+        <div className="flex min-h-12 items-center justify-between border-b border-slate-800 px-4">
+          <p className="text-sm font-semibold text-white">Selected record</p>
+          <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">
+            {getAttestationStatusLabel(attestation)}
+          </Badge>
+        </div>
+
+        <div className="space-y-4 p-4">
+          <div className="space-y-3">
+            <Badge className={cn("w-fit border", toneStyle.badge)}>
+              <VerdictIcon data-icon="inline-start" />
+              {getAttestationVerdictLabel(
+                attestation.classification,
+                attestation.publicationStatus,
+              )}
+            </Badge>
+            <div>
+              <h3 className="truncate font-display text-2xl leading-tight text-white">
+                {attestation.publicDisplayName}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                {attestation.summary}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <Fact label="Artifact key" value={attestation.artifactKey} mono />
+            <Fact
+              label="Version"
+              value={getDisplayArtifactVersion(attestation.artifactVersion) ?? "Not set"}
+              title={
+                shouldShowFullArtifactVersionTitle(attestation.artifactVersion)
+                  ? `Full version: ${attestation.artifactVersion}`
+                  : undefined
+              }
+            />
+            <Fact label="SHA-256" value={shortenHash(attestation.contentHash)} mono />
+            <Fact label="Findings" value={`${attestation.findingCount} retained`} />
+          </div>
+
+          <div className="divide-y divide-slate-800 rounded-lg border border-slate-800 bg-slate-900/40">
+            <SummaryRow label="Source binding" value={getSourceBindingLabel(attestation.sourceBindingStatus)} />
+            <SummaryRow label="Verification" value={getVerificationTierLabel(attestation.verificationTier)} />
+            <SummaryRow
+              label="Scanned"
+              value={formatDate(attestation.scannedAt)}
+            />
+          </div>
+
+          {isDraft ? (
+            <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-3 text-sm leading-6 text-slate-300">
+              {publishBlockedReason
+                ? publishBlockedReason
+                : publishOutcomeLabel
+                  ? publishOutcomeLabel
+                  : `Publish new current attestation for ${attestation.artifactKey}.`}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-2">
+            {isDraft ? (
+              <Button
+                disabled={publishBusy || Boolean(publishBlockedReason)}
+                className="justify-between"
+                onClick={() => void onPublish()}
+              >
+                {publishBusy ? "Publishing..." : "Publish attestation"}
+                <ArrowUpRight data-icon="inline-end" />
+              </Button>
+            ) : null}
+
+            <Button
+              variant="outline"
+              className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              onClick={() => void onRefresh(attestation.id)}
+            >
+              Sync latest report for these bytes
+              <ArrowUpRight data-icon="inline-end" />
+            </Button>
+
+            {shareOutputs ? (
+              <>
+                <Button
+                  variant="outline"
+                  className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  onClick={() => onCopySnippet(shareOutputs.markdown, "Copied Markdown badge snippet")}
+                >
+                  Copy Markdown badge
+                  <FileText data-icon="inline-end" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  onClick={() => onCopySnippet(shareOutputs.bbcode, "Copied BBCode badge snippet")}
+                >
+                  Copy BBCode badge
+                  <FileText data-icon="inline-end" />
+                </Button>
+              </>
+            ) : null}
+
+            {isPublic ? (
+              <Button
+                variant="outline"
+                className="justify-between border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                onClick={() => onOpenLink(attestation.publicUrl)}
+              >
+                Open public attestation
+                <ArrowUpRight data-icon="inline-end" />
+              </Button>
+            ) : null}
+
+            {canRevoke ? (
+              <Button
+                variant="outline"
+                className="justify-between border-rose-700/60 bg-rose-950/30 text-rose-200 hover:bg-rose-950/45"
+                onClick={() => setRevokeOpen(true)}
+              >
+                Revoke public attestation
+                <TriangleAlert data-icon="inline-end" />
+              </Button>
+            ) : null}
+
+            {isDraft ? (
+              <Button
+                variant="outline"
+                className="justify-between border-rose-700/60 bg-rose-950/30 text-rose-200 hover:bg-rose-950/45"
+                disabled={deleteBusy}
+                onClick={() => void onDeleteDraft(attestation.id)}
+              >
+                {deleteBusy ? "Deleting..." : "Delete draft"}
+                <Trash2 data-icon="inline-end" />
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="rounded-lg border border-slate-800 bg-slate-900/35 px-3 py-3 text-sm leading-6 text-slate-400">
+            <p className="dashboard-kicker">Trust model</p>
+            <p className="mt-2">{getVerificationTierDescription(attestation.verificationTier)}</p>
+            <p className="mt-2">
+              {attestation.sourceBindingStatus === "verified"
+                ? "Source binding confirms the declared download source matched these exact bytes when MLVScan checked it."
+                : "Treat the SHA-256 on the public page as the deciding identity check unless source binding is verified."}
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <AlertDialog open={revokeOpen} onOpenChange={setRevokeOpen}>
+        <AlertDialogContent className="border-slate-800 bg-slate-900">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke public attestation</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the public page and badge for {attestation.publicDisplayName} right away.
+              The ledger entry remains so you can refresh or republish later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void onRevoke(attestation.id)}>
+              Revoke attestation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm">
+      <span className="text-slate-400">{label}</span>
+      <span className="max-w-[58%] text-right text-slate-100">{value}</span>
+    </div>
+  )
+}
+
 function MetadataField({
   label,
   description,
@@ -556,10 +818,12 @@ function Fact({
   label,
   value,
   mono = false,
+  title,
 }: {
   label: string
   value: string
   mono?: boolean
+  title?: string
 }) {
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-800/50 px-3 py-2">
@@ -567,9 +831,10 @@ function Fact({
         {label}
       </p>
       <p
+        title={title}
         className={cn(
           "mt-1 text-[1.02rem] leading-5 text-slate-100",
-          mono && "break-all font-mono text-sm",
+          mono ? "break-all font-mono text-sm" : "truncate",
         )}
       >
         {value}

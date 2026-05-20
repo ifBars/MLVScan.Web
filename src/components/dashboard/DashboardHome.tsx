@@ -1,25 +1,22 @@
 import {
   ArrowRight,
-  BadgeCheck,
-  FileCode2,
-  KeyRound,
+  CircleAlert,
+  Clock3,
+  FileCheck2,
   ShieldCheck,
   Sparkles,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  getAttestationStatusDescription,
-  getAttestationStatusLabel,
-} from "@/lib/attestation-lineage"
+import { getAttestationStatusLabel } from "@/lib/attestation-lineage"
 import {
   getAttestationTone,
   getAttestationVerdictLabel,
   getSourceBindingLabel,
-  getVerificationTierLabel,
   shortenHash,
 } from "@/lib/attestation-view"
+import { getDisplayArtifactVersion } from "@/lib/artifact-version-display"
 import { cn, formatDate } from "@/lib/utils"
 import type {
   PartnerAttestationSummary,
@@ -56,200 +53,182 @@ export default function DashboardHome({
   onReviewAttestation,
 }: DashboardHomeProps) {
   const latestAttestation = attestations[0] ?? null
-  const greetingName = firstName(partner.name)
-  const latestTone = latestAttestation
-    ? getAttestationTone(
-        latestAttestation.classification,
-        latestAttestation.publicationStatus,
-      )
-    : null
+  const recentAttestations = attestations.slice(0, 4)
+  const attentionItems = buildAttentionItems({
+    draftCount,
+    activeKeyCount,
+    maxKeys: partner.maxKeys,
+    latestAttestation,
+  })
 
   return (
-    <div className="space-y-8">
-      <section className="px-1 py-2 sm:px-0">
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <p className="dashboard-kicker">Home</p>
-            <h2 className="mt-3 font-display text-5xl leading-none text-white sm:text-6xl">
-              Hello, {greetingName}
-            </h2>
-          </div>
-
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/70 sm:grid-cols-2 xl:grid-cols-4">
-            <OverviewCell label="Current" value={`${publishedCount}`} />
-            <OverviewCell label="Drafts" value={`${draftCount}`} />
-            <OverviewCell label="Superseded" value={`${supersededCount}`} />
-            <OverviewCell label="Active keys" value={`${activeKeyCount}/${partner.maxKeys}`} />
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-slate-800 pt-8">
-        <div className="flex flex-col gap-3 pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-display text-3xl leading-tight text-white">
-              Recent attestation activity
-            </p>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-              Keep the current release visible here, then jump into the workflow surface that needs
-              attention next.
-            </p>
-          </div>
-
-          {latestAttestation ? (
-            <Button
-              variant="outline"
-              className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
-              onClick={() => onReviewAttestation(latestAttestation)}
-            >
-              Open in ledger
-              <ArrowRight data-icon="inline-end" />
-            </Button>
-          ) : null}
+    <div className="space-y-7">
+      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="min-w-0">
+          <p className="dashboard-kicker">Home</p>
+          <h2 className="mt-3 font-display text-4xl leading-tight text-white sm:text-5xl">
+            {partner.name}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            Watch release health, drafts, and access posture from one overview.
+          </p>
         </div>
 
-        {latestAttestation ? (
-          <div className="grid gap-8 py-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
-            <div className="rounded-[24px] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.64),rgba(2,6,23,0.92))] p-5">
-              <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-800 bg-slate-950/80">
-                <FileCode2 className="size-7 text-primary" />
-              </div>
-              <p className="mt-6 text-[0.72rem] uppercase tracking-[0.18em] text-slate-500">
-                Latest artifact
-              </p>
-              <p className="mt-3 break-all font-mono text-xs text-slate-400">
-                {latestAttestation.fileName}
-              </p>
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="border-slate-700 bg-slate-900/70 text-slate-300">
-                  Recent record
-                </Badge>
-                {latestTone ? (
-                  <Badge className={cn("border", toneClasses[latestTone])}>
-                    {getAttestationVerdictLabel(
-                      latestAttestation.classification,
-                      latestAttestation.publicationStatus,
-                    )}
-                  </Badge>
-                ) : null}
-                <Badge variant="outline" className="border-slate-700 bg-slate-900/70 text-slate-300">
-                  {getAttestationStatusLabel(latestAttestation)}
-                </Badge>
-              </div>
-
-              <p className="mt-5 max-w-3xl text-base leading-8 text-slate-300">
-                {latestAttestation.summary}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                {getAttestationStatusDescription(latestAttestation)}
-              </p>
-
-              <div className="mt-6 grid gap-x-12 gap-y-1 lg:grid-cols-2">
-                <MetricRow label="Artifact key" value={latestAttestation.artifactKey} mono />
-                <MetricRow label="Updated" value={formatDate(latestAttestation.refreshedAt ?? latestAttestation.createdAt)} />
-                <MetricRow label="Scanned at" value={formatDate(latestAttestation.scannedAt)} />
-                <MetricRow
-                  label="Published"
-                  value={
-                    latestAttestation.publishedAt
-                      ? formatDate(latestAttestation.publishedAt)
-                      : "Not yet published"
-                  }
-                />
-                <MetricRow label="Short hash" value={shortenHash(latestAttestation.contentHash)} mono />
-                <MetricRow
-                  label="Verification"
-                  value={getVerificationTierLabel(latestAttestation.verificationTier)}
-                />
-                <MetricRow
-                  label="Source binding"
-                  value={getSourceBindingLabel(latestAttestation.sourceBindingStatus)}
-                />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-5 py-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <Badge variant="outline" className="border-slate-700 bg-slate-900/60 text-slate-300">
-                No records yet
-              </Badge>
-              <h3 className="mt-5 font-display text-3xl leading-tight text-white">
-                Start the first attestation draft
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-slate-400">
-                This dashboard fills in once you upload your first DLL or EXE and create an
-                attestation draft.
-              </p>
-            </div>
-
-            <Button className="justify-between lg:min-w-[240px]" onClick={() => onSelectWorkspace("publish")}>
-              Open submit workspace
-              <ArrowRight data-icon="inline-end" />
-            </Button>
-          </div>
-        )}
-      </section>
-
-      <section className="border-t border-slate-800">
-        <div className="divide-y divide-slate-800">
-          <WorkspaceRow
-            icon={Sparkles}
-            title="Submit"
-            description="Upload a mod DLL, scan it, and create a new draft attestation."
-            actionLabel="Create draft"
-            onClick={() => onSelectWorkspace("publish")}
-          />
-          <WorkspaceRow
-            icon={BadgeCheck}
-            title="Ledger"
-            description="Review current, superseded, revoked, and draft records for each artifact lineage, then publish, refresh, revoke, or inspect the current release."
-            actionLabel={latestAttestation ? "Review latest record" : "Open ledger"}
-            onClick={() =>
-              latestAttestation
-                ? onReviewAttestation(latestAttestation)
-                : onSelectWorkspace("attestations")
-            }
-          />
-          <WorkspaceRow
-            icon={KeyRound}
-            title="Access"
-            description="Create, rotate, and revoke API keys without mixing access management into the release workflow."
-            actionLabel="Manage keys"
-            onClick={() => onSelectWorkspace("access")}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm text-slate-400 sm:px-6 lg:px-8">
-          <Badge
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={() => onSelectWorkspace("publish")}>
+            <Sparkles data-icon="inline-start" />
+            Create draft
+          </Button>
+          <Button
             variant="outline"
-            className="border-emerald-600/30 bg-emerald-950/30 text-emerald-300"
+            className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+            onClick={() => onSelectWorkspace("attestations")}
           >
-            <ShieldCheck data-icon="inline-start" />
-            {partner.tierRestriction === "partner" ? "Partner tier active" : "Free tier active"}
-          </Badge>
-          <span className="text-slate-500">
-            Signed in as {partner.email}
-          </span>
+            Open ledger
+            <ArrowRight data-icon="inline-end" />
+          </Button>
+        </div>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiTile label="Current releases" value={`${publishedCount}`} tone="primary" />
+        <KpiTile label="Drafts waiting" value={`${draftCount}`} tone={draftCount > 0 ? "attention" : "neutral"} />
+        <KpiTile label="Superseded history" value={`${supersededCount}`} tone="neutral" />
+        <KpiTile label="Active keys" value={`${activeKeyCount}/${partner.maxKeys}`} tone="neutral" />
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <RecentRecords
+          attestations={recentAttestations}
+          onSelectWorkspace={onSelectWorkspace}
+          onReviewAttestation={onReviewAttestation}
+        />
+        <div className="space-y-5">
+          <ReleaseHealthCard
+            attestation={latestAttestation}
+            onReviewAttestation={onReviewAttestation}
+            onCreateDraft={() => onSelectWorkspace("publish")}
+          />
+          <AttentionCard items={attentionItems} onSelectWorkspace={onSelectWorkspace} />
         </div>
       </section>
     </div>
   )
 }
 
-function OverviewCell({ label, value }: { label: string; value: string }) {
+function KpiTile({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone: "primary" | "attention" | "neutral"
+}) {
   return (
-    <div className="min-w-[150px] bg-slate-950/70 px-4 py-4">
-      <p className="text-[0.68rem] uppercase tracking-[0.18em] text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+    <div className="rounded-xl border border-slate-800 bg-slate-950/45 px-4 py-4">
+      <p className="text-[0.68rem] font-medium uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-2 text-3xl font-semibold text-white",
+          tone === "primary" && "text-emerald-200",
+          tone === "attention" && "text-primary",
+        )}
+      >
+        {value}
+      </p>
     </div>
   )
 }
 
-function MetricRow({
+function ReleaseHealthCard({
+  attestation,
+  onReviewAttestation,
+  onCreateDraft,
+}: {
+  attestation: PartnerAttestationSummary | null
+  onReviewAttestation: (attestation: PartnerAttestationSummary) => void
+  onCreateDraft: () => void
+}) {
+  if (!attestation) {
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/35 p-5">
+        <Badge variant="outline" className="border-slate-700 bg-slate-900/60 text-slate-300">
+          No releases yet
+        </Badge>
+        <h3 className="mt-4 font-display text-2xl leading-tight text-white">
+          Create your first attestation
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-slate-400">
+          Upload a DLL or EXE, review the scan result, then publish from the ledger when it is ready.
+        </p>
+        <Button className="mt-5 w-full justify-between" onClick={onCreateDraft}>
+          Create draft
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      </div>
+    )
+  }
+
+  const tone = getAttestationTone(attestation.classification, attestation.publicationStatus)
+  const displayVersion = getDisplayArtifactVersion(attestation.artifactVersion)
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="dashboard-kicker">Latest release</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Badge className={cn("border", toneClasses[tone])}>
+              {getAttestationVerdictLabel(attestation.classification, attestation.publicationStatus)}
+            </Badge>
+            <Badge variant="outline" className="border-slate-700 bg-slate-900/70 text-slate-300">
+              {getAttestationStatusLabel(attestation)}
+            </Badge>
+          </div>
+          <h3 className="mt-4 truncate text-xl font-semibold text-white">
+            {attestation.publicDisplayName}
+          </h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">
+            {attestation.summary}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+        <HealthFact label="Version" value={displayVersion ? `v${displayVersion}` : "Not set"} />
+        <HealthFact label="Updated" value={formatDate(attestation.refreshedAt ?? attestation.createdAt)} />
+        <HealthFact label="Hash" value={shortenHash(attestation.contentHash)} mono />
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        <SignalPill
+          icon={FileCheck2}
+          label="Source binding"
+          value={getSourceBindingLabel(attestation.sourceBindingStatus)}
+        />
+        <SignalPill
+          icon={ShieldCheck}
+          label="Verification"
+          value={attestation.verificationTier === "self_submitted" ? "Self-submitted" : attestation.verificationTier}
+        />
+      </div>
+
+      <Button
+        variant="outline"
+        className="mt-5 w-full justify-between border-slate-700 bg-slate-900/80 text-slate-200 hover:bg-slate-800"
+        onClick={() => onReviewAttestation(attestation)}
+      >
+        Review record
+        <ArrowRight data-icon="inline-end" />
+      </Button>
+    </div>
+  )
+}
+
+function HealthFact({
   label,
   value,
   mono = false,
@@ -259,63 +238,188 @@ function MetricRow({
   mono?: boolean
 }) {
   return (
-    <div className="flex items-center gap-4 border-b border-slate-800/80 py-3 text-sm">
-      <span className="shrink-0 text-slate-400">{label}</span>
-      <span className="min-w-0 flex-1 border-b border-dotted border-slate-700/80" />
-      <span
+    <div className="rounded-xl border border-slate-800 bg-slate-900/35 px-3 py-2.5">
+      <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-500">{label}</p>
+      <p
         className={cn(
-          "text-right text-slate-100",
-          mono && "max-w-[16rem] truncate font-mono text-xs sm:max-w-none",
+          "mt-1 truncate text-sm font-semibold text-white",
+          mono && "font-mono text-sm",
         )}
+        title={value}
       >
         {value}
-      </span>
+      </p>
     </div>
   )
 }
 
-function WorkspaceRow({
+function SignalPill({
   icon: Icon,
-  title,
-  description,
-  actionLabel,
-  onClick,
+  label,
+  value,
 }: {
-  icon: typeof Sparkles
-  title: string
-  description: string
-  actionLabel: string
-  onClick: () => void
+  icon: typeof FileCheck2
+  label: string
+  value: string
 }) {
   return (
-    <div className="flex flex-col gap-4 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-      <div className="flex min-w-0 items-start gap-4">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-200">
-          <Icon className="size-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-lg font-semibold text-white">{title}</p>
-          <p className="mt-1 max-w-3xl text-sm leading-7 text-slate-400">{description}</p>
-        </div>
+    <div className="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-900/35 px-3 py-2.5">
+      <Icon className="size-5 text-primary" />
+      <div className="min-w-0">
+        <p className="text-xs text-slate-500">{label}</p>
+        <p className="truncate text-sm font-medium text-slate-100">{value}</p>
       </div>
-
-      <Button
-        variant="ghost"
-        className="justify-between border border-slate-800 bg-slate-900 px-4 text-slate-200 hover:bg-slate-800 lg:min-w-[220px]"
-        onClick={onClick}
-      >
-        {actionLabel}
-        <ArrowRight data-icon="inline-end" />
-      </Button>
     </div>
   )
 }
 
-function firstName(name: string): string {
-  const trimmed = name.trim()
-  if (!trimmed) {
-    return "partner"
+function AttentionCard({
+  items,
+  onSelectWorkspace,
+}: {
+  items: AttentionItem[]
+  onSelectWorkspace: (value: PartnerWorkspaceView) => void
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="dashboard-kicker">Needs attention</p>
+          <h3 className="mt-1 text-xl font-semibold text-white">{items.length} items</h3>
+        </div>
+        <CircleAlert className={cn("size-5", items.length > 0 ? "text-primary" : "text-slate-600")} />
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {items.length > 0 ? (
+          items.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className="w-full rounded-xl border border-slate-800 bg-slate-900/45 px-3 py-3 text-left transition hover:border-slate-700 hover:bg-slate-900"
+              onClick={() => onSelectWorkspace(item.workspace)}
+            >
+              <p className="text-sm font-medium text-white">{item.label}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">{item.description}</p>
+            </button>
+          ))
+        ) : (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/35 px-3 py-4 text-sm text-slate-400">
+            No drafts or access issues need attention.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function RecentRecords({
+  attestations,
+  onSelectWorkspace,
+  onReviewAttestation,
+}: {
+  attestations: PartnerAttestationSummary[]
+  onSelectWorkspace: (value: PartnerWorkspaceView) => void
+  onReviewAttestation: (attestation: PartnerAttestationSummary) => void
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-800 bg-slate-950/45">
+      <div className="flex flex-col gap-3 border-b border-slate-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="dashboard-kicker">Recent records</p>
+          <h3 className="mt-1 text-xl font-semibold text-white">Attestation activity</h3>
+        </div>
+        <Button
+          variant="outline"
+          className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+          onClick={() => onSelectWorkspace("attestations")}
+        >
+          View all
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      </div>
+
+      <div className="divide-y divide-slate-800">
+        {attestations.length > 0 ? (
+          attestations.map((attestation) => {
+            const tone = getAttestationTone(attestation.classification, attestation.publicationStatus)
+            const displayVersion = getDisplayArtifactVersion(attestation.artifactVersion)
+
+            return (
+              <button
+                key={attestation.id}
+                type="button"
+                className="grid w-full gap-3 px-5 py-4 text-left transition hover:bg-slate-900/45 lg:grid-cols-[minmax(0,1fr)_auto_auto]"
+                onClick={() => onReviewAttestation(attestation)}
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-white">{attestation.publicDisplayName}</p>
+                  <p className="mt-1 truncate text-xs text-slate-500">
+                    {displayVersion ? `v${displayVersion}` : attestation.artifactKey}
+                  </p>
+                </div>
+                <Badge className={cn("w-fit border", toneClasses[tone])}>
+                  {getAttestationVerdictLabel(attestation.classification, attestation.publicationStatus)}
+                </Badge>
+                <div className="flex items-center gap-2 text-sm text-slate-400 lg:min-w-[190px] lg:justify-end">
+                  <Clock3 className="size-4" />
+                  {formatDate(attestation.refreshedAt ?? attestation.createdAt)}
+                </div>
+              </button>
+            )
+          })
+        ) : (
+          <div className="px-5 py-6 text-sm text-slate-400">
+            No attestation records yet.
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+type AttentionItem = {
+  label: string
+  description: string
+  workspace: PartnerWorkspaceView
+}
+
+function buildAttentionItems({
+  draftCount,
+  activeKeyCount,
+  maxKeys,
+  latestAttestation,
+}: {
+  draftCount: number
+  activeKeyCount: number
+  maxKeys: number
+  latestAttestation: PartnerAttestationSummary | null
+}): AttentionItem[] {
+  const items: AttentionItem[] = []
+
+  if (draftCount > 0) {
+    items.push({
+      label: `${draftCount} draft${draftCount === 1 ? "" : "s"} waiting`,
+      description: "Review and publish the records you want to make public.",
+      workspace: "attestations",
+    })
   }
 
-  return trimmed.split(/\s+/)[0] ?? "partner"
+  if (activeKeyCount >= maxKeys) {
+    items.push({
+      label: "API key limit reached",
+      description: "Rotate or revoke unused keys before creating more.",
+      workspace: "access",
+    })
+  }
+
+  if (latestAttestation?.sourceBindingStatus === "none") {
+    items.push({
+      label: "Latest release has no bound source",
+      description: "Add a canonical source URL when the download page is stable.",
+      workspace: "attestations",
+    })
+  }
+
+  return items
 }

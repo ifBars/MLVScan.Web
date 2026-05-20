@@ -63,6 +63,7 @@ import {
   uploadSubmission,
 } from "@/lib/partner-dashboard-api"
 import { buildAttestationPublishMetadata, toAttestationUploadMetadata } from "@/lib/attestation-publish-metadata"
+import { consumeBrowserScanAttestationHandoff } from "@/lib/browser-scan-attestation-handoff"
 import {
   countCurrentAttestations,
   countSupersededAttestations,
@@ -112,6 +113,11 @@ type PublishTextField =
   | "artifactKey"
   | "artifactVersion"
   | "canonicalSourceUrl"
+
+type PartnerDashboardLocationState = {
+  source?: "browser-scan"
+  publishFile?: unknown
+}
 
 const workspaceItems: Array<{
   value: PartnerWorkspaceView
@@ -188,6 +194,7 @@ export default function PartnerDashboardPage() {
   const publishFlowAbortControllerRef = useRef<AbortController | null>(null)
   const publishFlowRunIdRef = useRef(0)
   const publishFileInspectRunIdRef = useRef(0)
+  const consumedBrowserScanFileRef = useRef<File | null>(null)
 
   const selectedAttestation =
     attestations.find((attestation) => attestation.id === selectedAttestationId) ??
@@ -223,7 +230,7 @@ export default function PartnerDashboardPage() {
       return true
     }
 
-    return window.matchMedia("(max-width: 1279px)").matches
+    return window.matchMedia("(max-width: 1535px)").matches
   }
 
   function handleCloseAttestationDetail(): void {
@@ -390,6 +397,19 @@ export default function PartnerDashboardPage() {
     }
   })
 
+  const applyBrowserScanPublishFile = useEffectEvent((
+    file: File,
+    source: PartnerDashboardLocationState["source"],
+  ) => {
+    handlePublishFileChange(file)
+    if (source === "browser-scan") {
+      setPublishFlow({
+        ...initialPublishFlow(),
+        message: "Using the file you just scanned. Review the attestation fields, then create the draft.",
+      })
+    }
+  })
+
   useEffect(() => {
     const controller = new AbortController()
     void syncSession(location.search, controller.signal)
@@ -432,6 +452,42 @@ export default function PartnerDashboardPage() {
 
     navigate(rememberedPath, { replace: true })
   }, [location.pathname, navigate, partner?.status])
+
+  useEffect(() => {
+    if (
+      partner?.status !== "active" ||
+      location.pathname !== getPartnerDashboardPath("publish")
+    ) {
+      return
+    }
+
+    const state = location.state as PartnerDashboardLocationState | null
+    const publishFile = state?.publishFile
+    if (publishFile instanceof File && consumedBrowserScanFileRef.current !== publishFile) {
+      consumedBrowserScanFileRef.current = publishFile
+      applyBrowserScanPublishFile(publishFile, state?.source)
+      navigate(location.pathname, { replace: true, state: null })
+      return
+    }
+
+    let cancelled = false
+    void consumeBrowserScanAttestationHandoff()
+      .then((handoff) => {
+        if (cancelled || !handoff || consumedBrowserScanFileRef.current === handoff.file) {
+          return
+        }
+
+        consumedBrowserScanFileRef.current = handoff.file
+        applyBrowserScanPublishFile(handoff.file, handoff.source)
+      })
+      .catch((error) => {
+        console.warn("Unable to restore browser scan file for attestation.", error)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [location.pathname, location.state, navigate, partner?.status])
 
   async function handleSharedKeyLogin(
     username: string,
@@ -956,7 +1012,7 @@ export default function PartnerDashboardPage() {
   function handleSelectAttestation(attestation: PartnerAttestationSummary): void {
     setSelectedAttestationId(attestation.id)
     setBadgeDefaultsOpen(false)
-    setDetailSheetOpen(true)
+    setDetailSheetOpen(shouldUseMobileDetailSheet())
   }
 
   function handleReviewAttestation(attestation: PartnerAttestationSummary): void {
@@ -1167,21 +1223,45 @@ export default function PartnerDashboardPage() {
                         />
                       </div>
                     ) : (
-                      <AttestationLedger
-                        attestations={attestations}
-                        selectedAttestationId={selectedAttestationId}
-                        isLoading={attestationsLoading}
-                        errorMessage=""
-                        onSelect={handleSelectAttestation}
-                        onReview={handleReviewAttestation}
-                        onRefresh={handleRefreshAttestation}
-                        onRevoke={handleRevokeAttestation}
-                        onDeleteDraft={handleDeleteAttestationDraft}
-                        onOpenLink={handleOpenLink}
-                        onCopySnippet={handleCopySnippet}
-                        onOpenDetails={() => setDetailSheetOpen(true)}
-                        onOpenBadgeDefaults={handleOpenBadgeDefaults}
-                      />
+                      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_390px]">
+                        <AttestationLedger
+                          attestations={attestations}
+                          selectedAttestationId={selectedAttestationId}
+                          isLoading={attestationsLoading}
+                          errorMessage=""
+                          onSelect={handleSelectAttestation}
+                          onReview={handleReviewAttestation}
+                          onRefresh={handleRefreshAttestation}
+                          onRevoke={handleRevokeAttestation}
+                          onDeleteDraft={handleDeleteAttestationDraft}
+                          onOpenLink={handleOpenLink}
+                          onCopySnippet={handleCopySnippet}
+                          onOpenDetails={() => setDetailSheetOpen(true)}
+                          onOpenBadgeDefaults={handleOpenBadgeDefaults}
+                        />
+
+                        <DashboardDetailPanel
+                          key={selectedAttestation ? `${buildDetailPanelKey(selectedAttestation)}:summary` : "empty-summary"}
+                          variant="summary"
+                          className="hidden 2xl:block"
+                          attestation={selectedAttestation}
+                          shareOutputs={shareOutputs}
+                          onPublish={handlePublishAttestation}
+                          onRefresh={handleRefreshAttestation}
+                          onRevoke={handleRevokeAttestation}
+                          onDeleteDraft={handleDeleteAttestationDraft}
+                          onMetadataChange={handleUpdateAttestationMetadata}
+                          onBadgeConfigChange={handleUpdateBadgeConfig}
+                          onOpenLink={handleOpenLink}
+                          onCopySnippet={handleCopySnippet}
+                          publishBusy={publishFlow.stage === "publishing"}
+                          metadataBusy={selectedAttestation ? metadataBusyId === selectedAttestation.id : false}
+                          deleteBusy={selectedAttestation ? draftDeleteBusyId === selectedAttestation.id : false}
+                          badgeConfigBusy={selectedAttestation ? badgeConfigBusyId === selectedAttestation.id : false}
+                          publishOutcomeLabel={selectedAttestation ? getPublishOutcomeLabel(attestations, selectedAttestation) : null}
+                          publishBlockedReason={getDraftPublishBlockReason(selectedAttestation)}
+                        />
+                      </div>
                     )}
                   </div>
                 ) : null}
@@ -1274,7 +1354,7 @@ export default function PartnerDashboardPage() {
       <Sheet open={detailSheetOpen && shouldUseMobileDetailSheet()} onOpenChange={setDetailSheetOpen}>
         <SheetContent
           side="right"
-          className="w-full border-l border-slate-800 bg-slate-950 p-0 text-white sm:max-w-md xl:hidden"
+          className="w-full border-l border-slate-800 bg-slate-950 p-0 text-white sm:max-w-md 2xl:hidden"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Manage attestation</SheetTitle>

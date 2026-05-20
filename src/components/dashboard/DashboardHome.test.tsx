@@ -131,11 +131,14 @@ afterEach(() => {
 })
 
 describe("DashboardHome", () => {
-  it("shows current and superseded lineage counts on the home overview", () => {
+  it("shows compact partner status, latest attestation, and next actions", () => {
     renderHome()
 
-    expect(screen.getByText("Current")).toBeTruthy()
-    expect(screen.getByText("Superseded")).toBeTruthy()
-    expect(screen.getByText("sample-mod")).toBeTruthy()
+    expect(screen.getByText("Current releases")).toBeTruthy()
+    expect(screen.getByText("Latest release")).toBeTruthy()
+    expect(screen.getByText("Needs attention")).toBeTruthy()
+    expect(screen.getByText("Recent records")).toBeTruthy()
+    expect(screen.getAllByText("Sample Mod").length).toBeGreaterThan(0)
+    expect(screen.getByRole("button", { name: /create draft/i })).toBeTruthy()
   })
 })

@@ -72,6 +72,9 @@ function renderLedger(props?: Partial<ComponentProps<typeof AttestationLedger>>)
   const root = createRoot(container)
   mountedRoots.push({ container, root })
 
+  const onSelect = vi.fn()
+  const onReview = vi.fn()
+  const onOpenDetails = vi.fn()
   const onOpenBadgeDefaults = vi.fn()
   const onDeleteDraft = vi.fn(async () => {})
 
@@ -82,21 +85,21 @@ function renderLedger(props?: Partial<ComponentProps<typeof AttestationLedger>>)
         selectedAttestationId={baseAttestation.id}
         isLoading={false}
         errorMessage=""
-        onSelect={vi.fn()}
-        onReview={vi.fn()}
+        onSelect={onSelect}
+        onReview={onReview}
         onRefresh={vi.fn(async () => {})}
         onRevoke={vi.fn(async () => {})}
         onDeleteDraft={onDeleteDraft}
         onOpenLink={vi.fn()}
         onCopySnippet={vi.fn()}
-        onOpenDetails={vi.fn()}
+        onOpenDetails={onOpenDetails}
         onOpenBadgeDefaults={onOpenBadgeDefaults}
         {...props}
       />,
     )
   })
 
-  return { onOpenBadgeDefaults, onDeleteDraft }
+  return { onSelect, onReview, onOpenDetails, onOpenBadgeDefaults, onDeleteDraft }
 }
 
 afterEach(() => {
@@ -120,7 +123,7 @@ describe("AttestationLedger", () => {
 
     expect(onOpenBadgeDefaults).toHaveBeenCalledTimes(1)
     expect(screen.queryByText("Default badge settings")).toBeNull()
-    expect(screen.getByText("Review your publication history")).toBeTruthy()
+    expect(screen.getByText("Review publication history without leaving the workbench")).toBeTruthy()
   })
 
   it("surfaces superseded history and links to the current replacement", () => {
@@ -139,11 +142,11 @@ describe("AttestationLedger", () => {
       onOpenLink,
     })
 
-    expect(screen.getByText("sample-mod · v1.0.0")).toBeTruthy()
-    expect(screen.getByText("Replaced by a newer current attestation for sample-mod.")).toBeTruthy()
+    expect(screen.getAllByText("v1.0.0").length).toBeGreaterThan(0)
+    expect(screen.queryByText("Replaced by a newer current attestation for sample-mod.")).toBeNull()
 
     act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /open current replacement/i }))
+      fireEvent.click(screen.getAllByRole("button", { name: /open current replacement/i })[0])
     })
 
     expect(onOpenLink).toHaveBeenCalledWith("/attestations/att_current")
@@ -162,9 +165,51 @@ describe("AttestationLedger", () => {
       }],
     })
 
-    expect(screen.getByRole("button", { name: /open current replacement/i })).toBeTruthy()
-    expect(screen.getByRole("button", { name: /details/i })).toBeTruthy()
+    expect(screen.getAllByRole("button", { name: /open current replacement/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /quick view/i }).length).toBeGreaterThan(0)
     expect(screen.getByRole("button", { name: /attestation actions/i })).toBeTruthy()
+  })
+
+  it("selects a row without opening details until the quick view action is used", () => {
+    const { onSelect, onOpenDetails } = renderLedger()
+
+    act(() => {
+      fireEvent.click(screen.getByRole("row", { name: /sample mod/i }))
+    })
+
+    expect(onSelect).toHaveBeenCalledWith(baseAttestation)
+    expect(onOpenDetails).not.toHaveBeenCalled()
+
+    act(() => {
+      fireEvent.click(screen.getAllByRole("button", { name: /quick view/i })[0])
+    })
+
+    expect(onSelect).toHaveBeenCalledTimes(2)
+    expect(onOpenDetails).toHaveBeenCalledTimes(1)
+  })
+
+  it("opens management on desktop row double click", () => {
+    const { onReview } = renderLedger()
+
+    act(() => {
+      fireEvent.doubleClick(screen.getByRole("row", { name: /sample mod/i }))
+    })
+
+    expect(onReview).toHaveBeenCalledWith(baseAttestation)
+  })
+
+  it("shows compact versions without build metadata in ledger rows", () => {
+    renderLedger({
+      attestations: [{
+        ...baseAttestation,
+        publicDisplayName: "Sample Loader",
+        artifactKey: "sample-loader",
+        artifactVersion: "3.0.3+594f848d676ad7fafb78988724947aa77b39f8bb",
+      }],
+    })
+
+    expect(screen.getAllByText("v3.0.3").length).toBeGreaterThan(0)
+    expect(screen.queryByText(/594f848d676ad7fafb78988724947aa77b39f8bb/)).toBeNull()
   })
 
 })
