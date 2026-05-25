@@ -23,7 +23,7 @@ describe("source-report-redirect", () => {
     expect(parseSourceReportRedirectPath("/c/schedule-i/p/ifBars/S1API_Forked/")).toEqual({
       provider: "thunderstore",
       game: "schedule-i",
-      packageFullName: "ifBars/S1API_Forked",
+      packageFullName: "ifBars-S1API_Forked",
     })
   })
 
@@ -67,7 +67,7 @@ describe("source-report-redirect", () => {
     await expect(fetchLatestSourceReportRedirect({
       provider: "thunderstore",
       game: "schedule-i",
-      packageFullName: "ifBars/S1API_Forked",
+      packageFullName: "ifBars-S1API_Forked",
     })).rejects.toBeInstanceOf(SourceReportNotFoundError)
   })
 })

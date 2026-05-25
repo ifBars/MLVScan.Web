@@ -49,7 +49,7 @@ export function parseSourceReportRedirectPath(pathname: string): SourceReportRed
     return {
       provider: "thunderstore",
       game: segments[1],
-      packageFullName: `${segments[3]}/${segments[4]}`,
+      packageFullName: `${segments[3]}-${segments[4]}`,
     }
   }
 
