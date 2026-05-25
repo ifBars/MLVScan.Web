@@ -297,6 +297,10 @@ export function buildPartnerApiProxy(target: string) {
       target,
       changeOrigin: true,
     },
+    '/sources': {
+      target,
+      changeOrigin: true,
+    },
     '/public/attestations': {
       target,
       changeOrigin: true,
