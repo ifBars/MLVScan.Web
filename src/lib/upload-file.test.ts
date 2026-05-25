@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { strToU8, zipSync } from "fflate"
 
-import { isSupportedAssemblyFileName, isZipArchiveFileName, resolveUploadFile } from "./upload-file"
+import { isSupportedAssemblyFileName, isZipArchiveFileName, resolveUploadFile, resolveUploadFiles } from "./upload-file"
 
 const createFile = (bytes: Uint8Array, fileName: string): File => {
   return {
@@ -60,6 +60,36 @@ describe("upload-file", () => {
 
     expect(resolvedFile.fileName).toBe("Main.dll")
     expect(Array.from(resolvedFile.fileBytes)).toEqual([2])
+  })
+
+  it("prefers mod entrypoint assemblies over dependency DLLs", async () => {
+    const file = createArchiveFile({
+      "AutoTranslator/Config.ini": strToU8("[Service]\nEndpoint=GoogleTranslate"),
+      "Mods/XUnity.AutoTranslator.Plugin.MelonMod.dll": new Uint8Array([1, 2, 3]),
+      "UserLibs/XUnity.AutoTranslator.Plugin.Core.dll": new Uint8Array(640),
+      "UserLibs/Translators/FullNET/Newtonsoft.Json.dll": new Uint8Array(701),
+    })
+
+    const resolvedFile = await resolveUploadFile(file, 1024)
+
+    expect(resolvedFile.fileName).toBe("XUnity.AutoTranslator.Plugin.MelonMod.dll")
+    expect(Array.from(resolvedFile.fileBytes)).toEqual([1, 2, 3])
+  })
+
+  it("resolves all supported assemblies from a zip archive in scan order", async () => {
+    const file = createArchiveFile({
+      "Mods/Main.dll": new Uint8Array([1]),
+      "UserLibs/Helper.dll": new Uint8Array([2]),
+      "UserLibs/Translators/FullNET/Newtonsoft.Json.dll": new Uint8Array([3]),
+    })
+
+    const resolvedFiles = await resolveUploadFiles(file, 1024)
+
+    expect(resolvedFiles.map((entry) => entry.fileName)).toEqual([
+      "Main.dll",
+      "Helper.dll",
+      "Newtonsoft.Json.dll",
+    ])
   })
 
   it("throws when a zip archive does not contain a supported assembly", async () => {

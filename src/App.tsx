@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar"
 import Hero from "@/components/layout/Hero"
 import ScanPage from "@/pages/ScanPage"
 import AttestationPage from "@/pages/AttestationPage"
+import PublicReportPage from "@/pages/PublicReportPage"
 import Footer from "@/components/layout/Footer"
 import Features from "@/components/Features"
 import FAQ from "@/components/FAQ"
@@ -65,6 +66,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/scan" element={<ScanPage />} />
             <Route path="/attestations/:shareId" element={<AttestationPage />} />
+            <Route path="/reports/:submissionId" element={<PublicReportPage />} />
             <Route path="/inspector" element={<InspectorPage />} />
             <Route path="/docs" element={
               <Suspense fallback={<LoadingSpinner />}>

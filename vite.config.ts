@@ -286,6 +286,16 @@ export function buildPartnerApiProxy(target: string) {
     '/reports': {
       target,
       changeOrigin: true,
+      bypass: (req: IncomingMessage) => {
+        const accept = req.headers.accept ?? ''
+        if (req.method === 'GET' && accept.includes('text/html')) {
+          return '/index.html'
+        }
+      },
+    },
+    '/public/reports': {
+      target,
+      changeOrigin: true,
     },
     '/public/attestations': {
       target,

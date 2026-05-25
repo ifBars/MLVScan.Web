@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Upload, ShieldAlert, RefreshCw } from "lucide-react"
 import type { ScanResult, ScanStatus } from "@/types/mlvscan"
 import { scanAssembly } from "@/lib/scanner"
-import { isSupportedAssemblyFileName, resolveUploadFile } from "@/lib/upload-file"
+import { isSupportedAssemblyFileName, resolveUploadFiles } from "@/lib/upload-file"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 import { saveBrowserScanAttestationHandoff } from "@/lib/browser-scan-attestation-handoff"
 import ScanReport from "@/components/results/ScanReport"
@@ -43,7 +43,7 @@ const ScanUploader = () => {
     setProgress(0)
 
     try {
-      const resolvedUpload = await resolveUploadFile(selectedFile, MAX_FILE_SIZE)
+      const resolvedUploads = await resolveUploadFiles(selectedFile, MAX_FILE_SIZE)
 
       let uploadProgress = 0
       const uploadInterval = setInterval(() => {
@@ -57,13 +57,21 @@ const ScanUploader = () => {
       setStatus("scanning")
       setProgress(0)
 
-      const scanResult = await scanAssembly(resolvedUpload.fileBytes, resolvedUpload.fileName)
+      const scanResults = []
+      for (const [index, resolvedUpload] of resolvedUploads.entries()) {
+        const scanResult = await scanAssembly(resolvedUpload.fileBytes, resolvedUpload.fileName)
+        scanResults.push(scanResult)
+        setProgress(Math.round(((index + 1) / resolvedUploads.length) * 100))
+      }
+      const scanResult = combineScanResults(selectedFile.name, scanResults)
 
       setResult(scanResult)
-      setAttestationFile(new File([toFileBlobPart(resolvedUpload.fileBytes)], resolvedUpload.fileName, {
-        type: "application/octet-stream",
-        lastModified: selectedFile.lastModified,
-      }))
+      setAttestationFile(resolvedUploads.length === 1
+        ? new File([toFileBlobPart(resolvedUploads[0].fileBytes)], resolvedUploads[0].fileName, {
+          type: "application/octet-stream",
+          lastModified: selectedFile.lastModified,
+        })
+        : null)
       setStatus("complete")
       setProgress(100)
     } catch (err) {
@@ -267,3 +275,51 @@ const ScanUploader = () => {
 }
 
 export default ScanUploader
+
+function combineScanResults(packageFileName: string, results: ScanResult[]): ScanResult {
+  if (results.length === 1) {
+    return results[0]
+  }
+
+  const first = results[0]
+  const findings = results.flatMap((result) => result.findings ?? [])
+  const blockingRecommended = results.some((result) => result.disposition?.blockingRecommended === true)
+  const hasKnownThreat = results.some((result) => result.disposition?.classification === "KnownThreat")
+  const hasSuspicious = findings.length > 0 || results.some((result) => result.disposition?.classification === "Suspicious")
+  const classification = hasKnownThreat ? "KnownThreat" : hasSuspicious ? "Suspicious" : "Clean"
+  const sizeBytes = results.reduce((total, result) => total + (result.input?.sizeBytes ?? 0), 0)
+
+  const countBySeverity = results.reduce<Record<string, number>>((counts, result) => {
+    for (const [severity, count] of Object.entries(result.summary?.countBySeverity ?? {})) {
+      counts[severity] = (counts[severity] ?? 0) + count
+    }
+    return counts
+  }, {})
+
+  return {
+    ...first,
+    input: {
+      ...first.input,
+      fileName: packageFileName,
+      sizeBytes,
+    },
+    summary: {
+      ...first.summary,
+      totalFindings: findings.length,
+      triggeredRules: [...new Set(results.flatMap((result) => result.summary?.triggeredRules ?? []))],
+      countBySeverity,
+    },
+    findings,
+    threatFamilies: results.flatMap((result) => result.threatFamilies ?? []),
+    disposition: {
+      classification,
+      headline: classification === "Clean" ? "No Known Threats Detected" : "Package scan found suspicious assemblies",
+      summary: classification === "Clean"
+        ? `No known threats detected across ${results.length} scanned assemblies.`
+        : `MLVScan found ${findings.length} findings across ${results.length} scanned assemblies.`,
+      blockingRecommended,
+      primaryThreatFamilyId: results.find((result) => result.disposition?.primaryThreatFamilyId)?.disposition?.primaryThreatFamilyId ?? null,
+      relatedFindingIds: findings.map((finding) => finding.id).filter((id): id is string => typeof id === "string"),
+    },
+  } satisfies ScanResult
+}

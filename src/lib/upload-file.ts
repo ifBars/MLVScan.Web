@@ -5,6 +5,7 @@ const invalidUploadMessage = "Please upload a .NET assembly (.dll, .exe, or .net
 const missingAssemblyMessage = "This .zip archive does not contain a supported .NET assembly"
 const extractedSizeMessage = "The extracted assembly exceeds the 100MB limit"
 const invalidZipMessage = "Failed to read the .zip archive. Make sure it is valid and contains a supported .NET assembly"
+const maxArchiveAssemblyCount = 25
 
 const archivePriority = new Map<string, number>([
   [".dll", 0],
@@ -12,6 +13,26 @@ const archivePriority = new Map<string, number>([
   [".di", 2],
   [".netmodule", 3],
 ])
+
+const dependencyFolders = new Set([
+  "dependencies",
+  "lib",
+  "libs",
+  "managed",
+  "translators",
+  "userlibs",
+])
+
+const dependencyAssemblyPrefixes = [
+  "0harmony",
+  "harmony",
+  "microsoft.",
+  "mono.cecil",
+  "newtonsoft.",
+  "system.",
+  "unity.",
+  "unityengine.",
+]
 
 export type ResolvedUpload = {
   fileBytes: Uint8Array
@@ -38,6 +59,10 @@ const getArchiveEntryName = (entryPath: string): string => {
   return fileName && fileName.length > 0 ? fileName : normalizedPath
 }
 
+const normalizeArchiveEntryPath = (entryPath: string): string => {
+  return entryPath.replaceAll("\\", "/").toLowerCase()
+}
+
 export const isSupportedAssemblyFileName = (fileName: string): boolean => {
   return supportedAssemblyExtensions.includes(getLowerCaseExtension(fileName) as (typeof supportedAssemblyExtensions)[number])
 }
@@ -47,6 +72,12 @@ export const isZipArchiveFileName = (fileName: string): boolean => {
 }
 
 const compareArchiveEntries = (leftPath: string, rightPath: string): number => {
+  const leftScore = scoreArchiveEntry(leftPath)
+  const rightScore = scoreArchiveEntry(rightPath)
+  if (leftScore !== rightScore) {
+    return leftScore - rightScore
+  }
+
   const leftExtension = getLowerCaseExtension(leftPath)
   const rightExtension = getLowerCaseExtension(rightPath)
   const leftPriority = archivePriority.get(leftExtension) ?? Number.MAX_SAFE_INTEGER
@@ -59,13 +90,43 @@ const compareArchiveEntries = (leftPath: string, rightPath: string): number => {
   return leftPath.localeCompare(rightPath)
 }
 
+const scoreArchiveEntry = (entryPath: string): number => {
+  const normalizedPath = normalizeArchiveEntryPath(entryPath)
+  const segments = normalizedPath.split("/").filter(Boolean)
+  const filename = segments.at(-1) ?? normalizedPath
+  let score = 20
+
+  if (segments.includes("mods")) {
+    score = 0
+  } else if (normalizedPath.includes("/bepinex/plugins/") || segments.includes("plugins")) {
+    score = 1
+  } else if (segments.includes("melonloader")) {
+    score = 2
+  }
+
+  if (segments.some((segment) => dependencyFolders.has(segment))) {
+    score += 100
+  }
+
+  if (dependencyAssemblyPrefixes.some((prefix) => filename.startsWith(prefix))) {
+    score += 100
+  }
+
+  return score
+}
+
 export const resolveUploadFile = async (file: File, maxFileSize: number): Promise<ResolvedUpload> => {
+  const files = await resolveUploadFiles(file, maxFileSize)
+  return files[0]
+}
+
+export const resolveUploadFiles = async (file: File, maxFileSize: number): Promise<ResolvedUpload[]> => {
   if (isSupportedAssemblyFileName(file.name)) {
-    return {
+    return [{
       fileBytes: await readBlobBytes(file),
       fileName: file.name,
       extractedFromArchive: false,
-    }
+    }]
   }
 
   if (!isZipArchiveFileName(file.name)) {
@@ -79,27 +140,30 @@ export const resolveUploadFile = async (file: File, maxFileSize: number): Promis
       .filter(([entryPath]) => isSupportedAssemblyFileName(getArchiveEntryName(entryPath)))
       .sort(([leftPath], [rightPath]) => compareArchiveEntries(leftPath, rightPath))
 
-    const selectedEntry = assemblyEntries[0]
-
-    if (!selectedEntry) {
+    if (assemblyEntries.length === 0) {
       throw new Error(missingAssemblyMessage)
     }
 
-    const [entryPath, entryBytes] = selectedEntry
-    const extractedFileName = getArchiveEntryName(entryPath)
-
-    if (entryBytes.byteLength > maxFileSize) {
-      throw new Error(extractedSizeMessage)
+    if (assemblyEntries.length > maxArchiveAssemblyCount) {
+      throw new Error(`This .zip archive contains ${assemblyEntries.length} assemblies, exceeding the package scan limit of ${maxArchiveAssemblyCount}`)
     }
 
-    return {
-      fileBytes: entryBytes,
-      fileName: extractedFileName,
-      extractedFromArchive: true,
-    }
+    return assemblyEntries.map(([entryPath, entryBytes]) => {
+      const extractedFileName = getArchiveEntryName(entryPath)
+
+      if (entryBytes.byteLength > maxFileSize) {
+        throw new Error(extractedSizeMessage)
+      }
+
+      return {
+        fileBytes: entryBytes,
+        fileName: extractedFileName,
+        extractedFromArchive: true,
+      }
+    })
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === missingAssemblyMessage || error.message === extractedSizeMessage) {
+      if (error.message === missingAssemblyMessage || error.message === extractedSizeMessage || error.message.includes("package scan limit")) {
         throw error
       }
 
