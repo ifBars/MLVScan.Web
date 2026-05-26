@@ -92,17 +92,6 @@ const docs: DocMeta[] = [
     keywords: ['installation', 'dotnet add package', 'assemblyscanner', 'scanconfig'],
   },
   {
-    id: 'core-advanced-analysis',
-    title: 'Advanced Analysis',
-    description: 'Call graph and data flow analysis patterns and outputs',
-    slug: 'libraries/core/advanced-analysis',
-    contentPath: 'libraries/core/advanced-analysis.mdx',
-    section: 'libraries',
-    library: 'core',
-    status: 'stable',
-    keywords: ['call graph', 'data flow', 'cross method', 'threat chains'],
-  },
-  {
     id: 'core-reference',
     title: 'Core Reference',
     description: 'Generated reference docs for the public MLVScan.Core API surface',
