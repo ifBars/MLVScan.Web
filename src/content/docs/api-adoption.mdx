@@ -70,6 +70,20 @@ export default function ApiAdoptionContent() {
         from the same OpenAPI contract as the API reference and includes a small wrapper for common
         upload and report-polling workflows.
       </p>
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-6">
+        <h3 className="text-amber-200 font-semibold mb-2">Prefer local scans when you do not need the hosted API</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          If your integration can scan files locally, start with <code>MLVScan.Core</code> or
+          <code> MLVScan.DevCLI</code>. Those paths avoid API rate limits, keep artifacts on the
+          caller&apos;s machine, and are the better fit for local developer tooling, CI jobs, and
+          products that do not need account-owned hosted reports or public attestations.
+        </p>
+        <p className="text-sm text-gray-300">
+          Use <code>MLVScan.ApiClient</code> when you specifically need the hosted API surface:
+          account-owned submissions, private report polling, public attestation publishing, or a
+          system boundary where local scanning is not practical.
+        </p>
+      </div>
       <CodeBlock className="mb-4">{`dotnet add package MLVScan.ApiClient`}</CodeBlock>
       <CodeBlock className="mb-6">{`using MLVScan.ApiClient;
 
@@ -96,6 +110,27 @@ if (report.Result?.Disposition?.BlockingRecommended == true)
         Use the generated client exposed by <code>MlvScanClient.GeneratedClient</code> when you need
         lower-level request-builder access. Non-.NET integrations should use the OpenAPI document at
         <code> https://api.mlvscan.com/openapi.json</code>.
+      </p>
+
+      <h2 id="rate-limits">Rate Limits</h2>
+      <p className="text-gray-300 mb-4">
+        The hosted API has rate limits because uploads and report generation use shared MLVScan
+        infrastructure. Current production limits are:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-4">
+        <li>Anonymous requests: <code>60 requests per minute</code> per source IP.</li>
+        <li>Authenticated API-key requests: <code>1000 requests per minute</code> per API key.</li>
+        <li>Partner/dashboard automation routes: <code>60 requests per minute</code> per account or session context.</li>
+      </ul>
+      <p className="text-gray-300 mb-4">
+        A rate-limited request returns <code>429</code> with <code>Retry-After: 60</code>. Treat this
+        as a normal backoff signal and avoid tight polling loops. The C# wrapper&apos;s report polling
+        helper is intended for moderate automation; high-throughput platforms should tune polling
+        cadence around their release volume.
+      </p>
+      <p className="text-gray-300 mb-8">
+        If you need higher hosted API limits, contact <a href="mailto:ifbars@mlvscan.com" className="text-teal-400 hover:text-teal-300">ifbars@mlvscan.com</a>{" "}
+        or <code>ifbars</code> on Discord.
       </p>
 
       <h2 id="optional-attestation-flow">Optional Attestation Flow</h2>
