@@ -179,6 +179,56 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
         </div>
       </section>
 
+      {payload.relatedReports.length > 1 ? (
+        <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Package assemblies</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                This source package produced {payload.relatedReports.length} public assembly reports.
+              </p>
+            </div>
+            <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
+              {packageName}
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {payload.relatedReports.map((report) => (
+              <Link
+                key={report.submissionId}
+                to={`/reports/${encodeURIComponent(report.submissionId)}`}
+                className={cn(
+                  "rounded-md border p-4 transition hover:border-slate-500 hover:bg-slate-900",
+                  report.current
+                    ? "border-teal-400/40 bg-teal-500/10"
+                    : "border-slate-800 bg-slate-900/50",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 break-words font-mono text-xs text-slate-100">{report.fileName}</p>
+                  {report.current ? (
+                    <span className="shrink-0 rounded-full border border-teal-400/40 bg-teal-500/10 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-teal-200">
+                      Open
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className={cn("rounded-full border px-2 py-0.5 text-xs", classificationClass(report.classification))}>
+                    {report.classification}
+                  </span>
+                  <span className="rounded-full border border-slate-700 bg-slate-950/60 px-2 py-0.5 text-xs text-slate-300">
+                    {report.findingCount} {report.findingCount === 1 ? "finding" : "findings"}
+                  </span>
+                </div>
+                {report.contentHash ? (
+                  <p className="mt-3 truncate font-mono text-[0.68rem] text-slate-500">{report.contentHash}</p>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
           <h2 className="text-lg font-semibold text-white">Artifact</h2>
@@ -235,56 +285,6 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
           )}
         </div>
       </section>
-
-      {payload.relatedReports.length > 1 ? (
-        <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Package assemblies</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                This source package produced {payload.relatedReports.length} public assembly reports.
-              </p>
-            </div>
-            <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
-              {packageName}
-            </span>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {payload.relatedReports.map((report) => (
-              <Link
-                key={report.submissionId}
-                to={`/reports/${encodeURIComponent(report.submissionId)}`}
-                className={cn(
-                  "rounded-md border p-4 transition hover:border-slate-500 hover:bg-slate-900",
-                  report.current
-                    ? "border-teal-400/40 bg-teal-500/10"
-                    : "border-slate-800 bg-slate-900/50",
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="min-w-0 break-words font-mono text-xs text-slate-100">{report.fileName}</p>
-                  {report.current ? (
-                    <span className="shrink-0 rounded-full border border-teal-400/40 bg-teal-500/10 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-teal-200">
-                      Open
-                    </span>
-                  ) : null}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className={cn("rounded-full border px-2 py-0.5 text-xs", classificationClass(report.classification))}>
-                    {report.classification}
-                  </span>
-                  <span className="rounded-full border border-slate-700 bg-slate-950/60 px-2 py-0.5 text-xs text-slate-300">
-                    {report.findingCount} {report.findingCount === 1 ? "finding" : "findings"}
-                  </span>
-                </div>
-                {report.contentHash ? (
-                  <p className="mt-3 truncate font-mono text-[0.68rem] text-slate-500">{report.contentHash}</p>
-                ) : null}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       {payload.threatFamilies.length > 0 ? (
         <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
