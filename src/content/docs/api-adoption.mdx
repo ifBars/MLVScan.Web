@@ -63,6 +63,41 @@ export default function ApiAdoptionContent() {
         <li>Use the completed report in your own moderation queue, release gate, or package metadata system.</li>
       </ol>
 
+      <h2 id="csharp-sdk">C# SDK</h2>
+      <p className="text-gray-300 mb-4">
+        .NET integrations can use <code>MLVScan.ApiClient</code> instead of hand-writing
+        <code> HttpClient</code> calls or parsing JSON responses directly. The package is generated
+        from the same OpenAPI contract as the API reference and includes a small wrapper for common
+        upload and report-polling workflows.
+      </p>
+      <CodeBlock className="mb-4">{`dotnet add package MLVScan.ApiClient`}</CodeBlock>
+      <CodeBlock className="mb-6">{`using MLVScan.ApiClient;
+
+var client = new MlvScanClient(Environment.GetEnvironmentVariable("MLVSCAN_API_KEY"));
+
+await using var file = File.OpenRead("dist/YourMod.dll");
+var upload = await client.UploadFileAsync(
+    file,
+    "YourMod.dll",
+    "application/octet-stream");
+
+var submissionId = upload.Data?.Id
+    ?? throw new InvalidOperationException("Upload response did not include a submission ID.");
+
+var report = await client.WaitForReportAsync(
+    submissionId,
+    timeout: TimeSpan.FromMinutes(10));
+
+if (report.Result?.Disposition?.BlockingRecommended == true)
+{
+    throw new InvalidOperationException(report.Result.Disposition.Headline);
+}`}</CodeBlock>
+      <p className="text-gray-300 mb-8">
+        Use the generated client exposed by <code>MlvScanClient.GeneratedClient</code> when you need
+        lower-level request-builder access. Non-.NET integrations should use the OpenAPI document at
+        <code> https://api.mlvscan.com/openapi.json</code>.
+      </p>
+
       <h2 id="optional-attestation-flow">Optional Attestation Flow</h2>
       <p className="text-gray-300 mb-4">
         Add attestations only when you want MLVScan to host a public verification page, signed JSON
