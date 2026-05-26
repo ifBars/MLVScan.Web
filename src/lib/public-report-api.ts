@@ -80,7 +80,9 @@ function isPublicReportPayload(value: unknown): value is PublicReportPayload {
     Array.isArray(value.threatFamilies) &&
     Array.isArray(value.findings) &&
     typeof value.findingCount === "number" &&
-    Array.isArray(value.triggeredRules)
+    Array.isArray(value.triggeredRules) &&
+    Array.isArray(value.relatedReports) &&
+    value.relatedReports.every(isPublicRelatedReport)
   )
 }
 
@@ -95,6 +97,20 @@ function isPublicReportSource(value: unknown): boolean {
     (value.fileName === null || typeof value.fileName === "string") &&
     (value.packageFileName === null || typeof value.packageFileName === "string") &&
     (value.sourceUrl === null || typeof value.sourceUrl === "string")
+}
+
+function isPublicRelatedReport(value: unknown): boolean {
+  return isRecord(value) &&
+    typeof value.submissionId === "string" &&
+    typeof value.reportId === "string" &&
+    typeof value.fileName === "string" &&
+    (value.contentHash === null || typeof value.contentHash === "string") &&
+    (value.schemaVersion === null || typeof value.schemaVersion === "string") &&
+    isReportStatus(value.status) &&
+    isClassification(value.classification) &&
+    typeof value.findingCount === "number" &&
+    typeof value.createdAt === "string" &&
+    typeof value.current === "boolean"
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

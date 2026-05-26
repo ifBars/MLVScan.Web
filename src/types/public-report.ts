@@ -33,6 +33,19 @@ export interface PublicReportSource {
   sourceUrl: string | null
 }
 
+export interface PublicRelatedReport {
+  submissionId: string
+  reportId: string
+  fileName: string
+  contentHash: string | null
+  schemaVersion: string | null
+  status: "pending" | "processing" | "completed" | "failed"
+  classification: PublicReportClassification
+  findingCount: number
+  createdAt: string
+  current: boolean
+}
+
 export interface PublicReportPayload {
   submissionId: string
   reportId: string
@@ -53,4 +66,5 @@ export interface PublicReportPayload {
   findings: PublicReportFinding[]
   findingCount: number
   triggeredRules: string[]
+  relatedReports: PublicRelatedReport[]
 }

@@ -43,14 +43,29 @@ const payload: PublicReportPayload = {
   }],
   findingCount: 1,
   triggeredRules: ["ProcessStartRule"],
+  relatedReports: [{
+    submissionId: "sub_test",
+    reportId: "report-1",
+    fileName: "KeybindManager.dll",
+    contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    schemaVersion: "1.2.0",
+    status: "completed",
+    classification: "Suspicious",
+    findingCount: 1,
+    createdAt: "2026-05-24T12:00:00.000Z",
+    current: true,
+  }],
 }
 
 describe("public-report-api", () => {
   afterEach(() => {
+    vi.unstubAllEnvs()
     vi.unstubAllGlobals()
   })
 
   it("fetches public source-linked scan reports", async () => {
+    vi.stubEnv("VITE_PUBLIC_API_BASE_URL", "http://localhost:3000")
+
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify(payload), {
         status: 200,

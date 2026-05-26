@@ -8,6 +8,7 @@ import {
 
 describe("source-report-redirect", () => {
   afterEach(() => {
+    vi.unstubAllEnvs()
     vi.unstubAllGlobals()
   })
 
@@ -28,6 +29,8 @@ describe("source-report-redirect", () => {
   })
 
   it("fetches the latest source-linked submission for a Nexus mod", async () => {
+    vi.stubEnv("VITE_PUBLIC_API_BASE_URL", "http://localhost:3000")
+
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({
         data: [{
