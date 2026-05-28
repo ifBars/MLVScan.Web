@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Navigate, Link, useParams } from "react-router-dom"
+import { Navigate, Link, useLocation, useParams } from "react-router-dom"
 import { AlertTriangle, Calendar, FileText, Shield } from "lucide-react"
 
 import { getAdvisoryBySlug, sortAdvisoriesByDate } from "@/advisories/registry"
@@ -11,6 +11,10 @@ import Seo from "@/components/seo/Seo"
 import { getAdvisoriesSeoPage, getAdvisorySeoPage } from "@/seo/routes"
 
 const advisoryModules = import.meta.glob<{ default: React.ComponentType }>("../content/advisories/*.mdx")
+
+export function shouldScrollAdvisoryDetailToTop(slug: string | undefined, hash: string): boolean {
+  return Boolean(slug && !hash)
+}
 
 function FeaturedAdvisory({ advisory }: { advisory: AdvisoryMeta }) {
   const [Content, setContent] = useState<React.ComponentType | null>(null)
@@ -248,7 +252,16 @@ function AdvisoryDetail({ meta }: { meta: AdvisoryMeta }) {
 
 export default function AdvisoriesPage() {
   const params = useParams()
+  const location = useLocation()
   const slug = params["slug"]
+
+  useEffect(() => {
+    if (!shouldScrollAdvisoryDetailToTop(slug, location.hash)) {
+      return
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  }, [location.hash, slug])
 
   if (!slug) {
     return <AdvisoryList />
