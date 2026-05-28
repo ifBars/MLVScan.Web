@@ -38,6 +38,7 @@ const families: ThreatFamilyMeta[] = [
     contentPath: 'webdownload-stage-exec-v2.mdx',
     aliases: ['WebClient temp staging executor', 'HTTP temp staging executor'],
     sampleNames: [
+      'DynamicOrders.dll',
       'LongLastingFertilizer.dll',
       'MelonLoaderMod55.dll',
       'MoreTrees.dll',
@@ -48,7 +49,18 @@ const families: ThreatFamilyMeta[] = [
       'UnlimitedGraffiti.dll',
       'vortex_backuprtilizer.dll',
     ],
-    advisorySlugs: ['2026-03-malware-unlimitedgraffiti', '2026-03-malware-longlastingfertilizer', '2026-03-malware-nopolice', '2026-03-malware-customer-search-bar', '2026-02-malware-moretrees'],
+    advisorySlugs: [
+      '2026-04-malware-dynamicorders',
+      '2026-03-malware-vortex-backuprtilizer',
+      '2026-03-malware-storagehub',
+      '2026-03-malware-skitching',
+      '2026-03-malware-rentalcars',
+      '2026-03-malware-unlimitedgraffiti',
+      '2026-03-malware-longlastingfertilizer',
+      '2026-03-malware-nopolice',
+      '2026-03-malware-customer-search-bar',
+      '2026-02-malware-moretrees',
+    ],
     behaviorTags: ['webdownload', 'webclient', 'httpclient', 'download-and-execute', 'temp-staging', 'cmd', 'powershell', 'process-start'],
   },
   {

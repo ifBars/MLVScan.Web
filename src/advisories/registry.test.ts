@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   allAdvisories,
   getAdvisoryBySlug,
@@ -8,7 +11,13 @@ import {
   sortedYears,
   getTypeLabel,
 } from './registry'
+import { allThreatFamilies } from '../families/registry'
 import type { AdvisoryType } from './types'
+
+const advisoryContentDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../content/advisories',
+)
 
 describe('Advisory Registry', () => {
   describe('allAdvisories', () => {
@@ -30,6 +39,47 @@ describe('Advisory Registry', () => {
         expect(advisory).toHaveProperty('description')
         expect(advisory).toHaveProperty('contentPath')
         expect(advisory).toHaveProperty('keywords')
+      })
+    })
+
+    it('should have a content file for every registered advisory', () => {
+      allAdvisories.forEach(advisory => {
+        expect(
+          fs.existsSync(path.join(advisoryContentDir, advisory.contentPath)),
+          `${advisory.slug} points to missing content file ${advisory.contentPath}`,
+        ).toBe(true)
+      })
+    })
+
+    it('should document every tracked quarantine malware sample in a registered malware advisory', () => {
+      const sampleAdvisorySlugs: Record<string, string> = {
+        'CustomTV_IL2CPP.dll': '2025-12-malware-customtv-il2cpp',
+        'DynamicOrders.dll': '2026-04-malware-dynamicorders',
+        'EndlessGraffiti.dll': '2026-01-malware-endlessgraffiti',
+        'FasterGrowth.dll': '2026-01-malware-fastergrowth',
+        'LongLastingFertilizer.dll': '2026-03-malware-longlastingfertilizer',
+        'MelonLoaderMod55.dll': '2026-03-malware-customer-search-bar',
+        'MoreTrees.dll': '2026-02-malware-moretrees',
+        'NoMoreTrash.dll': '2025-12-malware-nomoretrash',
+        'NoPolice.dll': '2026-03-malware-nopolice',
+        'RealRadio.dll': '2025-12-malware-realandwaitingtimeonfire',
+        'RentalCars.dll': '2026-03-malware-rentalcars',
+        'S1API.Il2Cpp.MelonLoader.dll': '2025-12-malware-realandwaitingtimeonfire',
+        'ScheduleIMoreNpcs.dll': '2025-11-malware-scheduleimorenpcs',
+        'Skitching.dll': '2026-03-malware-skitching',
+        'StorageHub.dll': '2026-03-malware-storagehub',
+        'UnlimitedGraffiti.dll': '2026-03-malware-unlimitedgraffiti',
+        'vortex_backuprtilizer.dll': '2026-03-malware-vortex-backuprtilizer',
+      }
+
+      const trackedSamples = allThreatFamilies.flatMap(family => family.sampleNames)
+
+      expect(Object.keys(sampleAdvisorySlugs).sort()).toEqual([...trackedSamples].sort())
+
+      Object.entries(sampleAdvisorySlugs).forEach(([sampleName, slug]) => {
+        const advisory = getAdvisoryBySlug(slug)
+        expect(advisory, `${sampleName} maps to missing advisory ${slug}`).toBeDefined()
+        expect(advisory?.type, `${sampleName} should map to a malware advisory`).toBe('malware-analysis')
       })
     })
   })
