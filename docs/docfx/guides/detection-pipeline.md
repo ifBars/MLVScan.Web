@@ -5,9 +5,10 @@
 ## Pipeline Overview
 
 1. Scanner services analyze assemblies and emit `ScanFinding` values.
-2. Threat-family classifiers correlate those findings into `ThreatFamilyMatch` values.
-3. The disposition classifier derives the retained verdict from the findings and family matches.
-4. `ScanResultMapper` turns the internal result into the shared DTO/schema contract.
+2. Analysis-completeness correlation checks whether retained scanner warnings limit confidence in the result.
+3. Threat-family classifiers correlate findings into `ThreatFamilyMatch` values.
+4. The disposition classifier derives the retained verdict from the findings, family matches, and completeness state.
+5. `ScanResultMapper` turns the internal result into the shared DTO/schema contract.
 
 That order matters. Consumers should not treat raw rule severity as the final user-facing outcome when `Disposition` is available.
 
@@ -21,12 +22,19 @@ That order matters. Consumers should not treat raw rule severity as the final us
 
 Threat-family matches explain when the observed evidence aligns with a known malware family or family variant. These matches are built from the low-level findings and supporting evidence.
 
+### `AnalysisCompleteness`
+
+Analysis completeness explains whether Core inspected enough of the input to trust a clean result. It is not malware evidence by itself. It records scanner limitations such as unreadable assemblies, skipped full IL analysis, or retained scan-warning findings.
+
+When analysis is incomplete and no stronger suspicious or known-threat verdict exists, the disposition becomes `ManualReviewRequired` instead of `Clean`.
+
 ### `ThreatDispositionResult`
 
 The disposition is the final product verdict for a file. The important classifications are:
 
 - `KnownThreat`
 - `Suspicious`
+- `ManualReviewRequired`
 - `Clean`
 
 The disposition can also reference a primary family and the retained findings that support the verdict.

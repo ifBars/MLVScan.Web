@@ -117,6 +117,7 @@ The mapped result adds:
 
 - `result.ThreatFamilies`: known malware family matches, if any.
 - `result.Disposition`: the final retained verdict for the file.
+- `result.AnalysisCompleteness`: whether scanner limitations make a clean result unsafe to trust without review.
 - `result.Findings[*].Visibility`: whether a finding should appear in default views or only advanced views.
 - `result.CallChains`, `result.DataFlows`, and `result.DeveloperGuidance` when those options are enabled.
 
@@ -181,11 +182,23 @@ When this happens:
 - `Disposition.BlockingRecommended` is `true`.
 - `Disposition.RelatedFindingIds` identifies the findings that should be shown by default.
 
+### `ManualReviewRequired`
+
+`ManualReviewRequired` means Core did not retain known malware or suspicious behavior, but analysis was incomplete enough that the result should not be treated as clean.
+
+When this happens:
+
+- `AnalysisCompleteness.IsComplete` is `false`.
+- `AnalysisCompleteness.ReviewRecommended` is `true`.
+- `AnalysisCompleteness.Reasons` explains what limited the scan.
+- `Disposition.BlockingRecommended` is `true`.
+- `Disposition.RelatedFindingIds` points at the scanner warnings that should be shown by default.
+
 ### `Clean`
 
 `Clean` means there was no known family match and no retained suspicious seed after correlation.
 
-Important: an isolated high-severity primitive finding can still produce a `Clean` final disposition if it does not correlate strongly enough to justify a user-facing suspicious verdict.
+Important: an isolated high-severity primitive finding can still produce a `Clean` final disposition if it does not correlate strongly enough to justify a user-facing suspicious verdict. A completeness-limited scan should produce `ManualReviewRequired`, not `Clean`.
 
 When this happens:
 
