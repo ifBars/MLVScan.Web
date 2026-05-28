@@ -9,12 +9,9 @@ import { AdvisoryHeader } from "@/components/advisories/AdvisoryHeader"
 import { AdvisorySearch } from "@/components/advisories/AdvisorySearch"
 import Seo from "@/components/seo/Seo"
 import { getAdvisoriesSeoPage, getAdvisorySeoPage } from "@/seo/routes"
+import { shouldScrollAdvisoryDetailToTop } from "./advisory-scroll"
 
 const advisoryModules = import.meta.glob<{ default: React.ComponentType }>("../content/advisories/*.mdx")
-
-export function shouldScrollAdvisoryDetailToTop(slug: string | undefined, hash: string): boolean {
-  return Boolean(slug && !hash)
-}
 
 function FeaturedAdvisory({ advisory }: { advisory: AdvisoryMeta }) {
   const [Content, setContent] = useState<React.ComponentType | null>(null)

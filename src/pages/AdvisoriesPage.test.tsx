@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { shouldScrollAdvisoryDetailToTop } from "./AdvisoriesPage"
+import { shouldScrollAdvisoryDetailToTop } from "./advisory-scroll"
 
 describe("AdvisoriesPage", () => {
   it("scrolls advisory detail routes to the top", () => {
