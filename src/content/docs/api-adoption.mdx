@@ -65,16 +65,16 @@ export default function ApiAdoptionContent() {
 
       <h2 id="csharp-sdk">C# SDK</h2>
       <p className="text-gray-300 mb-4">
-        .NET integrations can use <code>MLVScan.ApiClient</code> instead of hand-writing
-        <code> HttpClient</code> calls or parsing JSON responses directly. The package is generated
+        .NET integrations can use <code>MLVScan.ApiClient</code> instead of hand-writing{" "}
+        <code>HttpClient</code> calls or parsing JSON responses directly. The package is generated
         from the same OpenAPI contract as the API reference and includes a small wrapper for common
         upload and report-polling workflows.
       </p>
       <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-6">
         <h3 className="text-amber-200 font-semibold mb-2">Prefer local scans when you do not need the hosted API</h3>
         <p className="text-sm text-gray-300 mb-3">
-          If your integration can scan files locally, start with <code>MLVScan.Core</code> or
-          <code> MLVScan.DevCLI</code>. Those paths avoid API rate limits, keep artifacts on the
+        If your integration can scan files locally, start with <code>MLVScan.Core</code> or{" "}
+        <code>MLVScan.DevCLI</code>. Those paths avoid API rate limits, keep artifacts on the
           caller&apos;s machine, and are the better fit for local developer tooling, CI jobs, and
           products that do not need account-owned hosted reports or public attestations.
         </p>
@@ -108,8 +108,8 @@ if (report.Result?.Disposition?.BlockingRecommended == true)
 }`}</CodeBlock>
       <p className="text-gray-300 mb-8">
         Use the generated client exposed by <code>MlvScanClient.GeneratedClient</code> when you need
-        lower-level request-builder access. Non-.NET integrations should use the OpenAPI document at
-        <code> https://api.mlvscan.com/openapi.json</code>.
+        lower-level request-builder access. Non-.NET integrations should use the OpenAPI document at{" "}
+        <code>https://api.mlvscan.com/openapi.json</code>.
       </p>
 
       <h2 id="rate-limits">Rate Limits</h2>
@@ -193,8 +193,8 @@ curl -fsS -X PUT --data-binary "@dist/YourMod.dll" "$upload_url"`}</CodeBlock>
 done`}</CodeBlock>
 
       <p className="text-gray-300 mb-8">
-        Completed reports include the shared MLVScan result payload. Consumers should prefer
-        <code> disposition</code>, <code>threatFamilies</code>, and the final classification over
+        Completed reports include the shared MLVScan result payload. Consumers should prefer{" "}
+        <code>disposition</code>, <code>threatFamilies</code>, and the final classification over
         isolated rule severities.
       </p>
 

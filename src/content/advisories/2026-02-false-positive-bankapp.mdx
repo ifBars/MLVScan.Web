@@ -21,8 +21,8 @@ export default function BankAppFalsePositiveContent() {
       </p>
 
       <p className="text-gray-300 mb-4">
-        Both flagged patterns appear in the compiler-generated state machine for the
-        <code> EnsureIconFileExists</code> coroutine (<code>&lt;EnsureIconFileExists&gt;d__32.MoveNext</code>):
+        Both flagged patterns appear in the compiler-generated state machine for the{" "}
+        <code>EnsureIconFileExists</code> coroutine (<code>&lt;EnsureIconFileExists&gt;d__32.MoveNext</code>):
       </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li>A network call via <code>UnityWebRequest</code> to fetch the icon PNG from <code>https://i.imgur.com/hsVNqRx.png</code></li>
@@ -75,8 +75,8 @@ private IEnumerator EnsureIconFileExists() {
       </pre>
       <p className="text-gray-300 mb-6">
         Because C# <code>async</code>/<code>IEnumerator</code> methods are compiled into state machine
-        classes, this code appears in the <code>MoveNext()</code> method of the generated
-        <code> &lt;EnsureIconFileExists&gt;d__32</code> type — which is the location reported in the
+        classes, this code appears in the <code>MoveNext()</code> method of the generated{" "}
+        <code>&lt;EnsureIconFileExists&gt;d__32</code> type — which is the location reported in the
         scan finding.
       </p>
 
