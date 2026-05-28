@@ -48,17 +48,16 @@ EnableReportUpload = false`}</code>
         <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
           <h3 className="text-white font-semibold mb-2">BepInEx</h3>
           <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
-            <code>{`{
-  "EnableAutoScan": true,
-  "EnableAutoDisable": true,
-  "EnableScanCache": true,
-  "BlockKnownThreats": true,
-  "BlockSuspicious": true,
-  "BlockIncompleteScans": false,
-  "WhitelistedHashes": ["<verified SHA256 hash>"],
-  "DumpFullIlReports": false,
-  "EnableReportUpload": false
-}`}</code>
+            <code>{`[MLVScan]
+EnableAutoScan = true
+EnableAutoDisable = true
+EnableScanCache = true
+BlockKnownThreats = true
+BlockSuspicious = true
+BlockIncompleteScans = false
+WhitelistedHashes = ["<verified SHA256 hash>"]
+DumpFullIlReports = false
+EnableReportUpload = false`}</code>
           </pre>
         </div>
       </div>

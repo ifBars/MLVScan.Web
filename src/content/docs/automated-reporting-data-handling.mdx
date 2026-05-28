@@ -40,7 +40,7 @@ export default function AutomatedReportingDataHandlingContent() {
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">MelonLoader:</strong> In <code className="bg-gray-800 px-1 rounded">MelonPreferences.cfg</code>, leave <code className="bg-gray-800 px-1 rounded">EnableReportUpload = false</code> (default)</li>
-        <li><strong className="text-white">BepInEx:</strong> In <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.json</code>, leave <code className="bg-gray-800 px-1 rounded">"EnableReportUpload": false</code> (default)</li>
+        <li><strong className="text-white">BepInEx:</strong> In <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.cfg</code>, leave <code className="bg-gray-800 px-1 rounded">EnableReportUpload = false</code> (default)</li>
       </ul>
       <p className="text-gray-300 mb-6">
         If you previously enabled it, set the value to <code className="bg-gray-800 px-1 rounded">false</code> and save. No further uploads will occur.
@@ -52,7 +52,7 @@ export default function AutomatedReportingDataHandlingContent() {
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">MelonLoader:</strong> Set <code className="bg-gray-800 px-1 rounded">EnableReportUpload = true</code> in <code className="bg-gray-800 px-1 rounded">[MLVScan]</code> in MelonPreferences.cfg</li>
-        <li><strong className="text-white">BepInEx:</strong> Set <code className="bg-gray-800 px-1 rounded">"EnableReportUpload": true</code> in BepInEx/config/MLVScan.json</li>
+        <li><strong className="text-white">BepInEx:</strong> Set <code className="bg-gray-800 px-1 rounded">EnableReportUpload = true</code> in BepInEx/config/MLVScan.cfg</li>
       </ul>
       <p className="text-gray-300 mb-6">
         The first time MLVScan detects a suspicious mod, it will show a one-time message explaining the feature. Your choice is persisted and you will not be prompted again.

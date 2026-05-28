@@ -47,19 +47,18 @@ EnableReportUpload = false`}</code>
         </div>
         <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
           <h3 className="text-white font-semibold mb-2">BepInEx</h3>
-          <p className="text-sm text-gray-400 mb-2">File: <code>BepInEx/config/MLVScan.json</code></p>
+          <p className="text-sm text-gray-400 mb-2">File: <code>BepInEx/config/MLVScan.cfg</code></p>
           <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
-            <code className="text-sm text-gray-300">{`{
-  "EnableAutoScan": true,
-  "EnableAutoDisable": true,
-  "EnableScanCache": true,
-  "BlockKnownThreats": true,
-  "BlockSuspicious": true,
-  "BlockIncompleteScans": false,
-  "WhitelistedHashes": [],
-  "DumpFullIlReports": false,
-  "EnableReportUpload": false
-}`}</code>
+            <code className="text-sm text-gray-300">{`[MLVScan]
+EnableAutoScan = true
+EnableAutoDisable = true
+EnableScanCache = true
+BlockKnownThreats = true
+BlockSuspicious = true
+BlockIncompleteScans = false
+WhitelistedHashes = []
+DumpFullIlReports = false
+EnableReportUpload = false`}</code>
           </pre>
         </div>
       </div>
