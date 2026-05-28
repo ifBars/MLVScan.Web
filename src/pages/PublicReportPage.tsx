@@ -128,9 +128,19 @@ export default function PublicReportPage() {
 function PublicReport({ payload }: { payload: PublicReportPayload }) {
   const tone = tonePresets[payload.classification]
   const VerdictIcon = tone.icon
-  const sortedFindings = useMemo(
-    () => [...payload.findings].sort((left, right) => severityRank(right.severity) - severityRank(left.severity)),
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const defaultFindings = useMemo(
+    () => payload.findings.filter((finding) => finding.visibility !== "Advanced"),
     [payload.findings],
+  )
+  const advancedFindings = useMemo(
+    () => payload.findings.filter((finding) => finding.visibility === "Advanced"),
+    [payload.findings],
+  )
+  const displayedFindings = showAdvanced ? payload.findings : defaultFindings
+  const sortedFindings = useMemo(
+    () => [...displayedFindings].sort((left, right) => severityRank(right.severity) - severityRank(left.severity)),
+    [displayedFindings],
   )
   const displayName = payload.source.displayName ?? payload.source.fileName ?? payload.fileName
   const packageName = payload.source.packageFileName ?? payload.source.fileName
@@ -174,7 +184,7 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Fact label="Disposition" value={payload.classification} />
           <Fact label="Blocking recommended" value={payload.blockingRecommended ? "Yes" : "No"} />
-          <Fact label="Findings" value={`${payload.findingCount}`} />
+          <Fact label="Findings" value={`${payload.findingCount} retained`} />
           <Fact label="Scanned" value={formatDate(payload.scannedAt)} />
         </div>
       </section>
@@ -239,13 +249,8 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
             <Detail label="Author" value={payload.source.author} />
             <Detail label="Provider" value={providerLabel(payload.source.provider)} />
             {payload.sizeBytes !== null ? <Detail label="Size" value={formatBytes(payload.sizeBytes)} /> : null}
+            <Detail label="SHA256" value={payload.contentHash} mono />
           </div>
-          {payload.contentHash ? (
-            <div className="mt-4 rounded-md border border-slate-800 bg-slate-900/70 p-3">
-              <p className="text-xs text-slate-500">SHA256</p>
-              <p className="mt-1 break-all font-mono text-xs text-slate-200">{payload.contentHash}</p>
-            </div>
-          ) : null}
           <div className="mt-4 rounded-md border border-slate-800 bg-slate-900/60 p-3 text-xs leading-5 text-slate-400">
             MLVScan can be incorrect. Treat this report as static-analysis guidance, not a guarantee.
           </div>
@@ -253,10 +258,31 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
 
         <div className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-white">Rules and findings</h2>
-            <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
-              {payload.findingCount} retained
-            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Rules and findings</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Retained findings are shown by default. Advanced diagnostics are optional.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+              <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
+                {payload.findingCount} retained
+              </span>
+              {advancedFindings.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced((value) => !value)}
+                  className={cn(
+                    "inline-flex min-h-8 items-center rounded-md border px-3 text-xs font-medium transition",
+                    showAdvanced
+                      ? "border-amber-400/40 bg-amber-500/10 text-amber-100 hover:bg-amber-500/15"
+                      : "border-slate-700 bg-slate-900 text-white hover:border-slate-500 hover:bg-slate-800",
+                  )}
+                >
+                  {showAdvanced ? "Hide Advanced" : `Show Advanced (${advancedFindings.length})`}
+                </button>
+              ) : null}
+            </div>
           </div>
           {sortedFindings.length > 0 ? (
             <div className="mt-4 space-y-3">
@@ -269,6 +295,11 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
                     {finding.ruleId ? (
                       <span className="font-mono text-xs text-teal-200">{finding.ruleId}</span>
                     ) : null}
+                    {finding.visibility === "Advanced" ? (
+                      <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-200">
+                        Advanced
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-2 break-words text-sm leading-6 text-slate-200">{finding.description}</p>
                   {finding.location ? (
@@ -280,7 +311,9 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
           ) : (
             <div className="mt-4 rounded-md border border-dashed border-slate-700 bg-slate-900/40 p-8 text-center text-sm text-slate-400">
               <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-emerald-300/70" />
-              No retained rule findings were exposed for this scan.
+              {advancedFindings.length > 0 && !showAdvanced
+                ? "No retained rule findings were exposed for this scan. Advanced diagnostics are available."
+                : "No retained rule findings were exposed for this scan."}
             </div>
           )}
         </div>
