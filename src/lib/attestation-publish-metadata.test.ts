@@ -18,7 +18,7 @@ type ScanResultWithAssembly = ScanResult & {
 
 function createScanResult(overrides: Partial<ScanResultWithAssembly> = {}): ScanResult {
   return {
-    schemaVersion: "1.2.0",
+    schemaVersion: "1.3.0",
     metadata: {
       scannerVersion: "1.2.3",
       coreVersion: "1.2.3",

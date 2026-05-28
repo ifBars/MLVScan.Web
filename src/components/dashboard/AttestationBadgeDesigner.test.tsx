@@ -60,7 +60,7 @@ const basePayload: PublicAttestationPayload = {
   contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   sizeBytes: 12345,
   scannerVersion: "1.2.3",
-  schemaVersion: "1.2.0",
+  schemaVersion: "1.3.0",
   scannedAt: "2026-04-06T12:00:00.000Z",
   classification: "Clean",
   headline: "No known threats detected",

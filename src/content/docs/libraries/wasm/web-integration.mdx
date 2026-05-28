@@ -58,7 +58,7 @@ export async function scanFile(file: File) {
   const fileBytes = new Uint8Array(arrayBuffer)
   const result = await scanAssembly(fileBytes, file.name)
 
-  // Schema v1.2.0 examples
+  // Schema v1.3.0 examples
   console.log(result.disposition?.classification)
   console.log(result.findings[0]?.riskScore)
   console.log(result.dataFlows?.[0]?.callDepth)

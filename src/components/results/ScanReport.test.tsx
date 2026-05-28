@@ -30,7 +30,7 @@ const createFinding = (overrides: Partial<Finding> = {}): Finding => ({
 })
 
 const createResult = (overrides: Partial<ScanResult> = {}): ScanResult => ({
-  schemaVersion: "1.2.0",
+  schemaVersion: "1.3.0",
   metadata: {
     coreVersion: "1.0.0",
     platformVersion: "1.0.0",
@@ -48,6 +48,12 @@ const createResult = (overrides: Partial<ScanResult> = {}): ScanResult => ({
     totalFindings: 1,
     countBySeverity: { Low: 1 },
     triggeredRules: ["IncompleteScanWarningRule"],
+  },
+  analysisCompleteness: {
+    status: "Complete",
+    isComplete: true,
+    reviewRecommended: false,
+    reasons: [],
   },
   findings: [createFinding()],
   threatFamilies: null,
