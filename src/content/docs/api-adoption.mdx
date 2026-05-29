@@ -45,7 +45,7 @@ export default function ApiAdoptionContent() {
         Scoped keys should include only the capabilities the integration needs:
       </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
-        <li><code>uploads:write</code> for authenticated <code>/files</code> and <code>/files/upload_url</code> submissions.</li>
+        <li><code>uploads:write</code> for authenticated <code>/files</code>, <code>/files/upload_url</code>, and trusted <code>/files/reuse</code> submissions.</li>
         <li><code>reports:read</code> for private report polling on account-owned submissions.</li>
         <li><code>attestations:read</code> for listing account-owned attestations.</li>
         <li><code>attestations:write</code> for draft creation, metadata updates, publish, refresh, revoke, and draft deletion.</li>
@@ -62,6 +62,25 @@ export default function ApiAdoptionContent() {
         <li>Poll <code>GET /reports/{"{submissionId}"}</code> until the report is <code>completed</code> or <code>failed</code>.</li>
         <li>Use the completed report in your own moderation queue, release gate, or package metadata system.</li>
       </ol>
+
+      <div className="rounded-lg border border-sky-900/50 bg-sky-950/20 p-4 mb-8">
+        <h3 className="text-sky-200 font-semibold mb-2">Which file submission path should I call?</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          <code>POST /files</code> and <code>GET /files/upload_url</code> accept bytes. The API hashes
+          those bytes, compares the hash against the active scan-result schema version, and reuses the
+          existing report when one is available. If no reusable report exists, the API stores or queues
+          the uploaded file for scanning. A duplicate upload is therefore safe: if the file was already
+          scanned for the active schema, the response still gives you a fresh <code>submissionId</code>
+          {" "}linked to the existing report.
+        </p>
+        <p className="text-sm text-gray-300">
+          <code>POST /files/reuse</code> is different: the caller has already downloaded the artifact
+          and computed the exact assembly SHA-256 hash. This endpoint never uploads bytes, never scans,
+          and never queues work. It creates a new submission and source link only if the API already has
+          an active-schema report for that hash. It returns <code>404</code> when no reusable report
+          exists; that is a normal miss signal, not a scan failure.
+        </p>
+      </div>
 
       <h2 id="csharp-sdk">C# SDK</h2>
       <p className="text-gray-300 mb-4">
@@ -173,6 +192,71 @@ submission_id=$(echo "$upload_url_json" | jq -r '.data.submission_id')
 
 curl -fsS -X PUT --data-binary "@dist/YourMod.dll" "$upload_url"`}</CodeBlock>
 
+      <h2 id="reusing-existing-reports">Reusing Existing Reports</h2>
+      <p className="text-gray-300 mb-4">
+        Source watchers and platform mirrors that already have the artifact bytes can avoid redundant
+        upload and queue work by calling <code>POST /files/reuse</code> first. This endpoint does not
+        scan, store, or upload a file. It only creates a submission against an existing report for the
+        current API schema version.
+      </p>
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full text-sm text-gray-300">
+          <thead className="text-left text-gray-100">
+            <tr>
+              <th className="border-b border-gray-700 py-2 pr-4">Scenario</th>
+              <th className="border-b border-gray-700 py-2 pr-4"><code>POST /files</code></th>
+              <th className="border-b border-gray-700 py-2"><code>POST /files/reuse</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">File is already scanned for the active schema</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Accepts bytes, creates a new submission, reuses the existing report, and records metadata.</td>
+              <td className="border-b border-gray-800 py-2">Creates a new submission from the submitted hash and records metadata without uploading bytes.</td>
+            </tr>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">File has never been scanned, or only has older-schema reports</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Accepts bytes and stores or queues a new scan for the active schema.</td>
+              <td className="border-b border-gray-800 py-2">Returns <code>404</code>. The caller should upload the bytes normally if it wants a scan.</td>
+            </tr>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">Caller only has a provider package or ZIP hash</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Upload the bytes, or extract the assembly first if your integration scans DLLs individually.</td>
+              <td className="border-b border-gray-800 py-2">Do not use the package hash for assembly reports. Hash the exact extracted DLL bytes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <CodeBlock className="mb-6">{`sha256=$(sha256sum dist/YourMod.dll | awk '{print $1}')
+
+reuse_json=$(curl -sS -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "contentHash": "'"$sha256"'",
+    "filename": "YourMod.dll",
+    "metadata": {
+      "sourceKind": "nexus-schedule1",
+      "sourceKey": "schedule1:1194:1779419635",
+      "sourceTitle": "Your Mod",
+      "sourceUrl": "https://www.nexusmods.com/schedule1/mods/1194"
+    }
+  }' \\
+  https://api.mlvscan.com/files/reuse)
+
+if [ "$(echo "$reuse_json" | jq -r '.error // empty')" = "Reusable report not found" ]; then
+  # Fall back to POST /files or GET /files/upload_url with the same bytes and metadata.
+  echo "No active-schema report exists yet; upload the file normally."
+else
+  submission_id=$(echo "$reuse_json" | jq -r '.data.id')
+fi`}</CodeBlock>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li>Use the hash of the exact assembly bytes. For ZIP packages, hash each extracted DLL you want to bind, not the archive itself.</li>
+        <li>The caller never supplies a schema version. The API chooses the active schema version and returns <code>404</code> if only older reports exist.</li>
+        <li>Use the same metadata shape as <code>POST /files</code>; source metadata is recorded when reuse succeeds.</li>
+        <li>Keep the normal upload path as the fallback. <code>/files/reuse</code> is an optimization for already-known bytes, not a replacement for scanning new bytes.</li>
+      </ul>
+
       <h2 id="polling-reports">Polling Reports</h2>
       <p className="text-gray-300 mb-4">
         Authenticated submissions are private to the account that uploaded them. Poll with the same
@@ -268,6 +352,7 @@ badge_url=$(echo "$published_json" | jq -r '.badgeUrl')`}</CodeBlock>
           <tbody>
             <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /files</code></td><td className="border-b border-gray-800 py-2 pr-4">Direct artifact upload</td><td className="border-b border-gray-800 py-2"><code>uploads:write</code> when authenticated</td></tr>
             <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /files/upload_url</code></td><td className="border-b border-gray-800 py-2 pr-4">Large-file presigned upload URL</td><td className="border-b border-gray-800 py-2"><code>uploads:write</code> when authenticated</td></tr>
+            <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /files/reuse</code></td><td className="border-b border-gray-800 py-2 pr-4">Submission from an existing active-schema report by SHA-256 hash</td><td className="border-b border-gray-800 py-2"><code>uploads:write</code></td></tr>
             <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /reports/{"{submissionId}"}</code></td><td className="border-b border-gray-800 py-2 pr-4">Private report polling</td><td className="border-b border-gray-800 py-2"><code>reports:read</code> when authenticated</td></tr>
             <tr><td className="border-b border-gray-800 py-2 pr-4"><code>GET /automation/attestations</code></td><td className="border-b border-gray-800 py-2 pr-4">List account attestations</td><td className="border-b border-gray-800 py-2"><code>attestations:read</code></td></tr>
             <tr><td className="border-b border-gray-800 py-2 pr-4"><code>POST /automation/attestations</code></td><td className="border-b border-gray-800 py-2 pr-4">Create or reuse a draft</td><td className="border-b border-gray-800 py-2"><code>attestations:write</code></td></tr>

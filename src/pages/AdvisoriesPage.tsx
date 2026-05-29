@@ -14,49 +14,12 @@ import { shouldScrollAdvisoryDetailToTop } from "./advisory-scroll"
 const advisoryModules = import.meta.glob<{ default: React.ComponentType }>("../content/advisories/*.mdx")
 
 function FeaturedAdvisory({ advisory }: { advisory: AdvisoryMeta }) {
-  const [Content, setContent] = useState<React.ComponentType | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadAdvisory = async () => {
-      setLoading(true)
-      try {
-        const importPath = `../content/advisories/${advisory.contentPath}`
-        const loadComponent = advisoryModules[importPath]
-        if (loadComponent) {
-          const module = await loadComponent()
-          setContent(() => module.default)
-        }
-      } catch (err) {
-        console.error("Failed to load featured advisory:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadAdvisory()
-  }, [advisory.contentPath])
-
-  if (loading) {
-    return (
-      <div className="animate-pulse bg-gray-900/40 rounded-xl border border-gray-800 p-8">
-        <div className="h-8 bg-gray-800 rounded w-3/4 mb-4"></div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-800 rounded w-full"></div>
-          <div className="h-4 bg-gray-800 rounded w-5/6"></div>
-        </div>
-      </div>
-    )
-  }
-
-  const ContentComponent = Content
-
   return (
     <article className="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden p-8">
       <AdvisoryHeader meta={advisory} headingLevel={2} />
 
-      <div className="mt-6 prose prose-invert prose-teal max-w-none line-clamp-6 [&_p]:mb-4 [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:mt-6 [&_h3]:mb-3 [&_ul]:mb-4 [&_li]:mb-1">
-        {ContentComponent ? <ContentComponent /> : <p className="text-gray-400">{advisory.description}</p>}
+      <div className="mt-6 max-w-none">
+        <p className="text-gray-300 leading-relaxed">{advisory.description}</p>
       </div>
 
       <div className="mt-6 pt-6 border-t border-gray-800">
@@ -188,14 +151,6 @@ function AdvisoryDetail({ meta }: { meta: AdvisoryMeta }) {
     loadAdvisory()
   }, [meta.contentPath])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="text-center py-16">
@@ -217,7 +172,13 @@ function AdvisoryDetail({ meta }: { meta: AdvisoryMeta }) {
       <AdvisoryHeader meta={meta} />
 
       <div className="prose prose-invert prose-teal max-w-none [&_p]:mb-4 [&_h2]:mt-10 [&_h2]:mb-6 [&_h3]:mt-8 [&_h3]:mb-4 [&_ul]:mb-6 [&_li]:mb-2">
-        {ContentComponent ? (
+        {loading ? (
+          <div className="animate-pulse space-y-4 rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+            <div className="h-4 w-full rounded bg-gray-800" />
+            <div className="h-4 w-11/12 rounded bg-gray-800" />
+            <div className="h-4 w-4/5 rounded bg-gray-800" />
+          </div>
+        ) : ContentComponent ? (
           <ContentComponent />
         ) : (
           <div className="border-l-4 border-orange-500 pl-6 py-4 bg-orange-500/10 rounded-r-lg">

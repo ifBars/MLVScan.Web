@@ -5,13 +5,13 @@ import {
   AlertTriangle,
   ExternalLink,
   FileWarning,
-  LoaderCircle,
   ShieldAlert,
   ShieldCheck,
   ShieldOff,
   ShieldQuestion,
 } from "lucide-react"
 
+import { PublicReportSkeletonArticle } from "@/components/reports/PublicReportSkeleton"
 import {
   PublicReportNotFoundError,
   fetchPublicReport,
@@ -92,13 +92,7 @@ export default function PublicReportPage() {
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4">
         {displayState.status === "loading" && (
-          <StatePanel
-            icon={<LoaderCircle className="h-10 w-10 animate-spin text-primary" />}
-            eyebrow="Loading report"
-            title="Fetching scan details"
-            description="MLVScan is loading the public report summary for this provider-linked scan."
-            showScanLink={false}
-          />
+          <PublicReportSkeletonArticle />
         )}
 
         {displayState.status === "not-found" && (

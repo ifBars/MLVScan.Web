@@ -1,40 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
-import { Suspense } from "react"
+import { lazy, Suspense, type ReactNode } from "react"
 import Navbar from "@/components/layout/Navbar"
-import Hero from "@/components/layout/Hero"
-import ScanPage from "@/pages/ScanPage"
-import AttestationPage from "@/pages/AttestationPage"
-import PublicReportPage from "@/pages/PublicReportPage"
-import SourceReportRedirectPage from "@/pages/SourceReportRedirectPage"
 import Footer from "@/components/layout/Footer"
-import Features from "@/components/Features"
-import FAQ from "@/components/FAQ"
-import TrustSection from "@/components/TrustSection"
-import DocsLayout from "@/components/docs/DocsLayout"
-import DocsPage from "@/pages/DocsPage"
-import AdvisoriesPage from "@/pages/AdvisoriesPage"
-import ThreatFamiliesPage from "@/pages/ThreatFamiliesPage"
 import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
-import Seo from "@/components/seo/Seo"
+import { PublicReportSkeleton } from "@/components/reports/PublicReportSkeleton"
 import { allDocs } from "@/docs/registry"
-import { getHomeSeoPage } from "@/seo/routes"
 
-import InspectorPage from "@/pages/InspectorPage"
-import PartnerDashboardPage from "@/pages/PartnerDashboardPage"
 import { Toaster } from "@/components/ui/sonner"
 
-function Home() {
-  return (
-    <>
-      <Seo page={getHomeSeoPage()} />
-      <Hero />
-      <Features />
-      <TrustSection />
-      <FAQ />
-    </>
-  )
-}
+const HomePage = lazy(() => import("@/pages/HomePage"))
+const ScanPage = lazy(() => import("@/pages/ScanPage"))
+const AttestationPage = lazy(() => import("@/pages/AttestationPage"))
+const PublicReportPage = lazy(() => import("@/pages/PublicReportPage"))
+const SourceReportRedirectPage = lazy(() => import("@/pages/SourceReportRedirectPage"))
+const InspectorPage = lazy(() => import("@/pages/InspectorPage"))
+const PartnerDashboardPage = lazy(() => import("@/pages/PartnerDashboardPage"))
+const DocsLayout = lazy(() => import("@/components/docs/DocsLayout"))
+const DocsPage = lazy(() => import("@/pages/DocsPage"))
+const AdvisoriesPage = lazy(() => import("@/pages/AdvisoriesPage"))
+const ThreatFamiliesPage = lazy(() => import("@/pages/ThreatFamiliesPage"))
 
 function LoadingSpinner() {
   return (
@@ -42,6 +27,10 @@ function LoadingSpinner() {
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
     </div>
   )
+}
+
+function LazyRoute({ children, fallback = <LoadingSpinner /> }: { children: ReactNode; fallback?: ReactNode }) {
+  return <Suspense fallback={fallback}>{children}</Suspense>
 }
 
 function MarketingShell() {
@@ -62,32 +51,32 @@ function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <>
         <Routes>
-          <Route path="/dashboard/*" element={<PartnerDashboardPage />} />
+          <Route path="/dashboard/*" element={<LazyRoute><PartnerDashboardPage /></LazyRoute>} />
           <Route element={<MarketingShell />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/scan" element={<ScanPage />} />
-            <Route path="/attestations/:shareId" element={<AttestationPage />} />
-            <Route path="/reports/:submissionId" element={<PublicReportPage />} />
-            <Route path="/schedule1/mods/:modId" element={<SourceReportRedirectPage />} />
-            <Route path="/c/:community/p/:namespace/:packageName" element={<SourceReportRedirectPage />} />
-            <Route path="/inspector" element={<InspectorPage />} />
+            <Route path="/" element={<LazyRoute><HomePage /></LazyRoute>} />
+            <Route path="/scan" element={<LazyRoute><ScanPage /></LazyRoute>} />
+            <Route path="/attestations/:shareId" element={<LazyRoute><AttestationPage /></LazyRoute>} />
+            <Route path="/reports/:submissionId" element={<LazyRoute fallback={<PublicReportSkeleton />}><PublicReportPage /></LazyRoute>} />
+            <Route path="/schedule1/mods/:modId" element={<LazyRoute><SourceReportRedirectPage /></LazyRoute>} />
+            <Route path="/c/:community/p/:namespace/:packageName" element={<LazyRoute><SourceReportRedirectPage /></LazyRoute>} />
+            <Route path="/inspector" element={<LazyRoute><InspectorPage /></LazyRoute>} />
             <Route path="/docs" element={
-              <Suspense fallback={<LoadingSpinner />}>
+              <LazyRoute>
                 <DocsLayout />
-              </Suspense>
+              </LazyRoute>
             }>
               {allDocs.map((doc) => (
                 doc.slug === '' ? 
-                  <Route key={doc.id} index element={<DocsPage doc={doc} />} /> :
-                  <Route key={doc.id} path={doc.slug} element={<DocsPage doc={doc} />} />
+                  <Route key={doc.id} index element={<LazyRoute><DocsPage doc={doc} /></LazyRoute>} /> :
+                  <Route key={doc.id} path={doc.slug} element={<LazyRoute><DocsPage doc={doc} /></LazyRoute>} />
               ))}
               <Route path="*" element={<Navigate to="/docs" replace />} />
             </Route>
             <Route path="/advisories" element={<AdvisoriesLayout />}>
-              <Route index element={<AdvisoriesPage />} />
-              <Route path="families" element={<ThreatFamiliesPage />} />
-              <Route path="families/:slug" element={<ThreatFamiliesPage />} />
-              <Route path=":slug" element={<AdvisoriesPage />} />
+              <Route index element={<LazyRoute><AdvisoriesPage /></LazyRoute>} />
+              <Route path="families" element={<LazyRoute><ThreatFamiliesPage /></LazyRoute>} />
+              <Route path="families/:slug" element={<LazyRoute><ThreatFamiliesPage /></LazyRoute>} />
+              <Route path=":slug" element={<LazyRoute><AdvisoriesPage /></LazyRoute>} />
             </Route>
           </Route>
         </Routes>
