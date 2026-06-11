@@ -1,0 +1,195 @@
+import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
+export default function ApiIntegrationFlowContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        The minimum API adoption path is upload plus report polling. Add attestations only when you
+        want MLVScan to host a public verification page, signed JSON document, and badge for the
+        scanned artifact.
+      </p>
+
+      <h2 id="direct-scan-flow">Direct Scan Report Flow</h2>
+      <ol className="list-decimal pl-6 space-y-2 text-gray-300 mb-8">
+        <li>Upload the exact artifact bytes with <code>POST /files</code> or request a large-file URL from <code>GET /files/upload_url</code>.</li>
+        <li>Poll <code>GET /reports/{"{submissionId}"}</code> until the report is <code>completed</code> or <code>failed</code>.</li>
+        <li>Use the completed report in your own moderation queue, release gate, or package metadata system.</li>
+      </ol>
+
+      <h2 id="uploading-files">Uploading Files</h2>
+      <p className="text-gray-300 mb-4">
+        Use direct multipart upload for artifacts under the API limit. Include <code>X-API-Key</code> so
+        the submission is owned by your account and can be read later with the same account key.
+      </p>
+      <CodeBlock className="mb-6">{`upload_json=$(curl -fsS \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -F "file=@dist/YourMod.dll" \\
+  -F 'metadata={"sourceHint":"https://example.com/mods/your-mod","loaderType":"BepInEx6Mono"}' \\
+  https://api.mlvscan.com/files)
+
+submission_id=$(echo "$upload_json" | jq -r '.data.id')`}</CodeBlock>
+
+      <p className="text-gray-300 mb-4">
+        For larger artifacts, create a one-time presigned URL and upload raw bytes with <code>PUT</code>.
+        The optional metadata query value is base64url-encoded JSON.
+      </p>
+      <CodeBlock className="mb-8">{`upload_url_json=$(curl -fsS \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  "https://api.mlvscan.com/files/upload_url?filename=YourMod.dll&contentType=application/octet-stream")
+
+upload_url=$(echo "$upload_url_json" | jq -r '.data.upload_url')
+submission_id=$(echo "$upload_url_json" | jq -r '.data.submission_id')
+
+curl -fsS -X PUT --data-binary "@dist/YourMod.dll" "$upload_url"`}</CodeBlock>
+
+      <div className="rounded-lg border border-sky-900/50 bg-sky-950/20 p-4 mb-8">
+        <h3 className="text-sky-200 font-semibold mb-2">Which file submission path should I call?</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          <code>POST /files</code> and <code>GET /files/upload_url</code> accept bytes. The API hashes
+          those bytes, compares the hash against the active scan-result schema version, and reuses the
+          existing report when one is available.
+        </p>
+        <p className="text-sm text-gray-300">
+          <code>POST /files/reuse</code> is different: the caller has already downloaded the artifact
+          and computed the exact assembly SHA-256 hash. This endpoint never uploads bytes, never scans,
+          and never queues work. It creates a new submission only when an active-schema report already
+          exists for that hash.
+        </p>
+      </div>
+
+      <h2 id="reusing-existing-reports">Reusing Existing Reports</h2>
+      <p className="text-gray-300 mb-4">
+        Source watchers and platform mirrors that already have the artifact bytes can avoid redundant
+        upload and queue work by calling <code>POST /files/reuse</code> first.
+      </p>
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full text-sm text-gray-300">
+          <thead className="text-left text-gray-100">
+            <tr>
+              <th className="border-b border-gray-700 py-2 pr-4">Scenario</th>
+              <th className="border-b border-gray-700 py-2 pr-4"><code>POST /files</code></th>
+              <th className="border-b border-gray-700 py-2"><code>POST /files/reuse</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">File is already scanned for the active schema</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Accepts bytes, creates a new submission, reuses the existing report, and records metadata.</td>
+              <td className="border-b border-gray-800 py-2">Creates a new submission from the submitted hash and records metadata without uploading bytes.</td>
+            </tr>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">File has never been scanned, or only has older-schema reports</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Accepts bytes and stores or queues a new scan for the active schema.</td>
+              <td className="border-b border-gray-800 py-2">Returns <code>404</code>. The caller should upload the bytes normally if it wants a scan.</td>
+            </tr>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4">Caller only has a provider package or ZIP hash</td>
+              <td className="border-b border-gray-800 py-2 pr-4">Upload the bytes, or extract the assembly first if your integration scans DLLs individually.</td>
+              <td className="border-b border-gray-800 py-2">Do not use the package hash for assembly reports. Hash the exact extracted DLL bytes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <CodeBlock className="mb-6">{`sha256=$(sha256sum dist/YourMod.dll | awk '{print $1}')
+
+reuse_json=$(curl -sS -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "contentHash": "'"$sha256"'",
+    "filename": "YourMod.dll",
+    "metadata": {
+      "sourceKind": "nexus-schedule1",
+      "sourceKey": "schedule1:1194:1779419635",
+      "sourceTitle": "Your Mod",
+      "sourceUrl": "https://www.nexusmods.com/schedule1/mods/1194"
+    }
+  }' \\
+  https://api.mlvscan.com/files/reuse)
+
+if [ "$(echo "$reuse_json" | jq -r '.error // empty')" = "Reusable report not found" ]; then
+  echo "No active-schema report exists yet; upload the file normally."
+else
+  submission_id=$(echo "$reuse_json" | jq -r '.data.id')
+fi`}</CodeBlock>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li>Use the hash of the exact assembly bytes. For ZIP packages, hash each extracted DLL you want to bind, not the archive itself.</li>
+        <li>The caller never supplies a schema version. The API chooses the active schema version and returns <code>404</code> if only older reports exist.</li>
+        <li>Keep the normal upload path as the fallback. <code>/files/reuse</code> is an optimization for already-known bytes, not a replacement for scanning new bytes.</li>
+      </ul>
+
+      <h2 id="polling-reports">Polling Reports</h2>
+      <p className="text-gray-300 mb-4">
+        Authenticated submissions are private to the account that uploaded them. Poll with the same
+        account key and handle an initial <code>404</code> as a materialization delay for production
+        R2 event processing.
+      </p>
+      <CodeBlock className="mb-6">{`for attempt in $(seq 1 60); do
+  report_json=$(curl -sS \\
+    -H "X-API-Key: $MLVSCAN_API_KEY" \\
+    "https://api.mlvscan.com/reports/$submission_id")
+
+  status=$(echo "$report_json" | jq -r '.status // empty')
+  if [ "$status" = "completed" ] || [ "$status" = "failed" ]; then
+    break
+  fi
+
+  sleep 10
+done`}</CodeBlock>
+
+      <p className="text-gray-300 mb-8">
+        Completed reports include the shared MLVScan result payload. Consumers should prefer{" "}
+        <code>disposition</code>, <code>threatFamilies</code>, and the final classification over
+        isolated rule severities.
+      </p>
+
+      <h2 id="attestations">Attestations</h2>
+      <p className="text-gray-300 mb-4">
+        An attestation is optional. It is the public record for one exact artifact scan. The{" "}
+        <code>artifactKey</code> defines the stable partner-scoped lineage, such as{" "}
+        <code>your-mod</code>, <code>your-mod/mono</code>, or <code>your-mod/il2cpp</code>.
+      </p>
+      <CodeBlock className="mb-6">{`draft_json=$(curl -fsS \\
+  -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "submissionId": "'"$submission_id"'",
+    "artifactKey": "your-mod/mono",
+    "artifactVersion": "1.2.3",
+    "publicDisplayName": "Your Mod 1.2.3",
+    "canonicalSourceUrl": "https://example.com/mods/your-mod"
+  }' \\
+  https://api.mlvscan.com/automation/attestations)
+
+attestation_id=$(echo "$draft_json" | jq -r '.id')
+
+published_json=$(curl -fsS \\
+  -X POST \\
+  -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  "https://api.mlvscan.com/automation/attestations/$attestation_id/publish")
+
+public_url=$(echo "$published_json" | jq -r '.publicUrl')
+badge_url=$(echo "$published_json" | jq -r '.badgeUrl')`}</CodeBlock>
+
+      <h2 id="public-resources">Public Resources</h2>
+      <p className="text-gray-300 mb-4">
+        Direct scan reports are private and require the owning account key. Published attestations expose
+        optional public resources that do not require an API key:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li><code>GET /public/attestations/{"{shareId}"}</code> returns the public attestation payload.</li>
+        <li><code>GET /public/attestations/{"{shareId}"}/attestation.json</code> returns a signed attestation document.</li>
+        <li><code>GET /public/attestations/{"{shareId}"}/badge.svg</code> returns or redirects to the badge SVG.</li>
+      </ul>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">API Adoption</Link></li>
+        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">API SDKs</Link></li>
+        <li><Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">CI Attestations</Link></li>
+      </ul>
+    </>
+  )
+}

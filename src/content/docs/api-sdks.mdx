@@ -1,0 +1,111 @@
+import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
+export default function ApiSdksContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        MLVScan publishes SDKs generated from the same OpenAPI contract as the hosted API reference.
+        Use them when your integration needs account-owned hosted submissions, private report polling,
+        or public attestation publishing.
+      </p>
+
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h3 className="text-amber-200 font-semibold mb-2">Prefer local scans when you do not need the hosted API</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          If your integration can scan files locally, start with <code>MLVScan.Core</code> or{" "}
+          <code>MLVScan.DevCLI</code>. Those paths avoid API rate limits, keep artifacts on the
+          caller&apos;s machine, and are the better fit for local developer tooling and CI jobs that do
+          not need hosted reports or public attestations.
+        </p>
+        <p className="text-sm text-gray-300">
+          Use the API SDKs when you specifically need the hosted API surface: account-owned
+          submissions, private report polling, public attestation publishing, or a system boundary
+          where local scanning is not practical.
+        </p>
+      </div>
+
+      <h2 id="csharp-sdk">C# SDK</h2>
+      <p className="text-gray-300 mb-4">
+        Install <code>MLVScan.ApiClient</code> from NuGet for .NET automation. The package includes
+        generated request builders plus a wrapper for common upload and report-polling workflows.
+      </p>
+      <CodeBlock className="mb-4">{`dotnet add package MLVScan.ApiClient`}</CodeBlock>
+      <CodeBlock className="mb-8">{`using MLVScan.ApiClient;
+
+var client = new MlvScanClient(Environment.GetEnvironmentVariable("MLVSCAN_API_KEY"));
+
+await using var file = File.OpenRead("dist/YourMod.dll");
+var upload = await client.UploadFileAsync(
+    file,
+    "YourMod.dll",
+    "application/octet-stream");
+
+var submissionId = upload.Data?.Id
+    ?? throw new InvalidOperationException("Upload response did not include a submission ID.");
+
+var report = await client.WaitForReportAsync(
+    submissionId,
+    timeout: TimeSpan.FromMinutes(10));
+
+if (report.Result?.Disposition?.BlockingRecommended == true)
+{
+    throw new InvalidOperationException(report.Result.Disposition.Headline);
+}`}</CodeBlock>
+
+      <h2 id="typescript-sdk">TypeScript SDK</h2>
+      <p className="text-gray-300 mb-4">
+        Install <code>@mlvscan/api-client</code> from npm for Node, Bun, or TypeScript automation.
+        The wrapper exposes upload URL creation, direct byte upload, report retrieval, and report
+        polling helpers.
+      </p>
+      <CodeBlock className="mb-4">{`bun add @mlvscan/api-client`}</CodeBlock>
+      <CodeBlock className="mb-8">{`import { MlvScanClient } from "@mlvscan/api-client"
+
+const client = new MlvScanClient({
+  apiKey: process.env.MLVSCAN_API_KEY,
+})
+
+const file = await Bun.file("dist/YourMod.dll").arrayBuffer()
+const upload = await client.uploadFile(file, "YourMod.dll", {
+  contentType: "application/octet-stream",
+  metadata: {
+    sourceHint: "https://example.com/mods/your-mod",
+  },
+})
+
+const submissionId = upload.data?.id
+if (!submissionId) {
+  throw new Error("Upload response did not include a submission ID.")
+}
+
+const report = await client.waitForReport(submissionId, {
+  timeoutMs: 10 * 60 * 1000,
+  pollIntervalMs: 10 * 1000,
+})
+
+if (report.result?.disposition?.blockingRecommended) {
+  throw new Error(report.result.disposition.headline ?? "MLVScan blocked this artifact.")
+}`}</CodeBlock>
+
+      <h2 id="generated-client-access">Generated Client Access</h2>
+      <p className="text-gray-300 mb-4">
+        Both SDKs expose the generated Kiota client for lower-level request-builder access when the
+        wrapper does not cover a route. Use the wrapper for the common upload and polling path, and
+        drop to the generated client when an integration needs an endpoint-specific request shape.
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li>C#: use <code>MlvScanClient.GeneratedClient</code>.</li>
+        <li>TypeScript: import generated types or request builders from <code>@mlvscan/api-client/generated</code>.</li>
+        <li>Other languages can use <code>https://api.mlvscan.com/openapi.json</code> as the source contract.</li>
+      </ul>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">API Adoption</Link></li>
+        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">API Integration Flow</Link></li>
+        <li><a href="https://api.mlvscan.com/docs" className="text-teal-400 hover:text-teal-300">Interactive API Reference</a></li>
+      </ul>
+    </>
+  )
+}
