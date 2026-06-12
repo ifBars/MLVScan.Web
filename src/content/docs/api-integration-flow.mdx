@@ -22,7 +22,7 @@ export default function ApiIntegrationFlowContent() {
         Use direct multipart upload for artifacts under the API limit. Include <code>X-API-Key</code> so
         the submission is owned by your account and can be read later with the same account key.
       </p>
-      <CodeBlock className="mb-6">{`upload_json=$(curl -fsS \\
+      <CodeBlock language="bash" className="mb-6">{`upload_json=$(curl -fsS \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
   -F "file=@dist/YourMod.dll" \\
   -F 'metadata={"sourceHint":"https://example.com/mods/your-mod","loaderType":"BepInEx6Mono"}' \\
@@ -34,7 +34,7 @@ submission_id=$(echo "$upload_json" | jq -r '.data.id')`}</CodeBlock>
         For larger artifacts, create a one-time presigned URL and upload raw bytes with <code>PUT</code>.
         The optional metadata query value is base64url-encoded JSON.
       </p>
-      <CodeBlock className="mb-8">{`upload_url_json=$(curl -fsS \\
+      <CodeBlock language="bash" className="mb-8">{`upload_url_json=$(curl -fsS \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
   "https://api.mlvscan.com/files/upload_url?filename=YourMod.dll&contentType=application/octet-stream")
 
@@ -91,7 +91,7 @@ curl -fsS -X PUT --data-binary "@dist/YourMod.dll" "$upload_url"`}</CodeBlock>
           </tbody>
         </table>
       </div>
-      <CodeBlock className="mb-6">{`sha256=$(sha256sum dist/YourMod.dll | awk '{print $1}')
+      <CodeBlock language="bash" className="mb-6">{`sha256=$(sha256sum dist/YourMod.dll | awk '{print $1}')
 
 reuse_json=$(curl -sS -X POST \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
@@ -125,7 +125,7 @@ fi`}</CodeBlock>
         account key and handle an initial <code>404</code> as a materialization delay for production
         R2 event processing.
       </p>
-      <CodeBlock className="mb-6">{`for attempt in $(seq 1 60); do
+      <CodeBlock language="bash" className="mb-6">{`for attempt in $(seq 1 60); do
   report_json=$(curl -sS \\
     -H "X-API-Key: $MLVSCAN_API_KEY" \\
     "https://api.mlvscan.com/reports/$submission_id")
@@ -150,7 +150,7 @@ done`}</CodeBlock>
         <code>artifactKey</code> defines the stable partner-scoped lineage, such as{" "}
         <code>your-mod</code>, <code>your-mod/mono</code>, or <code>your-mod/il2cpp</code>.
       </p>
-      <CodeBlock className="mb-6">{`draft_json=$(curl -fsS \\
+      <CodeBlock language="bash" className="mb-6">{`draft_json=$(curl -fsS \\
   -X POST \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
   -H "Content-Type: application/json" \\

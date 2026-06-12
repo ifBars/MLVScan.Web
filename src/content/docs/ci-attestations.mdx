@@ -2,6 +2,9 @@ import { Link } from "react-router-dom"
 import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
 
 export default function CiAttestationsContent() {
+  const workflowExampleUrl = "https://github.com/ifBars/MLVScan.Web/blob/main/public/examples/github-actions/publish-mlvscan-attestation.yml"
+  const rawWorkflowExampleUrl = "https://raw.githubusercontent.com/ifBars/MLVScan.Web/main/public/examples/github-actions/publish-mlvscan-attestation.yml"
+
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
@@ -55,12 +58,25 @@ export default function CiAttestationsContent() {
         <p className="text-sm text-gray-300 mb-3">
           Every automation request must include your API key in the <code>X-API-Key</code> header.
         </p>
-        <pre className="bg-gray-950 rounded-lg p-3 overflow-x-auto"><code>{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
-  https://api.mlvscan.com/automation/attestations`}</code></pre>
+        <CodeBlock language="bash">{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
+  https://api.mlvscan.com/automation/attestations`}</CodeBlock>
       </div>
 
       <h2 id="github-actions-template">GitHub Actions Example</h2>
-      <CodeBlock className="mb-6">{`name: Publish MLVScan attestation
+      <p className="text-gray-300 mb-4">
+        The full workflow is checked into the website repository so teams can review it on GitHub,
+        download the raw file, or copy the embedded version below.
+      </p>
+      <CodeBlock
+        title="publish-mlvscan-attestation.yml"
+        language="yaml"
+        className="mb-6"
+        preClassName="max-h-[42rem]"
+        actions={[
+          { href: workflowExampleUrl, label: "View on GitHub" },
+          { href: rawWorkflowExampleUrl, label: "Raw file" },
+        ]}
+      >{`name: Publish MLVScan attestation
 
 on:
   workflow_dispatch:
@@ -273,11 +289,11 @@ jobs:
         publish on every successful build, widen the workflow trigger and keep the same attestation
         steps.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`on:
+      <CodeBlock language="yaml" className="mb-6">{`on:
   push:
     branches:
       - main
-  workflow_dispatch:`}</code></pre>
+  workflow_dispatch:`}</CodeBlock>
 
       <p className="text-gray-300 mb-6">
         That variant will publish a new current attestation whenever the artifact bytes change. If the

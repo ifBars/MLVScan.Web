@@ -11,7 +11,7 @@ export const DocChrome = ({ children }: DocChromeProps) => {
   return (
     <div className="flex gap-8">
       <div className="flex-1 min-w-0" ref={contentRef}>
-        <div className="space-y-8">
+        <div className="docs-prose space-y-8">
           {children}
         </div>
       </div>

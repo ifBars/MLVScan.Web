@@ -38,7 +38,7 @@ export default function ApiAdoptionContent() {
         middleware, but <code>X-API-Key</code> is the documented header and matches the generated
         OpenAPI reference.
       </p>
-      <CodeBlock className="mb-6">{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
+      <CodeBlock language="bash" className="mb-6">{`curl -H "X-API-Key: $MLVSCAN_API_KEY" \\
   https://api.mlvscan.com/automation/attestations`}</CodeBlock>
 
       <p className="text-gray-300 mb-4">

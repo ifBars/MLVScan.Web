@@ -30,8 +30,8 @@ export default function ApiSdksContent() {
         Install <code>MLVScan.ApiClient</code> from NuGet for .NET automation. The package includes
         generated request builders plus a wrapper for common upload and report-polling workflows.
       </p>
-      <CodeBlock className="mb-4">{`dotnet add package MLVScan.ApiClient`}</CodeBlock>
-      <CodeBlock className="mb-8">{`using MLVScan.ApiClient;
+      <CodeBlock language="bash" className="mb-4">{`dotnet add package MLVScan.ApiClient`}</CodeBlock>
+      <CodeBlock language="csharp" className="mb-8">{`using MLVScan.ApiClient;
 
 var client = new MlvScanClient(Environment.GetEnvironmentVariable("MLVSCAN_API_KEY"));
 
@@ -59,8 +59,8 @@ if (report.Result?.Disposition?.BlockingRecommended == true)
         The wrapper exposes upload URL creation, direct byte upload, report retrieval, and report
         polling helpers.
       </p>
-      <CodeBlock className="mb-4">{`bun add @mlvscan/api-client`}</CodeBlock>
-      <CodeBlock className="mb-8">{`import { MlvScanClient } from "@mlvscan/api-client"
+      <CodeBlock language="bash" className="mb-4">{`bun add @mlvscan/api-client`}</CodeBlock>
+      <CodeBlock language="typescript" className="mb-8">{`import { MlvScanClient } from "@mlvscan/api-client"
 
 const client = new MlvScanClient({
   apiKey: process.env.MLVSCAN_API_KEY,

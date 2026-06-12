@@ -1,0 +1,198 @@
+name: Publish MLVScan attestation
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      MLVSCAN_API_BASE_URL: ${{ vars.MLVSCAN_API_BASE_URL }}
+    steps:
+      - name: Resolve target ref
+        id: ref
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "target_ref=${{ github.event.release.target_commitish }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "target_ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: ${{ steps.ref.outputs.target_ref }}
+
+      - name: Resolve API base URL
+        id: api-base
+        run: |
+          resolved_base_url="${MLVSCAN_API_BASE_URL:-https://api.mlvscan.com}"
+          echo "base_url=$resolved_base_url" >> "$GITHUB_OUTPUT"
+
+      - name: Build release artifact
+        run: dotnet build path/to/YourProject.csproj -c Release
+
+      - name: Publish MLVScan attestation
+        env:
+          MLVSCAN_API_KEY: ${{ secrets.MLVSCAN_API_KEY }}
+        run: |
+          set -euo pipefail
+          artifact_path="path/to/your/artifact.dll"
+          artifact_key="your-mod-slug"
+          # For Mono/IL2CPP variants, run the same publish block once per DLL
+          # with distinct keys such as your-mod/mono and your-mod/il2cpp.
+
+          if [ ! -f "$artifact_path" ]; then
+            echo "Artifact not found: $artifact_path" >&2
+            exit 1
+          fi
+
+          upload_status=$(curl -sS -o upload.json -w "%{http_code}" \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            -F "file=@$artifact_path" \
+            "${{ steps.api-base.outputs.base_url }}/files")
+
+          upload_json=$(cat upload.json)
+          if [ "$upload_status" -lt 200 ] || [ "$upload_status" -ge 300 ]; then
+            echo "$upload_json"
+            exit 1
+          fi
+
+          submission_id=$(echo "$upload_json" | jq -r '.data.id')
+          artifact_version="${{ github.ref_name }}"
+
+          for attempt in $(seq 1 60); do
+            report_status=$(curl -sS -o report.json -w "%{http_code}" \
+              -H "X-API-Key: $MLVSCAN_API_KEY" \
+              "${{ steps.api-base.outputs.base_url }}/reports/$submission_id")
+
+            report_json=$(cat report.json)
+
+            if [ "$report_status" = "404" ]; then
+              error_message=$(echo "$report_json" | jq -r '.error // empty')
+              if [ "$error_message" = "Submission not found" ] || [ "$error_message" = "Report not found" ]; then
+                sleep 10
+                continue
+              fi
+            fi
+
+            if [ "$report_status" -lt 200 ] || [ "$report_status" -ge 300 ]; then
+              echo "$report_json"
+              exit 1
+            fi
+
+            status=$(echo "$report_json" | jq -r '.status')
+
+            if [ "$status" = "completed" ]; then
+              break
+            fi
+
+            if [ "$status" = "failed" ]; then
+              echo "$report_json" | jq
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+          if [ "${{ github.event_name }}" = "release" ]; then
+            canonical_source_url="${{ github.event.release.html_url }}"
+          else
+            canonical_source_url="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          fi
+
+          draft_payload=$(jq -n \
+            --arg submissionId "$submission_id" \
+            --arg artifactKey "$artifact_key" \
+            --arg artifactVersion "$artifact_version" \
+            --arg publicDisplayName "Release artifact $artifact_version" \
+            --arg canonicalSourceUrl "$canonical_source_url" \
+            '{
+              submissionId: $submissionId,
+              artifactKey: $artifactKey,
+              artifactVersion: $artifactVersion,
+              publicDisplayName: $publicDisplayName,
+              canonicalSourceUrl: $canonicalSourceUrl
+            }')
+
+          draft_json=$(curl -fsS \
+            -X POST \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$draft_payload" \
+            "${{ steps.api-base.outputs.base_url }}/automation/attestations")
+
+          attestation_id=$(echo "$draft_json" | jq -r '.id')
+          resolved_artifact_key=$(echo "$draft_json" | jq -r '.artifactKey')
+          artifact_key_source=$(echo "$draft_json" | jq -r '.artifactKeySource // "explicit"')
+
+          if [ "$artifact_key_source" = "inferred" ]; then
+            echo "::warning::MLVScan inferred artifactKey as $resolved_artifact_key. Set artifactKey explicitly in CI for stable replacement behavior."
+            echo "$draft_json" | jq -r '.warnings[]?'
+          fi
+
+          published_json=$(curl -fsS \
+            -X POST \
+            -H "X-API-Key: $MLVSCAN_API_KEY" \
+            "${{ steps.api-base.outputs.base_url }}/automation/attestations/$attestation_id/publish")
+
+          public_url=$(echo "$published_json" | jq -r '.publicUrl')
+          badge_url=$(echo "$published_json" | jq -r '.badgeUrl')
+          readme_badge="[![MLVScan Attestation]($badge_url)]($public_url)"
+
+          if grep -q '^\[!\[MLVScan Attestation\]' README.md; then
+            badge_line=$(grep -n '^\[!\[MLVScan Attestation\]' README.md | head -1 | cut -d: -f1)
+            awk -v line="$badge_line" -v new_badge="$readme_badge" 'NR==line {print new_badge; next} {print}' README.md > README.md.tmp
+            mv README.md.tmp README.md
+          else
+            insert_after=$(awk '
+              NR == 1 { next }
+              /^[[:space:]]*$/ {
+                if (last_badge > 0) {
+                  print last_badge
+                  exit
+                }
+                next
+              }
+              /^\[!\[/ {
+                last_badge = NR
+                next
+              }
+              {
+                if (last_badge > 0) {
+                  print last_badge
+                } else {
+                  print 1
+                }
+                exit
+              }
+              END {
+                if (last_badge > 0) {
+                  print last_badge
+                } else {
+                  print 1
+                }
+              }
+            ' README.md | head -1)
+
+            awk -v line="$insert_after" -v new_badge="$readme_badge" '
+              { print }
+              NR == line { print new_badge }
+            ' README.md > README.md.tmp
+            mv README.md.tmp README.md
+          fi
+
+          {
+            echo "## MLVScan attestation"
+            echo
+            echo "- Public URL: $public_url"
+            echo "- Badge URL: $badge_url"
+            echo "- Artifact Key: ${resolved_artifact_key:-$artifact_key}"
+            echo "- Artifact Key Source: $artifact_key_source"
+          } >> "$GITHUB_STEP_SUMMARY"

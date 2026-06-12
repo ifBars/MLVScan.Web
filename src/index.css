@@ -393,6 +393,53 @@
   .dashboard-nav-item-active {
     @apply bg-slate-800 border-slate-700;
   }
+
+  .docs-prose {
+    @apply text-gray-300;
+  }
+
+  .docs-prose h2 {
+    @apply mt-12 mb-4 scroll-mt-28 border-t border-slate-800/80 pt-8 text-2xl font-semibold leading-tight text-white;
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+  }
+
+  .docs-prose h2:first-child {
+    @apply mt-0 border-t-0 pt-0;
+  }
+
+  .docs-prose h3 {
+    @apply mt-8 mb-3 scroll-mt-28 text-lg font-semibold leading-snug text-slate-100;
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+  }
+
+  .docs-prose h4 {
+    @apply mt-6 mb-2 text-base font-semibold leading-snug text-slate-100;
+  }
+
+  .docs-prose p {
+    @apply leading-7;
+  }
+
+  .docs-prose code:not(pre code) {
+    @apply rounded border border-slate-700/70 bg-slate-900/80 px-1.5 py-0.5 font-mono text-[0.92em] text-slate-100;
+  }
+
+  .docs-prose a:not([class]) {
+    @apply text-teal-300 underline-offset-4 hover:text-teal-200 hover:underline;
+  }
+
+  .docs-prose table {
+    @apply overflow-hidden rounded-lg border border-slate-800;
+  }
+
+  .docs-prose th {
+    @apply bg-slate-900/80 text-slate-100;
+  }
+
+  .docs-prose td,
+  .docs-prose th {
+    @apply border-slate-800 px-3 py-2 align-top;
+  }
 }
 
 @layer utilities {
