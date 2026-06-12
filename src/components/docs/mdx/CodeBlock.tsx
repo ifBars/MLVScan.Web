@@ -2,7 +2,7 @@ import { Check, Copy, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
-type CodeLanguage = 'bash' | 'csharp' | 'json' | 'powershell' | 'text' | 'typescript' | 'yaml'
+type CodeLanguage = 'bash' | 'csharp' | 'ini' | 'json' | 'powershell' | 'text' | 'typescript' | 'xml' | 'yaml'
 
 interface CodeBlockAction {
   href: string
@@ -21,10 +21,12 @@ interface CodeBlockProps {
 const languageLabels: Record<CodeLanguage, string> = {
   bash: 'Bash',
   csharp: 'C#',
+  ini: 'INI',
   json: 'JSON',
   powershell: 'PowerShell',
   text: 'Text',
   typescript: 'TypeScript',
+  xml: 'XML',
   yaml: 'YAML',
 }
 
@@ -130,6 +132,60 @@ const renderHighlightedLine = (line: string, language: CodeLanguage, lineIndex: 
         </>
       )
     }
+  }
+
+  if (language === 'ini') {
+    const sectionMatch = line.match(/^(\s*)(\[[^\]]+])(\s*)$/)
+    if (sectionMatch) {
+      return (
+        <>
+          {sectionMatch[1]}
+          <span className={codeTokenClass.keyword}>{sectionMatch[2]}</span>
+          {sectionMatch[3]}
+        </>
+      )
+    }
+
+    const keyMatch = line.match(/^(\s*)([A-Za-z0-9_.-]+)(\s*=\s*)(.*)$/)
+    if (keyMatch) {
+      return (
+        <>
+          {keyMatch[1]}
+          <span className={codeTokenClass.key}>{keyMatch[2]}</span>
+          <span className={codeTokenClass.punctuation}>{keyMatch[3]}</span>
+          {tokenizeInline(keyMatch[4], language, `line-${lineIndex}`)}
+        </>
+      )
+    }
+  }
+
+  if (language === 'xml') {
+    const parts: React.ReactNode[] = []
+    let lastIndex = 0
+    let tokenIndex = 0
+
+    for (const match of line.matchAll(/(<\/?)([A-Za-z0-9_.:-]+)([^>]*)(\/?>)/g)) {
+      const index = match.index ?? 0
+      if (index > lastIndex) {
+        parts.push(line.slice(lastIndex, index))
+      }
+
+      parts.push(
+        <span key={`xml-${lineIndex}-${tokenIndex++}`}>
+          <span className={codeTokenClass.punctuation}>{match[1]}</span>
+          <span className={codeTokenClass.keyword}>{match[2]}</span>
+          {tokenizeInline(match[3], language, `line-${lineIndex}-${tokenIndex}`)}
+          <span className={codeTokenClass.punctuation}>{match[4]}</span>
+        </span>,
+      )
+      lastIndex = index + match[0].length
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.slice(lastIndex))
+    }
+
+    return parts.length > 0 ? parts : line
   }
 
   if (language === 'json' || language === 'typescript' || language === 'csharp') {

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
 
 export default function WasmInteropContent() {
   return (
@@ -16,8 +17,7 @@ export default function WasmInteropContent() {
         Methods exposed to JavaScript must be public, static, and annotated with <code>[JSExport]</code> (or <code>[JSInvokable]</code> for legacy compat). 
         They should accept simple types or byte arrays and return strings (JSON).
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`using System.Runtime.InteropServices.JavaScript;
+      <CodeBlock language="csharp" className="mb-6">{`using System.Runtime.InteropServices.JavaScript;
 
 public static partial class ScannerExports
 {
@@ -33,15 +33,13 @@ public static partial class ScannerExports
 
     [JSExport]
     public static string GetSchemaVersion() => MLVScanVersions.SchemaVersion;
-}`}</code>
-      </pre>
+}`}</CodeBlock>
 
       <h2 id="javascript-side">JavaScript Side: Direct Exports</h2>
       <p className="text-gray-300 mb-4">
         The npm package loads the runtime and retrieves these exports internally. If you are not using the package, you can access the assembly exports directly after initializing the runtime (e.g. via <code>getAssemblyExports(getConfig().mainAssemblyName)</code>).
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`// Retrieve exports from the initialized runtime
+      <CodeBlock language="typescript" className="mb-6">{`// Retrieve exports from the initialized runtime
 const config = getConfig();
 const exports = await getAssemblyExports(config.mainAssemblyName);
 
@@ -50,8 +48,7 @@ const wasmExports = exports.MLVScan.WASM.ScannerExports;
 
 // Call methods directly
 const version = wasmExports.GetVersion();
-const result = wasmExports.ScanAssembly(fileBytes, "MyMod.dll");`}</code>
-      </pre>
+const result = wasmExports.ScanAssembly(fileBytes, "MyMod.dll");`}</CodeBlock>
 
       <h2 id="performance-considerations">Performance Considerations</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6">

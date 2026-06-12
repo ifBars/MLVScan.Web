@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
 
 export default function RuntimeWhitelistingContent() {
   return (
@@ -29,11 +30,11 @@ export default function RuntimeWhitelistingContent() {
       </p>
 
       <h2 id="config-example">Config Example</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
-          <h3 className="text-white font-semibold mb-2">MelonLoader</h3>
-          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
-            <code>{`[MLVScan]
+      <p className="text-gray-300 mb-4">
+        The whitelist keys are the same for MelonLoader and BepInEx. Use the loader-specific config
+        file location, then add the verified hash to <code>WhitelistedHashes</code>.
+      </p>
+      <CodeBlock language="ini" className="mb-6">{`[MLVScan]
 EnableAutoScan = true
 EnableAutoDisable = true
 EnableScanCache = true
@@ -42,28 +43,10 @@ BlockSuspicious = true
 BlockIncompleteScans = false
 WhitelistedHashes = ["<verified SHA256 hash>"]
 DumpFullIlReports = false
-EnableReportUpload = false`}</code>
-          </pre>
-        </div>
-        <div className="p-4 bg-gray-900/40 border border-gray-700 rounded-lg">
-          <h3 className="text-white font-semibold mb-2">BepInEx</h3>
-          <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
-            <code>{`[MLVScan]
-EnableAutoScan = true
-EnableAutoDisable = true
-EnableScanCache = true
-BlockKnownThreats = true
-BlockSuspicious = true
-BlockIncompleteScans = false
-WhitelistedHashes = ["<verified SHA256 hash>"]
-DumpFullIlReports = false
-EnableReportUpload = false`}</code>
-          </pre>
-        </div>
-      </div>
+EnableReportUpload = false`}</CodeBlock>
 
       <h2 id="manual-hash">Manual Hash Check</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`Get-FileHash -Algorithm SHA256 "path\\to\\mod.dll"`}</code></pre>
+      <CodeBlock language="powershell" className="mb-6">{`Get-FileHash -Algorithm SHA256 "path\\to\\mod.dll"`}</CodeBlock>
 
       <p className="text-gray-300">
         If you are building a mod or CI workflow, use the{" "}

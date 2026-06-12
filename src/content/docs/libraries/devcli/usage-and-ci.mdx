@@ -1,15 +1,17 @@
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
 export default function DevCliUsageAndCiContent() {
   return (
     <>
       <h2 id="install">Install</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`dotnet tool install --global MLVScan.DevCLI`}</code></pre>
+      <CodeBlock language="bash" className="mb-6">{`dotnet tool install --global MLVScan.DevCLI`}</CodeBlock>
 
       <h2 id="common-commands">Common Commands</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`mlvscan MyMod.dll
+      <CodeBlock language="bash" className="mb-6">{`mlvscan MyMod.dll
 mlvscan MyMod.dll --format schema
 mlvscan MyMod.dll --fail-on-disposition Suspicious
 mlvscan MyMod.dll --fail-on High
-mlvscan MyMod.dll --verbose`}</code></pre>
+mlvscan MyMod.dll --verbose`}</CodeBlock>
 
       <p className="text-gray-300 mb-6">
         Prefer <code>--fail-on-disposition</code> for CI because it follows the family-first verdict model.{" "}
@@ -17,9 +19,9 @@ mlvscan MyMod.dll --verbose`}</code></pre>
       </p>
 
       <h2 id="msbuild">MSBuild Hook</h2>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`<Target Name="MLVScanCheck" AfterTargets="Build">
+      <CodeBlock language="xml" className="mb-6">{`<Target Name="MLVScanCheck" AfterTargets="Build">
   <Exec Command="dotnet tool run mlvscan -- &quot;$(TargetPath)&quot; --fail-on-disposition Suspicious" />
-</Target>`}</code></pre>
+</Target>`}</CodeBlock>
 
       <h2 id="github-actions">GitHub Actions</h2>
       <p className="text-gray-300 mb-4">
@@ -30,11 +32,11 @@ mlvscan MyMod.dll --verbose`}</code></pre>
         </a>
         .
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`- name: Install MLVScan.DevCLI
+      <CodeBlock language="yaml" className="mb-6">{`- name: Install MLVScan.DevCLI
   run: dotnet tool install --global MLVScan.DevCLI
 
 - name: Scan build output
-  run: mlvscan ./bin/Release/netstandard2.1/MyMod.dll --format schema > scan-results.json`}</code></pre>
+  run: mlvscan ./bin/Release/netstandard2.1/MyMod.dll --format schema > scan-results.json`}</CodeBlock>
     </>
   )
 }

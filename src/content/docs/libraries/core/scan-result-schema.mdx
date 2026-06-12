@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
 
 export default function CoreScanResultSchemaContent() {
   return (
@@ -20,9 +21,9 @@ export default function CoreScanResultSchemaContent() {
         <li><strong className="text-white">API details:</strong> use the generated <Link to="/docs/libraries/core/reference" className="text-teal-400 hover:text-teal-300">Core Reference</Link> for member-level DTO documentation.</li>
       </ul>
 
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto"><code>{`// external app consuming the npm package
+      <CodeBlock language="typescript" className="mb-6">{`// external app consuming the npm package
 import type { ScanResult } from '@mlvscan/wasm-core'
-`}</code></pre>
+`}</CodeBlock>
 
       <h2 id="schema-highlights">Schema Highlights</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-8">

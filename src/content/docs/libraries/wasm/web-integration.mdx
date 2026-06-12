@@ -1,3 +1,5 @@
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
 export default function WasmIntegrationContent() {
   return (
     <>
@@ -28,8 +30,7 @@ export default function WasmIntegrationContent() {
       <p className="text-gray-300 mb-4">
         Pass <code>baseUrl</code> so the runtime can load <code>_framework/dotnet.js</code>. Use <code>throwOnInitFailure: true</code> if you want init to throw instead of falling back to mock when WASM fails to load.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`import { initScanner, getScannerStatus } from '@mlvscan/wasm-core'
+      <CodeBlock language="typescript" className="mb-6">{`import { initScanner, getScannerStatus } from '@mlvscan/wasm-core'
 
 await initScanner({
   baseUrl: '/',
@@ -43,15 +44,13 @@ if (status.initError) {
 }
 if (status.isMock) {
   console.info('Running in mock mode', status.mockRequestedExplicitly ? '(requested)' : '(fallback)')
-}`}</code>
-      </pre>
+}`}</CodeBlock>
 
       <h3 id="2-scanning-files">2. Scanning Files</h3>
       <p className="text-gray-300 mb-4">
         <code>scanAssembly</code> accepts a <code>Uint8Array</code> and file name, and returns a typed <code>ScanResult</code>. It will initialize the scanner if needed. In mock mode it returns a result with zero findings and <code>scannerVersion: &apos;1.0.0-mock&apos;</code>.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`import { scanAssembly } from '@mlvscan/wasm-core'
+      <CodeBlock language="typescript" className="mb-6">{`import { scanAssembly } from '@mlvscan/wasm-core'
 
 export async function scanFile(file: File) {
   const arrayBuffer = await file.arrayBuffer()
@@ -64,15 +63,13 @@ export async function scanFile(file: File) {
   console.log(result.dataFlows?.[0]?.callDepth)
 
   return result
-}`}</code>
-      </pre>
+}`}</CodeBlock>
 
       <h3 id="3-error-and-status">3. Error and Status</h3>
       <p className="text-gray-300 mb-4">
         Use <code>getScannerStatus()</code> for a single snapshot of ready, mock, and init error. Use <code>getInitError()</code> and <code>isMockScanner()</code> when you only need the error or a mock flag.
       </p>
-      <pre className="bg-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-gray-300">{`import { isScannerReady, isMockScanner, getInitError, getScannerVersion } from '@mlvscan/wasm-core'
+      <CodeBlock language="typescript" className="mb-6">{`import { isScannerReady, isMockScanner, getInitError, getScannerVersion } from '@mlvscan/wasm-core'
 
 if (!isScannerReady()) {
   return
@@ -84,8 +81,7 @@ if (isMockScanner()) {
 const err = getInitError()
 if (err) {
   // Show "Scanner unavailable: " + err.message
-}`}</code>
-      </pre>
+}`}</CodeBlock>
 
       <h2 id="deployment-notes">Deployment Notes</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300">
