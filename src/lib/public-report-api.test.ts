@@ -55,6 +55,7 @@ const payload: PublicReportPayload = {
     createdAt: "2026-05-24T12:00:00.000Z",
     current: true,
   }],
+  reviewOverride: null,
 }
 
 describe("public-report-api", () => {
@@ -86,6 +87,39 @@ describe("public-report-api", () => {
         method: "GET",
       }),
     )
+  })
+
+  it("accepts public review override metadata from corrected reports", async () => {
+    vi.stubEnv("VITE_PUBLIC_API_BASE_URL", "http://localhost:3000")
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      Response.json({
+        ...payload,
+        classification: "Clean",
+        headline: "Reviewed false positive",
+        summary: "Trusted staff reviewed this exact file.",
+        blockingRecommended: false,
+        reviewOverride: {
+          id: "override-1",
+          reviewStatus: "false_positive",
+          classification: "Clean",
+          headline: "Reviewed false positive",
+          summary: "Trusted staff reviewed this exact file.",
+          blockingRecommended: false,
+          reason: "Known benign loader behavior.",
+          reviewedAt: "2026-06-01T20:00:00.000Z",
+          reviewedBy: "discord:user-1",
+          reviewedByDiscordUserId: "1194839707243262088",
+          scopeKind: "submission",
+        },
+      }),
+    ))
+
+    const result = await fetchPublicReport("sub_test")
+
+    expect(result.classification).toBe("Clean")
+    expect(result.reviewOverride?.reviewStatus).toBe("false_positive")
+    expect(result.reviewOverride?.reason).toBe("Known benign loader behavior.")
+    expect(result.reviewOverride?.reviewedByDiscordUserId).toBe("1194839707243262088")
   })
 
   it("throws a not-found error for missing public reports", async () => {

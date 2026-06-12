@@ -82,7 +82,8 @@ function isPublicReportPayload(value: unknown): value is PublicReportPayload {
     typeof value.findingCount === "number" &&
     Array.isArray(value.triggeredRules) &&
     Array.isArray(value.relatedReports) &&
-    value.relatedReports.every(isPublicRelatedReport)
+    value.relatedReports.every(isPublicRelatedReport) &&
+    (!("reviewOverride" in value) || value.reviewOverride === null || isPublicReviewOverride(value.reviewOverride))
   )
 }
 
@@ -111,6 +112,21 @@ function isPublicRelatedReport(value: unknown): boolean {
     typeof value.findingCount === "number" &&
     typeof value.createdAt === "string" &&
     typeof value.current === "boolean"
+}
+
+function isPublicReviewOverride(value: unknown): boolean {
+  return isRecord(value) &&
+    typeof value.id === "string" &&
+    (value.reviewStatus === "false_positive" || value.reviewStatus === "allowed" || value.reviewStatus === "needs_admin_review") &&
+    isClassification(value.classification) &&
+    typeof value.headline === "string" &&
+    typeof value.summary === "string" &&
+    typeof value.blockingRecommended === "boolean" &&
+    typeof value.reason === "string" &&
+    typeof value.reviewedAt === "string" &&
+    typeof value.reviewedBy === "string" &&
+    (!("reviewedByDiscordUserId" in value) || value.reviewedByDiscordUserId === null || typeof value.reviewedByDiscordUserId === "string") &&
+    (value.scopeKind === "hash" || value.scopeKind === "report" || value.scopeKind === "submission" || value.scopeKind === "source_artifact")
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -46,6 +46,20 @@ export interface PublicRelatedReport {
   current: boolean
 }
 
+export interface PublicReportReviewOverride {
+  id: string
+  reviewStatus: "false_positive" | "allowed" | "needs_admin_review"
+  classification: PublicReportClassification
+  headline: string
+  summary: string
+  blockingRecommended: boolean
+  reason: string
+  reviewedAt: string
+  reviewedBy: string
+  reviewedByDiscordUserId?: string | null
+  scopeKind: "hash" | "report" | "submission" | "source_artifact"
+}
+
 export interface PublicReportPayload {
   submissionId: string
   reportId: string
@@ -67,4 +81,5 @@ export interface PublicReportPayload {
   findingCount: number
   triggeredRules: string[]
   relatedReports: PublicRelatedReport[]
+  reviewOverride?: PublicReportReviewOverride | null
 }

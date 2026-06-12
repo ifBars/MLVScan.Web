@@ -183,6 +183,26 @@ function PublicReport({ payload }: { payload: PublicReportPayload }) {
         </div>
       </section>
 
+      {payload.reviewOverride ? (
+        <section className="rounded-lg border border-emerald-400/25 bg-emerald-500/10 p-5">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-200" />
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-emerald-100">{reviewStatusLabel(payload.reviewOverride.reviewStatus)}</h2>
+              <p className="mt-1 text-sm leading-6 text-emerald-50/80">{payload.reviewOverride.summary}</p>
+              <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+                <Detail label="Reviewer" value={reviewerLabel(payload.reviewOverride)} mono />
+                <Detail label="Reviewed" value={formatDate(payload.reviewOverride.reviewedAt)} />
+                <Detail label="Scope" value={scopeLabel(payload.reviewOverride.scopeKind)} />
+              </div>
+              <p className="mt-3 text-xs leading-5 text-emerald-50/70">
+                Reason: {payload.reviewOverride.reason}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {payload.relatedReports.length > 1 ? (
         <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -397,6 +417,23 @@ function providerLabel(provider: string): string {
   if (provider === "nexusmods") return "Nexus Mods"
   if (provider === "thunderstore") return "Thunderstore"
   return provider
+}
+
+function reviewStatusLabel(status: NonNullable<PublicReportPayload["reviewOverride"]>["reviewStatus"]): string {
+  if (status === "false_positive") return "Reviewed false positive"
+  if (status === "allowed") return "Allowed by review"
+  return "Needs admin review"
+}
+
+function reviewerLabel(review: NonNullable<PublicReportPayload["reviewOverride"]>): string {
+  return review.reviewedByDiscordUserId
+    ? `${review.reviewedBy} (${review.reviewedByDiscordUserId})`
+    : review.reviewedBy
+}
+
+function scopeLabel(scope: NonNullable<PublicReportPayload["reviewOverride"]>["scopeKind"]): string {
+  if (scope === "source_artifact") return "Source artifact"
+  return scope.charAt(0).toUpperCase() + scope.slice(1)
 }
 
 function severityRank(severity: string): number {
