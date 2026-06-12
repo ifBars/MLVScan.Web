@@ -416,6 +416,10 @@
     @apply mt-6 mb-2 text-base font-semibold leading-snug text-slate-100;
   }
 
+  .docs-prose :where(.rounded-lg, .rounded-xl)[class*="border"] > :where(h2, h3, h4):first-child {
+    @apply mt-0 border-t-0 pt-0 text-lg leading-snug;
+  }
+
   .docs-prose p {
     @apply leading-7;
   }
