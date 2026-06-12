@@ -15,8 +15,8 @@ export default function CiAttestationsContent() {
       </p>
 
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
-        <h3 className="text-teal-300 font-semibold mb-2">What this flow does</h3>
-      <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
+        <h3 className="mt-0 text-teal-300 font-semibold mb-2">What this flow does</h3>
+        <ul className="list-disc pl-6 space-y-2 text-sm text-gray-300">
           <li>Uploads the exact release artifact to the MLVScan API with your API key.</li>
           <li>Polls the private report until the scan is complete, including the initial submission materialization delay.</li>
           <li>Creates or reuses a draft attestation for a stable <code>artifactKey</code> such as your package ID or mod slug.</li>
@@ -28,7 +28,7 @@ export default function CiAttestationsContent() {
       </div>
 
       <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
-        <h3 className="text-amber-200 font-semibold mb-2">Updating an existing workflow?</h3>
+        <h3 className="mt-0 text-amber-200 font-semibold mb-2">Updating an existing workflow?</h3>
         <p className="text-sm text-gray-300">
           If you already publish MLVScan attestations from GitHub Actions, start with the{" "}
           <a href="/docs/ci-attestations#migration-guide" className="text-amber-200 underline-offset-4 hover:underline">
@@ -54,7 +54,7 @@ export default function CiAttestationsContent() {
       </ul>
 
       <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 mb-8">
-        <h3 className="text-white font-semibold mb-2">Auth Header</h3>
+        <h3 className="mt-0 text-white font-semibold mb-2">Auth Header</h3>
         <p className="text-sm text-gray-300 mb-3">
           Every automation request must include your API key in the <code>X-API-Key</code> header.
         </p>
