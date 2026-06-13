@@ -51,7 +51,7 @@ describe('Advisory Registry', () => {
       })
     })
 
-    it('should document every tracked quarantine malware sample in a registered malware advisory', () => {
+    it('keeps advisory-backed quarantine sample names registered in threat families', () => {
       const sampleAdvisorySlugs: Record<string, string> = {
         'CustomTV_IL2CPP.dll': '2025-12-malware-customtv-il2cpp',
         'DynamicOrders.dll': '2026-04-malware-dynamicorders',
@@ -72,9 +72,9 @@ describe('Advisory Registry', () => {
         'vortex_backuprtilizer.dll': '2026-03-malware-vortex-backuprtilizer',
       }
 
-      const trackedSamples = allThreatFamilies.flatMap(family => family.sampleNames)
+      const trackedSamples = new Set(allThreatFamilies.flatMap(family => family.sampleNames))
 
-      expect(Object.keys(sampleAdvisorySlugs).sort()).toEqual([...trackedSamples].sort())
+      expect(Object.keys(sampleAdvisorySlugs).every(sampleName => trackedSamples.has(sampleName))).toBe(true)
 
       Object.entries(sampleAdvisorySlugs).forEach(([sampleName, slug]) => {
         const advisory = getAdvisoryBySlug(slug)

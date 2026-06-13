@@ -1,0 +1,47 @@
+export default function ObfuscatedMetadataLoaderFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family hides the launcher recipe in encoded strings, assembly metadata, or Base64
+        payload materialization, then reconstructs a hidden <code>cmd.exe</code> or{" "}
+        <code>powershell.exe</code> execution chain at runtime.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`encoded strings or assembly metadata
+-> numeric/Base64 decode
+-> rebuild ProcessStartInfo / cmd.exe / powershell.exe command
+-> write or reference staged script
+-> hidden command execution`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Strong obfuscation signal through numeric string, metadata, or Base64 decode pipelines</li>
+        <li>Decoded content reconstructs process-launch APIs or hidden launcher arguments</li>
+        <li>Execution is staged through hidden command shells rather than normal mod behavior</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        The original observed sample was <code>ScheduleIMoreNpcs.dll</code>. Current quarantine
+        coverage also clusters related obfuscated launch behavior seen in <code>CheatBox4.dll</code>,{" "}
+        <code>NoDeliveryWait.dll</code>, <code>WinterBackpackMod.dll</code>, <code>ATMUnlimitedDeposit.dll</code>,{" "}
+        <code>DealerMod.dll</code>, <code>PeakUnlimted.dll</code>, and <code>UnlimitedBatteries.dll</code>.
+      </p>
+      <p>
+        <code>UnlimitedBatteries.dll</code> uses an assembly description metadata value with
+        multi-level numeric segments that decode into <code>ProcessStartInfo</code>,{" "}
+        <code>cmd.exe</code>, PowerShell web-request staging, and hidden window settings.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>EncodedStringLiteralRule</code> with decoded <code>ProcessStartInfo</code>, <code>cmd.exe</code>, or PowerShell content</li>
+        <li><code>EncodedStringPipelineRule</code> or <code>Base64Rule</code> on payload reconstruction</li>
+        <li><code>ObfuscatedReflectiveExecutionRule</code> when decode behavior reaches reflective or staged execution</li>
+      </ul>
+    </>
+  )
+}

@@ -79,7 +79,7 @@ describe("advisory and family content spacing", () => {
   })
 
   it("keeps explicit JSX spaces between observed variant filenames in the web download family page", () => {
-    const source = readContentFile("src/content/families/webdownload-stage-exec-v2.mdx")
+    const source = readContentFile("src/content/families/webdownload-stage-exec-v3.mdx")
 
     expect(source).toContain("</code>,{\" \"}")
     expect(source).toContain("</code>, and{\" \"}")

@@ -30,6 +30,42 @@ describe("threat family registry", () => {
     expect(family?.behaviorTags).toContain("temp-cmd")
   })
 
+  it("keeps the registry aligned with current Core threat family ids", () => {
+    expect(allThreatFamilies.map((family) => family.id)).toEqual([
+      "family-resource-shell32-tempcmd-v2",
+      "family-powershell-iwr-dlbat-v1",
+      "family-webdownload-stage-exec-v3",
+      "family-embedded-resource-script-stager-v1",
+      "family-remote-script-pipe-shell-v1",
+      "family-encoded-powershell-tempcmd-stager-v1",
+      "family-hex-remote-config-tempcmd-stager-v1",
+      "family-dynamic-assembly-reflection-loader-v1",
+      "family-obfuscated-metadata-loader-v2",
+    ])
+  })
+
+  it("exposes pages for the new quarantine behavior families", () => {
+    expect(getThreatFamilyById("family-encoded-powershell-tempcmd-stager-v1")?.slug).toBe(
+      "encoded-powershell-tempcmd-stager-v1",
+    )
+    expect(getThreatFamilyById("family-dynamic-assembly-reflection-loader-v1")?.sampleNames).toContain(
+      "iiModdedV5.dll",
+    )
+    expect(getThreatFamilyById("family-remote-script-pipe-shell-v1")?.sampleNames).toEqual([
+      "TwelvePlayerExpansion.dll",
+    ])
+    expect(getThreatFamilyById("family-embedded-resource-script-stager-v1")?.sampleNames).toEqual([
+      "noclip.dll",
+    ])
+    expect(getThreatFamilyById("family-hex-remote-config-tempcmd-stager-v1")?.sampleNames).toEqual([
+      "CopyPasteFilterHotkeys_IL2Cpp.dll",
+      "MegaMenu.dll",
+    ])
+    expect(getThreatFamilyById("family-obfuscated-metadata-loader-v2")?.sampleNames).toContain(
+      "UnlimitedBatteries.dll",
+    )
+  })
+
   it("indexes every family by both id and slug", () => {
     for (const family of allThreatFamilies) {
       expect(threatFamiliesById[family.id]).toBe(family)

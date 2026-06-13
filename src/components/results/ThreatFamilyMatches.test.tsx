@@ -25,7 +25,7 @@ const createEvidence = (overrides: Partial<ThreatFamilyEvidence> = {}): ThreatFa
 })
 
 const createMatch = (overrides: Partial<ThreatFamily> = {}): ThreatFamily => ({
-  familyId: "family-webdownload-stage-exec-v2",
+  familyId: "family-webdownload-stage-exec-v3",
   variantId: "variant-a",
   displayName: "Web download staged payload executor",
   summary: "A network client downloads a payload into TEMP and immediately launches it.",
@@ -80,7 +80,7 @@ describe("ThreatFamilyMatches", () => {
     expect(screen.getByText("Downloads and executes code")).toBeTruthy()
     expect(screen.getByText("network download")).toBeTruthy()
     expect(screen.getByRole("link", { name: /open family page/i }).getAttribute("href")).toBe(
-      "/advisories/families/webdownload-stage-exec-v2",
+      "/advisories/families/webdownload-stage-exec-v3",
     )
     expect(screen.queryByText("Hidden cmd.exe launch")).toBeNull()
   })
@@ -98,7 +98,7 @@ describe("ThreatFamilyMatches", () => {
 
   it("emphasizes the disposition-linked family before higher-confidence secondary matches", () => {
     const lowerConfidencePrimary = createMatch({
-      familyId: "family-webdownload-stage-exec-v2",
+      familyId: "family-webdownload-stage-exec-v3",
       displayName: "Primary family",
       confidence: 0.62,
     })
@@ -112,7 +112,7 @@ describe("ThreatFamilyMatches", () => {
 
     const { container } = renderThreatFamilyMatches({
       matches: [higherConfidenceSecondary, lowerConfidencePrimary],
-      primaryThreatFamilyId: "family-webdownload-stage-exec-v2",
+      primaryThreatFamilyId: "family-webdownload-stage-exec-v3",
     })
 
     const primaryMatch = container.querySelector('[data-emphasis="primary"]')

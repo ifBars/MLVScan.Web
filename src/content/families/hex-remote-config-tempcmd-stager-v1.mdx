@@ -1,0 +1,44 @@
+export default function HexRemoteConfigTempCmdStagerFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family reconstructs hidden strings from hex literals and static byte arrays, retrieves a
+        remote command configuration through reflected <code>WebClient.DownloadString</code>, writes
+        the selected command into a temporary script, and launches it through a hidden{" "}
+        <code>cmd.exe</code> process.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`hex or byte-array string reconstruction
+-> reflected System.Net.WebClient.DownloadString
+-> parse remote command config
+-> Path.GetTempFileName + ".cmd"
+-> File.WriteAllText
+-> reflected ProcessStartInfo cmd.exe /c with hidden window
+-> MethodInfo.Invoke`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Remote configuration URLs are recovered from encoded strings rather than plain literals</li>
+        <li>Network, file-write, and process-launch APIs are resolved through reflection</li>
+        <li>The final payload path is a temporary command file executed through hidden <code>cmd.exe</code></li>
+      </ul>
+
+      <h2>Observed Samples</h2>
+      <p>
+        Current quarantine coverage tracks this behavior in{" "}
+        <code>CopyPasteFilterHotkeys_IL2Cpp.dll</code> and <code>MegaMenu.dll</code>. These are
+        behavior matches only; their exact hashes are not promoted as known-threat shortcuts.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>ObfuscatedReflectiveExecutionRule</code> cross-method stager correlation</li>
+        <li>Hex or byte-array string reconstruction around remote configuration URLs</li>
+        <li>Reflected <code>WebClient.DownloadString</code>, <code>File.WriteAllText</code>, and <code>ProcessStartInfo</code></li>
+      </ul>
+    </>
+  )
+}

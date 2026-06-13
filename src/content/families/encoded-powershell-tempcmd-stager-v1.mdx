@@ -1,0 +1,41 @@
+export default function EncodedPowerShellTempCmdStagerFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        This family stores process-launch types, hidden-window settings, and PowerShell downloader
+        arguments as numeric-encoded strings. Runtime helper methods decode those values and use
+        reflection or object staging to launch a hidden TEMP command payload.
+      </p>
+
+      <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
+        <code>{String.raw`"99_109_100_46_101_120_101" -> "cmd.exe"
+"Invoke-WebRequest ... -OutFile %TEMP%\temp.cmd"
+-> ProcessStartInfo
+-> hidden cmd.exe / PowerShell execution`}</code>
+      </pre>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>The launcher configuration decodes into the same process and PowerShell vocabulary</li>
+        <li>Command payloads are staged as TEMP <code>.cmd</code> or <code>.bat</code> files</li>
+        <li>Helper namespaces split decode, property assignment, and invocation to hide the chain</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        Current quarantine coverage clusters behavior observed in <code>EnhancedCasino.dll</code>,{" "}
+        <code>ExperienceMultiplier.dll</code>, <code>More Revive HP.dll</code>,{" "}
+        <code>More Staff Members.dll</code>, <code>PeakUnlimitedPlayers.dll</code>,{" "}
+        <code>Potomatic.dll</code>, and <code>SilverMod.dll</code>.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>EncodedStringLiteralRule</code> on decoded PowerShell, TEMP, and hidden-window command content</li>
+        <li><code>EncodedStringPipelineRule</code> on numeric-to-char reconstruction</li>
+        <li><code>ObfuscatedReflectiveExecutionRule</code> when split helper methods stage reflected invocation</li>
+      </ul>
+    </>
+  )
+}
