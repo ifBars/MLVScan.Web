@@ -60,7 +60,7 @@ bun add @mlvscan/wasm-core
 
 The package provides the browser runtime and shared scan-result types used by the web app.
 
-The current scan-result schema is also available at `https://mlvscan.com/schemas/scan-result/1.2.0/schema.json`.
+The current scan-result schema is also available at `https://mlvscan.com/schemas/scan-result/1.3.0/schema.json`.
 
 ## Documentation
 
