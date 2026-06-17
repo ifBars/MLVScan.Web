@@ -190,6 +190,47 @@ export function getInspectorSeoPage(): SeoPage {
   }
 }
 
+export function getStatusSeoPage(): SeoPage {
+  const description =
+    "Check live MLVScan service status for the public website, hosted API, cloud scanner backend, and uptime reporting."
+
+  return {
+    path: "/status",
+    title: "Status | MLVScan Service Availability",
+    heading: "MLVScan service status",
+    description,
+    keywords: [
+      "MLVScan status",
+      "MLVScan uptime",
+      "MLVScan API status",
+      "MLVScan scanner status",
+      "service availability",
+    ],
+    schema: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "MLVScan Status",
+        description,
+        url: `${SITE_URL}/status`,
+      },
+      breadcrumbSchema([
+        { name: "MLVScan", path: "/" },
+        { name: "Status", path: "/status" },
+      ]),
+    ],
+    fallbackParagraphs: [
+      description,
+      "Open the JavaScript-enabled status page to run live availability checks from your browser.",
+    ],
+    fallbackLinks: [
+      { href: "/", label: "Back to MLVScan" },
+      { href: "/docs/api-adoption", label: "Read API integration docs" },
+    ],
+    lastModified: new Date().toISOString(),
+  }
+}
+
 export function getDocsSeoPage(): SeoPage {
   const description =
     "Read MLVScan documentation for the runtime plugin, browser scanner, DevCLI, WASM package, and security workflows for MelonLoader and BepInEx."
@@ -459,6 +500,7 @@ export function getStaticSeoPages(): SeoPage[] {
     getHomeSeoPage(),
     getScanSeoPage(),
     getInspectorSeoPage(),
+    getStatusSeoPage(),
     getDocsSeoPage(),
     getAdvisoriesSeoPage(),
     getThreatFamiliesSeoPage(),
