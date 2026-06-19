@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
+  Activity,
   AlertTriangle,
+  CalendarDays,
   CheckCircle2,
   CircleHelp,
   Cloud,
@@ -28,12 +30,37 @@ type StatusComponent = {
   latencyMs: number | null
 }
 
+type StatusIncident = {
+  id: string
+  title: string
+  status: "investigating" | "identified" | "monitoring" | "resolved" | "scheduled"
+  impact: "none" | "minor" | "major" | "critical" | "maintenance"
+  affectedComponents: string[]
+  summary: string
+  updates: Array<{
+    id: string
+    status: StatusIncident["status"]
+    message: string
+    createdAt: string
+    createdBy: string
+  }>
+  startedAt: string
+  resolvedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 type StatusResponse = {
   status: Exclude<ComponentState, "checking">
   environment: string
   timestamp: string
   summary: Record<Exclude<ComponentState, "checking">, number>
   components: StatusComponent[]
+  incidents: {
+    active: StatusIncident[]
+    recent: StatusIncident[]
+    updatedAt: string | null
+  }
 }
 
 type StatusSnapshot = {
@@ -41,10 +68,15 @@ type StatusSnapshot = {
   status: ComponentState
   environment: string
   components: StatusComponent[]
+  incidents: {
+    active: StatusIncident[]
+    recent: StatusIncident[]
+  }
 }
 
 const REFRESH_INTERVAL_MS = 30_000
 const CHECK_TIMEOUT_MS = 8_000
+const UPTIME_WINDOW_DAYS = 90
 
 const statusLabels: Record<ComponentState, string> = {
   checking: "Checking",
@@ -91,6 +123,57 @@ function isComponentState(value: unknown): value is Exclude<ComponentState, "che
 
 function isComponentCategory(value: unknown): value is ComponentCategory {
   return value === "edge" || value === "storage" || value === "queue" || value === "scanner" || value === "observability"
+}
+
+function parseIncident(value: unknown): StatusIncident | null {
+  if (!isRecord(value)) return null
+  if (
+    typeof value.id !== "string" ||
+    typeof value.title !== "string" ||
+    typeof value.status !== "string" ||
+    typeof value.impact !== "string" ||
+    typeof value.summary !== "string" ||
+    typeof value.startedAt !== "string" ||
+    typeof value.createdAt !== "string" ||
+    typeof value.updatedAt !== "string" ||
+    !(value.resolvedAt === null || typeof value.resolvedAt === "string") ||
+    !Array.isArray(value.affectedComponents)
+  ) {
+    return null
+  }
+
+  const status = value.status
+  const impact = value.impact
+  if (!["investigating", "identified", "monitoring", "resolved", "scheduled"].includes(status)) return null
+  if (!["none", "minor", "major", "critical", "maintenance"].includes(impact)) return null
+
+  return {
+    id: value.id,
+    title: value.title,
+    status: status as StatusIncident["status"],
+    impact: impact as StatusIncident["impact"],
+    affectedComponents: value.affectedComponents.filter((component): component is string => typeof component === "string"),
+    summary: value.summary,
+    updates: Array.isArray(value.updates)
+      ? value.updates.flatMap((update): StatusIncident["updates"] => {
+          if (!isRecord(update) || typeof update.id !== "string" || typeof update.status !== "string" || typeof update.message !== "string" || typeof update.createdAt !== "string" || typeof update.createdBy !== "string") {
+            return []
+          }
+          if (!["investigating", "identified", "monitoring", "resolved", "scheduled"].includes(update.status)) return []
+          return [{
+            id: update.id,
+            status: update.status as StatusIncident["status"],
+            message: update.message,
+            createdAt: update.createdAt,
+            createdBy: update.createdBy,
+          }]
+        })
+      : [],
+    startedAt: value.startedAt,
+    resolvedAt: value.resolvedAt,
+    createdAt: value.createdAt,
+    updatedAt: value.updatedAt,
+  }
 }
 
 function parseStatusResponse(value: unknown): StatusResponse | null {
@@ -141,6 +224,13 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
         }
       : { operational: 0, degraded: 0, outage: 0, unknown: 0 },
     components,
+    incidents: isRecord(value.incidents)
+      ? {
+          active: Array.isArray(value.incidents.active) ? value.incidents.active.flatMap((incident) => parseIncident(incident) ?? []) : [],
+          recent: Array.isArray(value.incidents.recent) ? value.incidents.recent.flatMap((incident) => parseIncident(incident) ?? []) : [],
+          updatedAt: typeof value.incidents.updatedAt === "string" ? value.incidents.updatedAt : null,
+        }
+      : { active: [], recent: [], updatedAt: null },
   }
 }
 
@@ -180,6 +270,7 @@ async function fetchStatus(apiBaseUrl: string): Promise<StatusSnapshot> {
         },
         ...body.components,
       ],
+      incidents: body.incidents,
     }
   } catch (error) {
     return buildErrorSnapshot(error instanceof Error ? error.message : "Status request failed.", null)
@@ -204,6 +295,7 @@ function buildErrorSnapshot(detail: string, latencyMs: number | null): StatusSna
         latencyMs,
       },
     ],
+    incidents: { active: [], recent: [] },
   }
 }
 
@@ -271,6 +363,65 @@ function countLiveComponents(components: StatusComponent[]): { operational: numb
   }
 }
 
+function componentSignal(component: StatusComponent): string {
+  if (component.latencyMs !== null) {
+    return `${component.latencyMs} ms`
+  }
+
+  if (component.status === "checking") {
+    return "Checking"
+  }
+
+  if (component.status === "outage") {
+    return "Action needed"
+  }
+
+  switch (component.id) {
+    case "public-web":
+      return "Rendered"
+    case "cloudflare-worker":
+      return "Request served"
+    case "scan-queue":
+    case "r2-events-queue":
+      return "Binding OK"
+    case "azure-wasm-scanner":
+      return component.status === "degraded" ? "Mock route" : "Configured"
+    default:
+      return component.status === "unknown" ? "No signal" : "Healthy"
+  }
+}
+
+function historyLabel(status: ComponentState): string {
+  switch (status) {
+    case "operational":
+      return "No active incidents"
+    case "degraded":
+      return "Degraded service"
+    case "outage":
+      return "Active outage"
+    case "checking":
+      return "Checking status"
+    default:
+      return "Status unavailable"
+  }
+}
+
+function incidentTone(incident: StatusIncident): ComponentState {
+  if (incident.status === "resolved" || incident.impact === "none") return "operational"
+  if (incident.impact === "major" || incident.impact === "critical") return "outage"
+  return "degraded"
+}
+
+function incidentTimeLabel(incident: StatusIncident): string {
+  const date = new Date(incident.resolvedAt ?? incident.startedAt)
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
 export default function StatusPage() {
   const apiBaseUrl = useMemo(
     () => resolvePublicApiBaseUrl({ configuredBaseUrl: import.meta.env.VITE_PUBLIC_API_BASE_URL }),
@@ -281,6 +432,7 @@ export default function StatusPage() {
     status: "checking",
     environment: "checking",
     components: pendingComponents,
+    incidents: { active: [], recent: [] },
   }))
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -399,7 +551,7 @@ export default function StatusPage() {
                         return (
                           <div
                             key={component.id}
-                            className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(14rem,1fr)_9rem_7rem_minmax(18rem,1.4fr)] md:items-start"
+                            className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(14rem,1fr)_9rem_8rem_minmax(18rem,1.4fr)] md:items-start"
                           >
                             <div>
                               <div className="font-medium text-white">{component.name}</div>
@@ -415,8 +567,13 @@ export default function StatusPage() {
                               </span>
                             </div>
 
-                            <div className="text-sm text-slate-300">
-                              {component.latencyMs === null ? "n/a" : `${component.latencyMs} ms`}
+                            <div>
+                              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 md:hidden">
+                                Signal
+                              </div>
+                              <div className="text-sm text-slate-300">
+                                {componentSignal(component)}
+                              </div>
                             </div>
 
                             <div className="text-sm leading-6 text-slate-300">{component.detail}</div>
@@ -427,6 +584,110 @@ export default function StatusPage() {
                   </section>
                 )
               })}
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+              <section className="border border-slate-800 bg-slate-950/70">
+                <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900/60 px-4 py-3">
+                  <Activity className="h-4 w-4 text-teal-300" />
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-300">
+                    Uptime over the past {UPTIME_WINDOW_DAYS} days
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div>
+                      <div className="text-2xl font-semibold text-white">{historyLabel(snapshot.status)}</div>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                        The live status endpoint reports current component health and active incident impact.
+                        Per-day availability percentages will appear here after retained daily samples are available.
+                      </p>
+                    </div>
+                    <div className={cn("inline-flex items-center gap-2 border px-3 py-2 text-sm font-medium", statusTone(snapshot.status))}>
+                      <StatusIcon status={snapshot.status} className={cn("h-4 w-4", snapshot.status === "checking" && "animate-spin")} />
+                      {statusLabels[snapshot.status]}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-[repeat(30,minmax(0,1fr))] gap-1" aria-label={`${UPTIME_WINDOW_DAYS}-day availability window`}>
+                    {Array.from({ length: UPTIME_WINDOW_DAYS }, (_, index) => {
+                      const isCurrent = index === UPTIME_WINDOW_DAYS - 1
+                      return (
+                        <div
+                          key={index}
+                          className={cn(
+                            "h-6 border border-slate-800 bg-slate-900",
+                            isCurrent && snapshot.status === "operational" && "border-emerald-500/50 bg-emerald-500/30",
+                            isCurrent && snapshot.status === "degraded" && "border-amber-500/50 bg-amber-500/30",
+                            isCurrent && snapshot.status === "outage" && "border-rose-500/50 bg-rose-500/30",
+                            isCurrent && snapshot.status === "checking" && "border-sky-500/50 bg-sky-500/30",
+                          )}
+                          title={isCurrent ? `Today: ${statusLabels[snapshot.status]}` : "Historical sample pending"}
+                        />
+                      )
+                    })}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                    <span>{UPTIME_WINDOW_DAYS} days ago</span>
+                    <span>Today</span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="border border-slate-800 bg-slate-950/70">
+                <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900/60 px-4 py-3">
+                  <CalendarDays className="h-4 w-4 text-teal-300" />
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-300">
+                    Recent incidents
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <div className="space-y-3">
+                    {[...snapshot.incidents.active, ...snapshot.incidents.recent].slice(0, 6).map((incident) => {
+                      const tone = incidentTone(incident)
+                      return (
+                        <article key={incident.id} className="border border-slate-800 bg-slate-950 p-4">
+                          <div className="flex items-start gap-3">
+                            <StatusIcon status={tone} className={cn("mt-0.5 h-4 w-4", tone === "operational" ? "text-emerald-300" : tone === "outage" ? "text-rose-300" : "text-amber-300")} />
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="font-medium text-white">{incident.title}</div>
+                                <span className={cn("border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]", statusTone(tone))}>
+                                  {incident.impact}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-sm leading-6 text-slate-300">{incident.summary}</p>
+                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                                <span>{incident.status}</span>
+                                <span>{incident.status === "resolved" ? "Resolved" : "Started"} {incidentTimeLabel(incident)}</span>
+                                {incident.affectedComponents.length > 0 ? <span>{incident.affectedComponents.join(", ")}</span> : null}
+                              </div>
+                              {incident.updates[0] ? (
+                                <div className="mt-3 border-l border-slate-700 pl-3 text-sm leading-6 text-slate-300">
+                                  {incident.updates[0].message}
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </article>
+                      )
+                    })}
+                    {snapshot.incidents.active.length === 0 && snapshot.incidents.recent.length === 0 ? (
+                      <div className="border border-slate-800 bg-slate-950 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />
+                          <div>
+                            <div className="font-medium text-white">No incidents reported</div>
+                            <p className="mt-1 text-sm leading-6 text-slate-300">
+                              Current component feed last refreshed {checkedAtLabel}. Future incident and maintenance posts will appear here.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </section>
