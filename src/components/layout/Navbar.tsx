@@ -92,6 +92,13 @@ const Navbar = () => {
 
           {/* CTAs */}
           <div className="hidden md:flex items-center gap-4">
+            <Link
+              to="/status"
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" aria-hidden="true" />
+              Status
+            </Link>
             <Button variant="outline" size="sm" asChild>
               <Link to={getPartnerDashboardPath("home")}>Dashboard</Link>
             </Button>
@@ -141,6 +148,14 @@ const Navbar = () => {
               )
             ))}
             <div className="flex flex-col gap-2 border-t pt-4 dark:border-gray-800">
+              <Link
+                to="/status"
+                className="flex items-center justify-center gap-2 rounded-sm border border-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+                Status
+              </Link>
               <Button variant="outline" className="w-full" asChild>
                 <Link to={getPartnerDashboardPath("home")} onClick={() => setIsMenuOpen(false)}>
                   Dashboard

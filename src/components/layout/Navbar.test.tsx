@@ -88,4 +88,12 @@ describe("Navbar", () => {
     renderNavbar("/scan")
     expect(document.querySelector('[data-testid="docs-search"]')).toBeNull()
   })
+
+  it("shows the service status utility link", () => {
+    renderNavbar("/scan")
+    const statusLink = document.querySelector('a[href="/status"]')
+
+    expect(statusLink).toBeTruthy()
+    expect(statusLink?.textContent).toContain("Status")
+  })
 })
