@@ -50,6 +50,10 @@ Harmony.Patch(method, prefix: new HarmonyMethod(patch));`}
       <p className="text-gray-300 mb-4">
         MLVScan.Core 1.1.5 and earlier flagged these patterns as <strong>Critical</strong> severity because:
       </p>
+      <p className="text-gray-400 text-sm mb-4">
+        Version context: this advisory documents affected historical Core builds. Current MLVScan.Core releases use
+        contextual dynamic-load analysis, so the same sample may scan cleanly or report different diagnostic wording.
+      </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li>Assembly loading from byte arrays can execute arbitrary code</li>
         <li>No contextual analysis distinguished patching from payload execution</li>

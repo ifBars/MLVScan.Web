@@ -51,6 +51,7 @@ Fill in the template sections:
 - **Summary** - Brief 2-3 sentence overview
 - **Technical Details** - In-depth analysis with code snippets
 - **Detection** - How MLVScan detected (or didn't detect) the issue
+- **Version context** - Whether the evidence reflects historical scanner behavior, current Core behavior, or both
 - **Recommendations** - Actionable guidance for users and developers
 - **Timeline** - Key dates in the discovery/resolution process
 - **References** - Links to related resources
@@ -144,8 +145,9 @@ Tests cover:
 2. **Be actionable** - Provide specific steps for users and developers
 3. **Be timely** - Publish advisories as soon as issues are resolved
 4. **Use code examples** - Show actual patterns that triggered detection
-5. **Include timeline** - Document discovery → analysis → fix → disclosure
-6. **Link to fixes** - Reference GitHub commits, releases, or PRs
+5. **Include scanner version context** - Historical findings may differ from newer MLVScan.Core output as rule IDs, family labels, severities, and correlation logic evolve
+6. **Include timeline** - Document discovery → analysis → fix → disclosure
+7. **Link to fixes** - Reference GitHub commits, releases, or PRs
 
 ## Example Advisory Structure
 
@@ -161,6 +163,8 @@ Break down complex topics into digestible parts.
 
 ## Detection
 How MLVScan detected (or failed to detect) the pattern.
+Call out whether this is historical scanner output or expected current Core behavior.
+If newer Core builds may report different rule IDs, family labels, severities, or suppressions, say so explicitly.
 
 ## Resolution
 What was fixed and in which version.

@@ -65,6 +65,11 @@ public void RestartGame() {
       <p className="text-gray-300 mb-4">
         MLVScan.Core 1.1.6 and earlier flagged these patterns as <strong>Critical</strong> severity because:
       </p>
+      <p className="text-gray-400 text-sm mb-4">
+        Version context: this advisory documents affected historical Core builds. Current MLVScan.Core releases include
+        contextual suppression for the safe patterns described below, so the same sample may scan cleanly or report
+        different diagnostic wording.
+      </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li><code>Process.Start</code> is a high-risk API that can execute any program</li>
         <li>No contextual suppression logic existed for safe use cases</li>

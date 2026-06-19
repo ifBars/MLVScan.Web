@@ -32,7 +32,7 @@ export default function BankAppFalsePositiveContent() {
       <h3 className="text-lg font-semibold text-white mb-3">Why It Was Flagged</h3>
       <p className="text-gray-300 mb-4">
         MLVScan's multi-signal detection aggregates suspicious signals across all instructions in a
-        method. When both <code>HasNetworkCall</code> and <code>HasFileWrite</code> are set in the same
+        method. In the historical scanner build that produced this advisory, when both <code>HasNetworkCall</code> and <code>HasFileWrite</code> are set in the same
         method, <code>MethodSignals.IsHighRiskCombination()</code> returns <code>true</code>:
       </p>
       <pre className="bg-gray-950 border border-gray-800 rounded-lg p-4 overflow-x-auto mb-6">
@@ -44,9 +44,9 @@ if (HasNetworkCall && HasFileWrite)
         </code>
       </pre>
       <p className="text-gray-300 mb-4">
-        This combination is a reliable indicator of a download-and-execute payload dropper. The
-        rule correctly identifies a dangerous pattern in isolation, but lacks the context to
-        distinguish between a dropper writing an executable and a mod writing a PNG to its own
+        This combination was treated as a possible payload dropper because malicious droppers often
+        download data and write it to disk before execution. In this case, the finding lacked the
+        context to distinguish between a dropper writing an executable and a mod writing a PNG to its own
         UserData folder.
       </p>
 
@@ -86,6 +86,12 @@ private IEnumerator EnsureIconFileExists() {
       <p className="text-gray-300 mb-4">
         BankApp 2.0.3 and earlier produced the following finding when scanned:
       </p>
+      <p className="text-gray-400 text-sm mb-4">
+        Version context: this was a historical false positive. Current MLVScan.Core builds do not classify
+        a plain network download plus file write as the <code>DownloadAndExecute</code> family on its own; that
+        correlated pattern requires an execution sink such as <code>Process.Start</code>. The retained BankApp
+        sample is covered by false-positive regression tests and should scan cleanly on current builds.
+      </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-6">
         <li><strong>Location:</strong> <code>BankApp.Core/&lt;EnsureIconFileExists&gt;d__32.MoveNext</code></li>
         <li><strong>Severity:</strong> High</li>
@@ -95,7 +101,7 @@ private IEnumerator EnsureIconFileExists() {
 
       <h3 className="text-lg font-semibold text-white mb-3">Root Cause</h3>
       <p className="text-gray-300 mb-6">
-        The <code>IsHighRiskCombination()</code> check in <code>MethodSignals</code> treats any
+        The historical <code>IsHighRiskCombination()</code> check in <code>MethodSignals</code> treated the
         co-occurrence of a network download and a file write as a high-risk dropper pattern. This
         is a sound heuristic for malware — but it does not account for benign uses such as
         downloading a static image asset on first launch. Additionally, the write target
@@ -120,8 +126,9 @@ private IEnumerator EnsureIconFileExists() {
         </a>{' '}
         with the icon PNG compiled in as a .NET embedded resource in the DLL itself. This eliminates
         both the network call and the file write entirely — the coroutine was replaced with a
-        simple <code>Assembly.GetManifestResourceStream</code> call. BankApp 2.0.4 and later produce
-        zero findings in MLVScan.
+        simple <code>Assembly.GetManifestResourceStream</code> call. BankApp 2.0.4 and later produced
+        zero findings in the affected scanner line, and the retained BankApp sample remains part of the
+        current false-positive regression suite.
       </p>
 
       <hr className="border-gray-800 my-8" />

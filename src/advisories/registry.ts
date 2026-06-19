@@ -199,7 +199,7 @@ const advisories: AdvisoryMeta[] = [
     type: 'false-positive',
     publishedDate: '2026-02-10',
     affectedVersions: ['BankApp 2.0.3 and below'],
-    description: 'MLVScan incorrectly flagged BankApp as High severity because its EnsureIconFileExists coroutine downloads a PNG icon from Imgur and writes it to UserData — a legitimate asset-caching pattern. The mod author resolved this in BankApp 2.0.4 on February 10 by compiling the icon in as an embedded resource.',
+    description: 'Historical MLVScan builds incorrectly flagged BankApp as High severity because its EnsureIconFileExists coroutine downloaded a PNG icon from Imgur and wrote it to UserData. Current Core no longer treats that pattern as DownloadAndExecute without an execution sink.',
     contentPath: '2026-02-false-positive-bankapp.mdx',
     keywords: ['false-positive', 'network-call', 'file-write', 'unitywebrequest', 'coroutine', 'icon', 'bankapp', 'userdata'],
   },
