@@ -50,10 +50,18 @@ type StatusIncident = {
   updatedAt: string
 }
 
+type StatusUptime = {
+  windowDays: number
+  percentage: number | null
+  unavailableMinutes: number
+  calculatedFrom: string
+}
+
 type StatusResponse = {
   status: Exclude<ComponentState, "checking">
   environment: string
   timestamp: string
+  uptime: StatusUptime
   summary: Record<Exclude<ComponentState, "checking">, number>
   components: StatusComponent[]
   incidents: {
@@ -66,7 +74,7 @@ type StatusResponse = {
 type StatusSnapshot = {
   checkedAt: Date
   status: ComponentState
-  environment: string
+  uptime: StatusUptime
   components: StatusComponent[]
   incidents: {
     active: StatusIncident[]
@@ -176,6 +184,24 @@ function parseIncident(value: unknown): StatusIncident | null {
   }
 }
 
+function parseUptime(value: unknown): StatusUptime {
+  if (!isRecord(value)) {
+    return {
+      windowDays: UPTIME_WINDOW_DAYS,
+      percentage: null,
+      unavailableMinutes: 0,
+      calculatedFrom: "unavailable",
+    }
+  }
+
+  return {
+    windowDays: typeof value.windowDays === "number" ? value.windowDays : UPTIME_WINDOW_DAYS,
+    percentage: typeof value.percentage === "number" && Number.isFinite(value.percentage) ? value.percentage : null,
+    unavailableMinutes: typeof value.unavailableMinutes === "number" ? value.unavailableMinutes : 0,
+    calculatedFrom: typeof value.calculatedFrom === "string" ? value.calculatedFrom : "status_incidents",
+  }
+}
+
 function parseStatusResponse(value: unknown): StatusResponse | null {
   if (!isRecord(value) || !isComponentState(value.status) || typeof value.timestamp !== "string") {
     return null
@@ -215,6 +241,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     status: value.status,
     environment: typeof value.environment === "string" ? value.environment : "unknown",
     timestamp: value.timestamp,
+    uptime: parseUptime(value.uptime),
     summary: isRecord(value.summary)
       ? {
           operational: typeof value.summary.operational === "number" ? value.summary.operational : 0,
@@ -257,7 +284,7 @@ async function fetchStatus(apiBaseUrl: string): Promise<StatusSnapshot> {
     return {
       checkedAt: new Date(body.timestamp),
       status: body.status,
-      environment: body.environment,
+      uptime: body.uptime,
       components: [
         pendingComponents[0],
         {
@@ -283,7 +310,12 @@ function buildErrorSnapshot(detail: string, latencyMs: number | null): StatusSna
   return {
     checkedAt: new Date(),
     status: "outage",
-    environment: "unknown",
+    uptime: {
+      windowDays: UPTIME_WINDOW_DAYS,
+      percentage: null,
+      unavailableMinutes: 0,
+      calculatedFrom: "unavailable",
+    },
     components: [
       pendingComponents[0],
       {
@@ -391,21 +423,6 @@ function componentSignal(component: StatusComponent): string {
   }
 }
 
-function historyLabel(status: ComponentState): string {
-  switch (status) {
-    case "operational":
-      return "No active incidents"
-    case "degraded":
-      return "Degraded service"
-    case "outage":
-      return "Active outage"
-    case "checking":
-      return "Checking status"
-    default:
-      return "Status unavailable"
-  }
-}
-
 function incidentTone(incident: StatusIncident): ComponentState {
   if (incident.status === "resolved" || incident.impact === "none") return "operational"
   if (incident.impact === "major" || incident.impact === "critical") return "outage"
@@ -422,6 +439,27 @@ function incidentTimeLabel(incident: StatusIncident): string {
   })
 }
 
+function formatUptimePercentage(percentage: number | null): string {
+  if (percentage === null) return "-"
+  if (percentage === 100) return "100%"
+  return `${percentage.toFixed(2)}%`
+}
+
+function uptimeDetail(uptime: StatusUptime): string {
+  if (uptime.percentage === null) {
+    return "Uptime is unavailable while the status endpoint cannot be reached."
+  }
+
+  if (uptime.unavailableMinutes === 0) {
+    return "No major or critical incidents are recorded in this window."
+  }
+
+  const hours = Math.floor(uptime.unavailableMinutes / 60)
+  const minutes = uptime.unavailableMinutes % 60
+  const duration = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
+  return `${duration} of major or critical incident time is recorded in this window.`
+}
+
 export default function StatusPage() {
   const apiBaseUrl = useMemo(
     () => resolvePublicApiBaseUrl({ configuredBaseUrl: import.meta.env.VITE_PUBLIC_API_BASE_URL }),
@@ -430,7 +468,12 @@ export default function StatusPage() {
   const [snapshot, setSnapshot] = useState<StatusSnapshot>(() => ({
     checkedAt: new Date(),
     status: "checking",
-    environment: "checking",
+    uptime: {
+      windowDays: UPTIME_WINDOW_DAYS,
+      percentage: null,
+      unavailableMinutes: 0,
+      calculatedFrom: "unavailable",
+    },
     components: pendingComponents,
     incidents: { active: [], recent: [] },
   }))
@@ -471,6 +514,7 @@ export default function StatusPage() {
   }, [apiBaseUrl, refresh])
 
   const liveCount = countLiveComponents(snapshot.components)
+  const uptimeLabel = formatUptimePercentage(snapshot.uptime.percentage)
   const checkedAtLabel = snapshot.checkedAt.toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -526,8 +570,9 @@ export default function StatusPage() {
                 </div>
               </div>
               <div className="border border-slate-800 bg-slate-950/70 p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Environment</div>
-                <div className="mt-2 text-xl font-semibold text-white">{snapshot.environment}</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Uptime</div>
+                <div className="mt-2 text-xl font-semibold text-white">{uptimeLabel}</div>
+                <div className="mt-1 text-xs text-slate-500">Past {snapshot.uptime.windowDays} days</div>
               </div>
               <div className="border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Last checked</div>
@@ -597,10 +642,9 @@ export default function StatusPage() {
                 <div className="p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div>
-                      <div className="text-2xl font-semibold text-white">{historyLabel(snapshot.status)}</div>
+                      <div className="text-2xl font-semibold text-white">{uptimeLabel} uptime</div>
                       <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                        The live status endpoint reports current component health and active incident impact.
-                        Per-day availability percentages will appear here after retained daily samples are available.
+                        {uptimeDetail(snapshot.uptime)}
                       </p>
                     </div>
                     <div className={cn("inline-flex items-center gap-2 border px-3 py-2 text-sm font-medium", statusTone(snapshot.status))}>
@@ -621,8 +665,9 @@ export default function StatusPage() {
                             isCurrent && snapshot.status === "degraded" && "border-amber-500/50 bg-amber-500/30",
                             isCurrent && snapshot.status === "outage" && "border-rose-500/50 bg-rose-500/30",
                             isCurrent && snapshot.status === "checking" && "border-sky-500/50 bg-sky-500/30",
+                            !isCurrent && snapshot.uptime.percentage === 100 && "border-emerald-950 bg-emerald-950/40",
                           )}
-                          title={isCurrent ? `Today: ${statusLabels[snapshot.status]}` : "Historical sample pending"}
+                          title={isCurrent ? `Today: ${statusLabels[snapshot.status]}` : `${uptimeLabel} uptime window`}
                         />
                       )
                     })}
