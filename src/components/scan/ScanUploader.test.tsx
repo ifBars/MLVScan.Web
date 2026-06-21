@@ -8,6 +8,7 @@ import { MemoryRouter } from "react-router-dom"
 
 import type { ScanResult } from "@/types/mlvscan"
 import ScanUploader from "@/components/scan/ScanUploader"
+import { combineScanResults } from "@/lib/scan-result-aggregation"
 import { scanAssemblyInWorker, type ScanProgress } from "@/lib/scanner"
 
 vi.mock("@/lib/scanner", () => ({
@@ -82,6 +83,22 @@ const createScanResult = (fileName: string): ScanResult => ({
   },
 })
 
+const createFinding = (id: string, visibility: "Default" | "Advanced" = "Default") => ({
+  id,
+  ruleId: "DllImportRule",
+  description: "Detected diagnostic native import",
+  severity: "Medium" as const,
+  location: "Harmony.Patch",
+  codeSnippet: null,
+  riskScore: null,
+  callChainId: null,
+  dataFlowChainId: null,
+  developerGuidance: null,
+  callChain: null,
+  dataFlowChain: null,
+  visibility,
+})
+
 const renderScanUploader = () => {
   const container = document.createElement("div")
   document.body.appendChild(container)
@@ -130,6 +147,67 @@ afterEach(() => {
 })
 
 describe("ScanUploader", () => {
+  it("keeps package scans clean when child findings are advanced diagnostics only", () => {
+    const packageResult = combineScanResults("ModLib.zip", [
+      createScanResult("ModLib.Definitions.dll"),
+      createScanResult("ModLib.dll"),
+      {
+        ...createScanResult("0Harmony.dll"),
+        summary: {
+          totalFindings: 21,
+          countBySeverity: {
+            High: 4,
+            Medium: 16,
+            Low: 1,
+          },
+          triggeredRules: ["DllImportRule", "AssemblyDynamicLoadRule", "ReflectionRule", "ProcessStartRule"],
+        },
+        findings: Array.from({ length: 21 }, (_, index) => createFinding(`advanced-${index}`, "Advanced")),
+      },
+      createScanResult("ModLib.Patches.dll"),
+    ])
+
+    expect(packageResult.disposition?.classification).toBe("Clean")
+    expect(packageResult.disposition?.blockingRecommended).toBe(false)
+    expect(packageResult.disposition?.relatedFindingIds).toEqual([])
+    expect(packageResult.summary.totalFindings).toBe(21)
+    expect(packageResult.findings).toHaveLength(21)
+  })
+
+  it("marks package scans suspicious when a child disposition is suspicious", () => {
+    const packageResult = combineScanResults("LegacyPackage.zip", [
+      createScanResult("CleanDependency.dll"),
+      {
+        ...createScanResult("SuspiciousMod.dll"),
+        disposition: {
+          classification: "Suspicious",
+          headline: "Suspicious behavior detected",
+          summary: "Core retained correlated suspicious behavior.",
+          blockingRecommended: true,
+          primaryThreatFamilyId: null,
+          relatedFindingIds: ["retained-process-start"],
+        },
+        summary: {
+          totalFindings: 1,
+          countBySeverity: {
+            High: 1,
+          },
+          triggeredRules: ["ProcessStartRule"],
+        },
+        findings: [
+          {
+            ...createFinding("retained-process-start"),
+            visibility: undefined,
+          },
+        ],
+      },
+    ])
+
+    expect(packageResult.disposition?.classification).toBe("Suspicious")
+    expect(packageResult.disposition?.blockingRecommended).toBe(true)
+    expect(packageResult.disposition?.relatedFindingIds).toEqual(["retained-process-start"])
+  })
+
   it("updates the visible scan percentage and progress bar from scanner progress events", async () => {
     const deferredScan = createDeferred<ScanResult>()
     let progressCallback: ((progress: ScanProgress) => void) | undefined
