@@ -4,31 +4,38 @@ export default function PrivacyContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> March 24, 2026
+        <strong className="text-white">Last Updated:</strong> June 21, 2026
       </p>
-      
+
       <p className="text-lg text-gray-300 mb-6">
-        MLVScan is a security ecosystem built on data minimization and transparency. <strong className="text-white">The web scanner, DevCLI, and MLVScan.Core run entirely locally—your files never leave your device.</strong> The runtime plugin (MelonLoader/BepInEx) offers an <strong className="text-white">optional</strong> report upload feature that is <strong className="text-white">off by default</strong> and requires your explicit consent. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link> for details.
+        MLVScan is a security ecosystem built on data minimization and transparency. <strong className="text-white">The public web scanner, DevCLI, and MLVScan.Core run locally by default; your files do not leave your device in those local scanning flows.</strong> Hosted features such as the MLVScan API, dashboard attestations, optional runtime report upload, and MLVScan.Bot require server-side processing and are described separately below. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link> for runtime report upload details.
       </p>
 
       <h2 id="what-is-mlvscan">What MLVScan Is</h2>
       <p className="text-gray-300 mb-4">
-        MLVScan is a comprehensive security scanning ecosystem for Unity mod assemblies. It includes multiple components designed for different use cases - from in-game protection to web-based scanning to developer tools.
+        MLVScan is a security scanning ecosystem for Unity mod assemblies. It includes local scanners, hosted API workflows, dashboard attestations, and Discord automation for different use cases.
       </p>
 
-      <h2 id="ecosystem-components">Ecosystem Components</h2>
+      <h2 id="local-vs-hosted">Local vs Hosted Workflows</h2>
       <p className="text-gray-300 mb-4">
-        The MLVScan ecosystem consists of the following components, all of which operate with the same privacy-first principles:
+        The most important privacy distinction is whether you are using a local scanner or a hosted submission workflow.
       </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Local-only flows:</strong> The public web scanner, DevCLI, MLVScan.Core, and MLVScan.WASM analyze files on your device and do not upload scan data by default.</li>
+        <li><strong className="text-white">Hosted flows:</strong> API submissions, dashboard draft attestations, SDK/CI integrations, optional runtime report upload, and MLVScan.Bot scan submissions send selected files or provider artifacts to MLVScan infrastructure for server-side analysis.</li>
+        <li><strong className="text-white">Public publishing:</strong> Hosted reports are private by default unless you explicitly publish an attestation, public report, badge, or integration-managed public record.</li>
+      </ul>
+
+      <h2 id="ecosystem-components">Ecosystem Components</h2>
 
       <h3 id="mlvscan-web">MLVScan.Web (Web Scanner)</h3>
       <p className="text-gray-300 mb-4">
-        The browser-based scanner available at our website. It uses WebAssembly technology to analyze mod files entirely within your browser.
+        The browser-based scanner available at our website. It uses WebAssembly to analyze mod files entirely within your browser.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Client-side only:</strong> All scanning happens in your browser using WebAssembly</li>
-        <li><strong className="text-white">No uploads:</strong> Files are never sent to any server</li>
-        <li><strong className="text-white">Memory-only:</strong> Files are processed in RAM and never written to disk</li>
+        <li><strong className="text-white">Client-side only:</strong> All public web-scanner analysis happens in your browser.</li>
+        <li><strong className="text-white">No uploads:</strong> Files selected in the public scanner are never sent to any server.</li>
+        <li><strong className="text-white">Memory-only:</strong> Files are processed in browser memory and are not written to MLVScan storage.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Web" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Web</a></li>
       </ul>
 
@@ -37,20 +44,20 @@ export default function PrivacyContent() {
         The in-game security plugin for MelonLoader and BepInEx. It scans mods before they load to protect your game session.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Local filesystem:</strong> Scans mod files on your local drive</li>
-        <li><strong className="text-white">Local reports:</strong> Scan reports are always saved locally</li>
-        <li><strong className="text-white">Optional report upload:</strong> You may enable sending reports to the MLVScan API to help fix false positives. This is <strong className="text-teal-400">off by default</strong> and requires explicit consent. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link>.</li>
+        <li><strong className="text-white">Local filesystem:</strong> Scans mod files on your local drive.</li>
+        <li><strong className="text-white">Local reports:</strong> Scan reports are saved locally.</li>
+        <li><strong className="text-white">Optional report upload:</strong> You may enable sending reports and assemblies to the MLVScan API to help investigate false positives or malicious samples. This is <strong className="text-teal-400">off by default</strong> and requires explicit consent. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link>.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan</a></li>
       </ul>
 
       <h3 id="mlvscan-core">MLVScan.Core</h3>
       <p className="text-gray-300 mb-4">
-        The cross-platform malware detection engine that powers all MLVScan components. Available as a NuGet package for integration into other projects.
+        The cross-platform detection engine that powers MLVScan components. It is available as a NuGet package for integration into other projects.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Library only:</strong> Provides scanning APIs for developers</li>
-        <li><strong className="text-white">No telemetry:</strong> The library does not collect any data</li>
-        <li><strong className="text-white">Host-dependent:</strong> Privacy depends on the application using the library</li>
+        <li><strong className="text-white">Library only:</strong> Provides scanning APIs for local tools and integrations.</li>
+        <li><strong className="text-white">No telemetry:</strong> The library does not collect data by itself.</li>
+        <li><strong className="text-white">Host-dependent:</strong> Privacy depends on the application using the library.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Core" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Core</a></li>
         <li><strong className="text-white">NuGet:</strong> <a href="https://www.nuget.org/packages/MLVScan.Core/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">nuget.org/packages/MLVScan.Core</a></li>
       </ul>
@@ -60,80 +67,98 @@ export default function PrivacyContent() {
         WebAssembly adapter for MLVScan.Core, enabling browser-based scanning without server dependencies.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Browser runtime:</strong> Runs entirely in the browser</li>
-        <li><strong className="text-white">Zero server dependencies:</strong> Perfect for static hosting like GitHub Pages</li>
-        <li><strong className="text-white">In-memory processing:</strong> Uses Stream API, no file system access</li>
+        <li><strong className="text-white">Browser runtime:</strong> Runs entirely in the browser.</li>
+        <li><strong className="text-white">In-memory processing:</strong> Uses browser APIs and does not require file-system access.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.WASM" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.WASM</a></li>
       </ul>
 
       <h3 id="mlvscan-devcli">MLVScan.DevCLI</h3>
       <p className="text-gray-300 mb-4">
-        Command-line tool for developers to scan mods during development with remediation guidance.
+        Command-line tool for mod authors and CI systems to scan mods during development with remediation guidance.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Local execution:</strong> Runs on your development machine</li>
-        <li><strong className="text-white">No network calls:</strong> Does not transmit scan results or files</li>
-        <li><strong className="text-white">CI/CD ready:</strong> Can be integrated into build pipelines without exposing data</li>
+        <li><strong className="text-white">Local execution:</strong> Runs on your development machine.</li>
+        <li><strong className="text-white">No network calls:</strong> Does not transmit scan results or files by default.</li>
+        <li><strong className="text-white">CI/CD ready:</strong> Can be integrated into build pipelines without exposing data when used locally.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.DevCLI" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.DevCLI</a></li>
         <li><strong className="text-white">NuGet:</strong> <a href="https://www.nuget.org/packages/MLVScan.DevCLI/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">nuget.org/packages/MLVScan.DevCLI</a></li>
       </ul>
 
-      <h2 id="how-it-works">How It Works</h2>
+      <h3 id="mlvscan-api">MLVScan API and Dashboard</h3>
       <p className="text-gray-300 mb-4">
-        Most MLVScan components follow the same privacy-preserving pattern:
+        The hosted API and dashboard are server-side services for mod authors, CI systems, Discord automation, and platform integrations that need private reports, API keys, optional public attestations, or upload-time scanning.
       </p>
-      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">File Selection:</strong> You select or the system identifies a file to scan</li>
-        <li><strong className="text-white">Local Processing:</strong> The file is loaded into memory on your device</li>
-        <li><strong className="text-white">Analysis:</strong> MLVScan's scanning engine analyzes the file locally using Mono.Cecil for IL analysis</li>
-        <li><strong className="text-white">Results:</strong> Findings are displayed or saved locally on your device</li>
-      </ol>
-      <p className="text-gray-300 mb-6">
-        <strong className="text-teal-400">The public web scanner, DevCLI, and local library integrations do not upload your file.</strong> Those flows analyze content on your device. The exception is the developer dashboard attestation workflow, where submitting a draft uploads the selected DLL or EXE to the MLVScan API for private server-side analysis before any publication step exists.
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Developer-initiated uploads:</strong> Files submitted through the API, dashboard draft flow, SDKs, or CI integrations are uploaded to MLVScan infrastructure for hosted analysis.</li>
+        <li><strong className="text-white">Private by default:</strong> Direct API reports and dashboard drafts are private unless you explicitly publish an attestation or public report surface.</li>
+        <li><strong className="text-white">Account and key data:</strong> The dashboard stores the account, session, API-key, scope, and attestation metadata needed to operate authenticated workflows.</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan-API" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan-API</a></li>
+      </ul>
+
+      <h3 id="mlvscan-bot">MLVScan.Bot</h3>
+      <p className="text-gray-300 mb-4">
+        MLVScan.Bot is the official Discord automation surface for MLVScan. At the time of this update, it is primarily used through the Schedule 1 modding Discord and operator-configured watch/webhook workflows.
       </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Discord interactions:</strong> Slash commands and buttons may include Discord guild, channel, user, message, attachment, and interaction identifiers needed to respond to the request.</li>
+        <li><strong className="text-white">Manual scan uploads:</strong> Files submitted through a bot command are fetched from Discord and sent to the MLVScan API for hosted analysis.</li>
+        <li><strong className="text-white">Source watches:</strong> Operator-configured Nexus Mods, Thunderstore, or webhook watches may store source identifiers, filenames, source URLs, report IDs, policy settings, and notification history.</li>
+        <li><strong className="text-white">No separate scanner:</strong> The bot uses the MLVScan API as the scan authority; it does not run its own scanner implementation.</li>
+        <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Bot" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Bot</a></li>
+      </ul>
 
       <h2 id="network-connections">Network Connections</h2>
       <p className="text-gray-300 mb-4">
-        MLVScan makes the following network connections:
+        MLVScan makes or uses the following network connections depending on the component:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Web Scanner:</strong> When you first visit the MLVScan website, static assets are downloaded from GitHub Pages</li>
-        <li><strong className="text-white">WASM Module Loading:</strong> The scanning engine is downloaded and cached by your browser</li>
-        <li><strong className="text-white">NuGet Installation:</strong> When installing MLVScan.Core or DevCLI via NuGet, packages are downloaded from NuGet.org</li>
-        <li><strong className="text-white">Documentation:</strong> Accessing documentation pages on mlvscan.com or repository pages on GitHub</li>
-        <li><strong className="text-white">Runtime Report Upload (optional):</strong> If you enable report upload in the runtime plugin, it may send assemblies and metadata to the MLVScan API. This is off by default.</li>
-        <li><strong className="text-white">Dashboard Draft Submission (developer-initiated):</strong> Creating a dashboard attestation draft uploads the selected artifact to the MLVScan API for private analysis and draft generation.</li>
+        <li><strong className="text-white">Website and docs:</strong> Static assets, pages, and the WASM module are downloaded and cached by your browser.</li>
+        <li><strong className="text-white">NuGet and package delivery:</strong> Installing MLVScan.Core or DevCLI downloads packages from package hosts.</li>
+        <li><strong className="text-white">Runtime report upload:</strong> If enabled, the runtime plugin sends assemblies and metadata to the MLVScan API. This is off by default.</li>
+        <li><strong className="text-white">API, dashboard, SDK, and CI submissions:</strong> Files and metadata you submit are sent to the MLVScan API for hosted analysis.</li>
+        <li><strong className="text-white">MLVScan.Bot:</strong> Discord commands, source watches, and webhook delivery require network calls to Discord, the configured source provider, and the MLVScan API.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        During public web or DevCLI scanning: <strong className="text-white">no scan data is sent to any server</strong>. Runtime scanning does not make network calls unless you have explicitly enabled report upload. Dashboard draft submission is separate: it uploads the artifact privately for analysis, and a public attestation is only created later if you explicitly publish it.
+        During public web or DevCLI scanning: <strong className="text-white">no scan data is sent to any server</strong>. Hosted API, dashboard, CI, SDK, and bot workflows are intentional server-side submission paths, and a public attestation is only created later if you explicitly publish it or configure an integration to publish it.
       </p>
 
-      <h2 id="data-we-do-not-collect">Data We Do NOT Collect (Default Behavior)</h2>
+      <h2 id="local-data-not-collected">Data We Do Not Collect in Local-Only Scans</h2>
       <p className="text-gray-300 mb-4">
-        By default, MLVScan does not collect, store, or transmit any of the following:
+        In local-only scanning flows, MLVScan does not collect, store, or transmit:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Your scanned files or assemblies (unless you opt in to runtime report upload or explicitly submit a dashboard draft for private server-side analysis)</li>
-        <li>Scan results or findings (unless they are part of an optional runtime upload or an explicitly published public attestation)</li>
-        <li>Your IP address</li>
-        <li>Your browser fingerprints or user agent</li>
-        <li>Usage statistics or analytics</li>
+        <li>Your scanned files or assemblies</li>
+        <li>Scan results or findings</li>
+        <li>Your browser fingerprint or analytics profile</li>
+        <li>Usage statistics, advertising identifiers, or telemetry events</li>
         <li>Diagnostic data or crash reports</li>
         <li>Your game or system configuration</li>
-        <li>Any personal information</li>
+      </ul>
+
+      <h2 id="hosted-data">Data Processed by Hosted MLVScan Services</h2>
+      <p className="text-gray-300 mb-4">
+        Hosted MLVScan services process only the data needed to provide the requested scan, report, attestation, dashboard, bot, or source-watch feature. Depending on the feature, this may include:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Submitted artifacts:</strong> DLL, EXE, ZIP, or package bytes you upload directly, submit through a dashboard/SDK/CI integration, enable through runtime report upload, or submit through MLVScan.Bot.</li>
+        <li><strong className="text-white">Scan metadata:</strong> File names, hashes, sizes, scan status, schema version, scanner version, findings, dispositions, threat-family matches, and report identifiers.</li>
+        <li><strong className="text-white">Source metadata:</strong> Optional provider information such as Nexus Mods or Thunderstore source kind, source key, title, author, version, file name, package file name, and source URL.</li>
+        <li><strong className="text-white">Account metadata:</strong> Dashboard account identifiers, Discord-backed account data when you sign in with Discord, API key records, scopes, session state, CSRF state, attestation drafts, and published attestation metadata.</li>
+        <li><strong className="text-white">Bot metadata:</strong> Discord guild, channel, user, message, interaction, webhook sink, watch, policy, notification, submission, and review-override identifiers needed to operate bot commands and alerts.</li>
+        <li><strong className="text-white">Infrastructure logs:</strong> Standard security and operational logs such as timestamps, route names, status codes, rate-limit decisions, and source IP information may be processed by hosting infrastructure.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        If you enable the optional runtime report upload, assemblies and metadata may be sent to the MLVScan API. If you submit a dashboard draft, the artifact is uploaded privately so the API can produce a completed report and attestation draft. If you later publish that dashboard attestation, a sanitized public report page and badge will also be made available. See <Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:underline">Automated Reporting &amp; Data Handling</Link>.
+        MLVScan does not sell this data and does not use it for advertising. It is used to provide scan results, operate account and bot workflows, investigate false positives or malicious samples, maintain abuse controls, and improve scanner coverage.
       </p>
 
       <h2 id="cookies">Cookies and Local Storage</h2>
       <p className="text-gray-300 mb-6">
-        MLVScan does not use analytics, advertising, or cross-site tracking cookies. The public web scanner uses browser storage only to cache static assets such as the WASM module. The dashboard and admin dashboard use essential session and CSRF cookies so authenticated account actions can work securely. Those cookies are not used for advertising or analytics.
+        MLVScan does not use analytics, advertising, or cross-site tracking cookies. The public web scanner uses browser storage only to cache static assets such as the WASM module. The dashboard and admin dashboard use essential session and CSRF cookies so authenticated account actions can work securely. Discord OAuth may also use short-lived state during login. These cookies are not used for advertising or analytics.
       </p>
 
       <h2 id="no-analytics">No Analytics</h2>
       <p className="text-gray-300 mb-4">
-        We do not use any analytics or tracking services in any MLVScan component, including:
+        We do not use analytics or tracking services in MLVScan components, including:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li>Google Analytics</li>
@@ -142,21 +167,15 @@ export default function PrivacyContent() {
         <li>Hotjar</li>
         <li>Microsoft Application Insights</li>
         <li>Sentry or other error tracking</li>
-        <li>Any other analytics or tracking service</li>
+        <li>Any other analytics or advertising tracker</li>
       </ul>
 
       <h2 id="open-source">Open Source</h2>
       <p className="text-gray-300 mb-4">
-        All MLVScan components are open source (GPL-3.0). You can review the entire codebase to verify:
+        MLVScan components are open source (GPL-3.0). You can review the codebase to verify the difference between local scanning paths and hosted submission paths.
       </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>No network calls during scanning</li>
-        <li>No data exfiltration</li>
-        <li>No tracking code</li>
-        <li>Complete transparency in all operations</li>
-      </ul>
       <p className="text-gray-300 mb-6">
-        The scanning engine runs locally in all implementations - you can audit it yourself. All repositories are available at <a href="https://github.com/ifBars" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars</a>.
+        Repositories are available at <a href="https://github.com/ifBars" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars</a>.
       </p>
 
       <h2 id="third-party-services">Third-Party Services</h2>
@@ -164,13 +183,15 @@ export default function PrivacyContent() {
         The third-party services involved in the MLVScan ecosystem are:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">GitHub Pages:</strong> Hosts the static web scanner. GitHub's servers receive standard HTTP requests to deliver website files only. They do not have access to any scanning data.</li>
-        <li><strong className="text-white">NuGet.org:</strong> Hosts the MLVScan.Core and MLVScan.DevCLI packages. Standard NuGet package download traffic only.</li>
-        <li><strong className="text-white">GitHub:</strong> Hosts the source repositories. Standard GitHub access patterns only.</li>
-        <li><strong className="text-white">MLVScan API (optional):</strong> If you enable report upload in the runtime plugin, assemblies and metadata are sent to the MLVScan API for triage and false positive analysis. This is off by default.</li>
+        <li><strong className="text-white">GitHub Pages:</strong> Hosts static site assets. GitHub's servers receive standard HTTP requests to deliver website files.</li>
+        <li><strong className="text-white">Cloudflare:</strong> Hosts MLVScan API, MLVScan.Bot, dashboard/API storage, queues, and related infrastructure. Cloudflare may process standard request and infrastructure data while serving these services.</li>
+        <li><strong className="text-white">Discord:</strong> Used for community support, dashboard sign-in when Discord OAuth is enabled, and MLVScan.Bot commands, attachments, messages, webhooks, and interaction delivery.</li>
+        <li><strong className="text-white">Nexus Mods and Thunderstore:</strong> Source-watch integrations may call official provider APIs to inspect configured mod sections and retrieve files selected for scanning.</li>
+        <li><strong className="text-white">NuGet.org:</strong> Hosts MLVScan.Core and MLVScan.DevCLI packages.</li>
+        <li><strong className="text-white">GitHub:</strong> Hosts source repositories and example workflows.</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        GitHub, GitHub Pages, and NuGet receive only standard traffic for delivering content. The MLVScan API receives data only when you opt in to runtime report upload.
+        These providers receive data only for the site, package, hosted workflow, sign-in, bot, or source-watch behavior you use, configure, or interact with.
       </p>
 
       <h2 id="data-storage-locations">Data Storage Locations</h2>
@@ -178,67 +199,66 @@ export default function PrivacyContent() {
         When using MLVScan components, data is stored in the following locations:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Web Scanner:</strong> No persistent storage. Files exist only in browser memory during the scan.</li>
+        <li><strong className="text-white">Web Scanner:</strong> No MLVScan persistent storage. Files exist only in browser memory during the scan.</li>
         <li><strong className="text-white">Runtime Scanner (MelonLoader):</strong> Reports saved to <code className="bg-gray-800 px-1 rounded">UserData/MLVScan/Reports/</code> in your game directory. Configuration in <code className="bg-gray-800 px-1 rounded">MelonPreferences.cfg</code>.</li>
         <li><strong className="text-white">Runtime Scanner (BepInEx):</strong> Reports saved to <code className="bg-gray-800 px-1 rounded">BepInEx/MLVScan/Reports/</code> in your game directory. Configuration in <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.cfg</code>.</li>
         <li><strong className="text-white">DevCLI:</strong> No persistent storage unless you explicitly redirect output to a file.</li>
-      </ul>
-
-      <h2 id="browser-permissions">Browser Permissions</h2>
-      <p className="text-gray-300 mb-4">
-        The web scanner requires minimal browser permissions:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">File Reading:</strong> Read-only access to files you explicitly select via file input dialogs</li>
-        <li><strong className="text-white">Local Storage:</strong> Used only to cache the WASM scanning module for faster subsequent loads</li>
-        <li><strong className="text-white">Not Requested:</strong> Camera, microphone, location, notifications, clipboard, or any other sensitive permissions</li>
+        <li><strong className="text-white">MLVScan API and dashboard:</strong> Hosted submissions, reports, account records, API keys, drafts, attestations, and public report resources are stored in MLVScan-managed Cloudflare services.</li>
+        <li><strong className="text-white">MLVScan.Bot:</strong> Guild/watch configuration, source scan mappings, notification history, encrypted webhook sinks, and bot submission records are stored in MLVScan-managed Cloudflare services.</li>
       </ul>
 
       <h2 id="data-retention">Data Retention</h2>
+      <p className="text-gray-300 mb-4">
+        Hosted API retention depends on what was submitted and what the scan found. Production uploaded scan objects stored under the API's temporary R2 scan prefix are covered by a 7-day lifecycle expiration rule. Report records, hashes, source metadata, public attestations, review records, account data, and bot configuration are separate database or public-record data and are retained according to the purposes below.
+      </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Web Scanner:</strong> Files exist in memory only during scanning and are cleared immediately after. The WASM module is cached by your browser according to standard HTTP caching rules. Clear your browser cache to remove it.</li>
-        <li><strong className="text-white">Runtime Scanner:</strong> Reports are saved locally until you manually delete them from the game directory.</li>
+        <li><strong className="text-white">Web Scanner:</strong> Files exist in memory only during scanning and are cleared after the browser session or page state no longer holds them. The WASM module may be cached by your browser according to standard HTTP caching rules.</li>
+        <li><strong className="text-white">Runtime Scanner:</strong> Local reports are saved until you manually delete them from the game directory.</li>
         <li><strong className="text-white">DevCLI:</strong> No data retained unless you redirect output to files.</li>
+        <li><strong className="text-white">One-time upload URLs:</strong> Presigned upload URLs expire after a short window, currently 15 minutes. Expiration of the upload URL does not delete a file that was already uploaded successfully.</li>
+        <li><strong className="text-white">Duplicate hosted uploads:</strong> When uploaded bytes match an existing active-schema report, MLVScan reuses the existing report and deletes the redundant uploaded object when a temporary object was created.</li>
+        <li><strong className="text-white">Clean hosted uploads:</strong> After a successful scan with no findings, the uploaded file object is deleted. The scan report, content hash, filename, submission record, and related metadata may still be retained for report reuse, audit, abuse prevention, and source-history purposes.</li>
+        <li><strong className="text-white">Findings or failed scans:</strong> Submitted file objects that produce findings, incomplete results, or failed scans may be held temporarily for manual review, scanner debugging, false-positive handling, support, and abuse prevention. In production, the temporary R2 scan object is automatically expired after 7 days even if application cleanup does not delete it sooner.</li>
+        <li><strong className="text-white">Private reports and metadata:</strong> Private reports, hashes, filenames, source metadata, submission records, review overrides, and operational records may be retained while they are needed for report reuse, moderation history, security research, abuse prevention, support, and scanner improvement.</li>
+        <li><strong className="text-white">Dashboard attestations:</strong> Draft records remain private until deleted or published. Published attestations, public reports, badges, and signed documents remain public until revoked or removed.</li>
+        <li><strong className="text-white">Bot records:</strong> Bot configuration, source-watch state, notification history, submission mappings, and review records are retained as needed to operate watches, avoid duplicate scans, audit alerts, and support moderation workflows.</li>
       </ul>
 
       <h2 id="security-measures">Security Measures</h2>
       <p className="text-gray-300 mb-4">
-        MLVScan employs several security measures to protect your data:
+        MLVScan uses several security measures to protect data:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Read-Only Operations:</strong> The scanning engine only reads files; it never modifies them</li>
-        <li><strong className="text-white">Memory Isolation:</strong> Each scan operates in isolated memory space and data is cleared when scanning completes</li>
-        <li><strong className="text-white">No Network During Scan:</strong> Once the scanner is loaded, no network connections are made during the scanning process</li>
-        <li><strong className="text-white">Open Source Verification:</strong> All code is publicly auditable to verify security claims</li>
+        <li><strong className="text-white">Local scan isolation:</strong> Local scanners read files for analysis and do not need hosted storage.</li>
+        <li><strong className="text-white">Private hosted reports:</strong> Direct API reports and dashboard drafts are private by default and tied to the submitting account or integration.</li>
+        <li><strong className="text-white">Scoped API keys:</strong> API keys use scopes such as upload, report-read, and attestation permissions.</li>
+        <li><strong className="text-white">Discord signature verification:</strong> Bot interactions are verified before command routing.</li>
+        <li><strong className="text-white">Webhook protection:</strong> Bot webhook URLs are treated as credentials and encrypted before durable storage.</li>
+        <li><strong className="text-white">Open source verification:</strong> Code is publicly auditable.</li>
       </ul>
 
       <h2 id="user-rights">Your Rights</h2>
       <p className="text-gray-300 mb-4">
-        Because MLVScan does not collect, store, or process any personal data:
+        MLVScan minimizes personal data, but hosted account, API, dashboard, Discord, bot, and infrastructure workflows may process account or operational identifiers. Depending on your location and the data involved, you may have rights to request access, correction, deletion, or objection:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Right to Access:</strong> Not applicable - we have no data about you to provide</li>
-        <li><strong className="text-white">Right to Deletion:</strong> Not applicable - we have no data about you to delete</li>
-        <li><strong className="text-white">Right to Portability:</strong> Not applicable - we have no data about you to transfer</li>
-        <li><strong className="text-white">Right to Object:</strong> Not applicable - we perform no data processing about you</li>
+        <li><strong className="text-white">Local-only scans:</strong> We do not have your local scan files or local reports, so deletion must be done on your device.</li>
+        <li><strong className="text-white">Hosted submissions and accounts:</strong> Contact us if you need help with dashboard account data, API keys, private submissions, public attestations, or bot-related records.</li>
+        <li><strong className="text-white">Public attestations:</strong> Published public reports and badges are designed for verification. They can be revoked or removed when appropriate, but third parties may have already cached or copied public material.</li>
       </ul>
-      <p className="text-gray-300 mb-6">
-        Our privacy-first architecture means we minimize the data we collect and store. We do not run analytics or advertising trackers, and the only cookies we use are essential authentication cookies for dashboard and admin workflows.
-      </p>
 
-      <h2 id="github-privacy">GitHub Pages Hosting</h2>
+      <h2 id="hosting-privacy">Hosting and Provider Logs</h2>
       <p className="text-gray-300 mb-4">
-        Our web scanner is hosted on GitHub Pages. While MLVScan itself collects no data, GitHub may log standard web server information when serving pages:
+        Infrastructure providers such as GitHub, Cloudflare, Discord, Nexus Mods, Thunderstore, NuGet, and GitHub may log standard request information according to their own policies. MLVScan does not control those third-party policies.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Server Logs:</strong> GitHub may log IP addresses, user agents, and access times for infrastructure purposes</li>
-        <li><strong className="text-white">Beyond Our Control:</strong> This is standard CDN behavior and is handled according to <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">GitHub's Privacy Policy</a></li>
-        <li><strong className="text-white">No Scan Data:</strong> GitHub never receives your uploaded files or scan results - only standard web requests for page assets</li>
+        <li><strong className="text-white">No public web scanner file data:</strong> Static site hosts do not receive files selected in the public browser scanner.</li>
+        <li><strong className="text-white">Hosted-service request data:</strong> API, dashboard, and bot requests necessarily pass through hosting and integration providers.</li>
       </ul>
 
       <h2 id="export-sharing">Export and Sharing of Results</h2>
       <p className="text-gray-300 mb-6">
-        If you export or share scan reports generated by any MLVScan component, that is your responsibility. For most MLVScan components, we do not automatically publish your results anywhere. The exception is the MLVScan Dashboard's public attestation feature, which is an explicit opt-in workflow for developers. Public attestations are designed to disclose exact file hashes, timestamps, verdicts, and sanitized evidence so third parties can validate what MLVScan actually scanned.
+        If you export or share scan reports generated by any MLVScan component, that is your responsibility. Public attestations are an explicit opt-in workflow for mod authors, CI systems, and integrations. They disclose exact file hashes, timestamps, verdicts, and sanitized evidence so third parties can validate what MLVScan scanned.
       </p>
 
       <h2 id="children">Children's Privacy</h2>
@@ -248,7 +268,7 @@ export default function PrivacyContent() {
 
       <h2 id="changes">Changes to This Policy</h2>
       <p className="text-gray-300 mb-6">
-        If we make any changes to this privacy policy, we will update this page. No changes will retroactively expand our data collection practices. Given our privacy-first architecture, it is highly unlikely that this policy will ever need to change to permit data collection.
+        If we make changes to this privacy policy, we will update this page. We will not silently turn local-only scanning flows into upload flows; any new hosted submission path should be documented and should require user action, account/API usage, configuration, or integration setup.
       </p>
 
       <h2 id="contact">Contact</h2>

@@ -48,23 +48,23 @@ export default function OverviewContent() {
         </Link>
       </div>
 
-      <h2 id="developer-and-platform-adoption">Developer and Platform Adoption</h2>
+      <h2 id="mod-author-and-platform-adoption">Mod Author and Platform Adoption</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
         <Link to="/docs/api-adoption" className={indexCardClass}>
-          <h3 className={indexCardTitleClass}>API Adoption</h3>
-          <p className={indexCardDescriptionClass}>Hosted API overview, authentication, limits, and adoption paths.</p>
+          <h3 className={indexCardTitleClass}>Hosted Scanning API</h3>
+          <p className={indexCardDescriptionClass}>Hosted scanning for upload moderation, private reports, and optional public attestations.</p>
         </Link>
         <Link to="/docs/api-integration-flow" className={indexCardClass}>
-          <h3 className={indexCardTitleClass}>API Integration Flow</h3>
-          <p className={indexCardDescriptionClass}>Upload artifacts, poll reports, reuse known hashes, and publish attestations.</p>
+          <h3 className={indexCardTitleClass}>Upload Scan Flow</h3>
+          <p className={indexCardDescriptionClass}>Submit artifacts, poll reports, reuse known hashes, and publish attestations when needed.</p>
         </Link>
         <Link to="/docs/api-sdks" className={indexCardClass}>
-          <h3 className={indexCardTitleClass}>API SDKs</h3>
-          <p className={indexCardDescriptionClass}>C# and TypeScript SDKs for hosted API integrations.</p>
+          <h3 className={indexCardTitleClass}>Integration SDKs</h3>
+          <p className={indexCardDescriptionClass}>C# and TypeScript SDKs for platform, bot, and CI integrations.</p>
         </Link>
         <Link to="/docs/ci-attestations" className={indexCardClass}>
-          <h3 className={indexCardTitleClass}>CI Attestations</h3>
-          <p className={indexCardDescriptionClass}>GitHub Actions workflow for release-time attestation publishing.</p>
+          <h3 className={indexCardTitleClass}>Mod Attestations</h3>
+          <p className={indexCardDescriptionClass}>GitHub Actions and API-key workflows for publishing release-time proof.</p>
         </Link>
       </div>
     </>

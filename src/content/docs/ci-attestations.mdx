@@ -9,7 +9,9 @@ export default function CiAttestationsContent() {
     <>
       <p className="text-lg text-gray-200 mb-6">
         API keys support private upload, report polling, draft creation, public
-        attestation publishing, and README badge updates from CI. The production flow is:
+        attestation publishing, and README badge updates from CI. Mod authors can use this to
+        attest their own releases, while platforms can use the same primitives to bind upload-time
+        scans to the exact files they accepted. The production flow is:
         build your release artifact, upload those exact bytes, create or reuse a draft for a stable
         artifact lineage, publish the current attestation, and write the canonical badge URL into the README.
       </p>

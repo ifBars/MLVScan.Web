@@ -144,6 +144,26 @@ done`}</CodeBlock>
         isolated rule severities.
       </p>
 
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h3 className="mt-0 text-amber-200 font-semibold mb-2">Hosted artifact retention</h3>
+        <p className="text-sm text-gray-300 mb-3">
+          The upload URL is short-lived, currently 15 minutes, but a successful upload creates a
+          server-side submission. Duplicate objects are deleted when an existing active-schema report
+          is reused. Uploaded file objects for clean completed scans are deleted after processing.
+        </p>
+        <p className="text-sm text-gray-300">
+          Files with findings, incomplete results, or failed scans may be held temporarily for security
+          review, scanner debugging, false-positive handling, support, and abuse prevention. In
+          production, temporary scan objects expire automatically after 7 days. Private report metadata
+          such as hashes, filenames, source records, statuses, and submission IDs may be retained for
+          report reuse and audit. See the{" "}
+          <Link to="/docs/privacy" className="text-amber-200 underline-offset-4 hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      </div>
+
       <h2 id="attestations">Attestations</h2>
       <p className="text-gray-300 mb-4">
         An attestation is optional. It is the public record for one exact artifact scan. The{" "}
@@ -186,9 +206,9 @@ badge_url=$(echo "$published_json" | jq -r '.badgeUrl')`}</CodeBlock>
 
       <h2 id="related-docs">Related Docs</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300">
-        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">API Adoption</Link></li>
-        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">API SDKs</Link></li>
-        <li><Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">CI Attestations</Link></li>
+        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">Hosted Scanning API</Link></li>
+        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">Integration SDKs</Link></li>
+        <li><Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">Mod Attestations</Link></li>
       </ul>
     </>
   )

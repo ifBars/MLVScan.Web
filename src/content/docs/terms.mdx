@@ -2,11 +2,11 @@ export default function TermsContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> February 22, 2026
+        <strong className="text-white">Last Updated:</strong> June 21, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
-        These Terms of Service ("Terms") govern your use of the MLVScan ecosystem and its components. By using any MLVScan tool, you agree to these Terms.
+        These Terms of Service ("Terms") govern your use of the MLVScan ecosystem and its components, including local tools, hosted API services, dashboard attestations, and MLVScan.Bot. By using any MLVScan tool or hosted service, you agree to these Terms.
       </p>
 
       <h2 id="acceptance-of-terms">Acceptance of Terms</h2>
@@ -28,6 +28,7 @@ export default function TermsContent() {
         <li>Educational purposes to understand how mod security scanning works</li>
         <li>Integration into your own projects under the terms of the GPL-3.0 license</li>
         <li>Security research on files you own or have permission to analyze</li>
+        <li>Submitting files you own or are authorized to analyze to hosted MLVScan API, dashboard, CI, SDK, or bot workflows</li>
       </ul>
 
       <h2 id="prohibited-use">Prohibited Use</h2>
@@ -39,6 +40,9 @@ export default function TermsContent() {
         <li>Reverse engineering proprietary software in violation of its license</li>
         <li>Removing or bypassing security protections on copyrighted material</li>
         <li>Creating derivative works that violate the GPL-3.0 license terms</li>
+        <li>Submitting files, URLs, credentials, Discord attachments, or provider resources you are not authorized to scan</li>
+        <li>Abusing hosted MLVScan services, including attempts to overload the API, bypass rate limits, extract secrets, or interfere with bot/source-watch operation</li>
+        <li>Using MLVScan results to harass mod authors, users, platform staff, or communities</li>
         <li>Any illegal activities or purposes</li>
       </ul>
 
@@ -69,8 +73,30 @@ export default function TermsContent() {
 
       <h3 id="mlvscan-devcli">MLVScan.DevCLI</h3>
       <p className="text-gray-300 mb-4">
-        Command-line tool for developers. Use in CI/CD pipelines and development workflows is permitted under these Terms.
+        Command-line tool for mod authors and CI systems. Use in CI/CD pipelines and development workflows is permitted under these Terms.
       </p>
+
+      <h3 id="mlvscan-api">MLVScan API and Dashboard</h3>
+      <p className="text-gray-300 mb-4">
+        Hosted API and dashboard services for private report polling, API keys, dashboard draft submissions, CI/SDK integrations, and optional public attestations. You are responsible for submitting only files and metadata you are authorized to analyze and publish.
+      </p>
+
+      <h3 id="mlvscan-bot">MLVScan.Bot</h3>
+      <p className="text-gray-300 mb-4">
+        Discord automation surface for scan submissions, report lookup, source lookup, source watches, webhook delivery, and trusted review actions. At the time of this update, MLVScan.Bot is primarily used through the Schedule 1 modding Discord and operator-configured watches/webhooks.
+      </p>
+
+      <h2 id="hosted-services">Hosted Services and Submitted Content</h2>
+      <p className="text-gray-300 mb-4">
+        Some MLVScan workflows are local-only, while others intentionally send files or metadata to hosted MLVScan infrastructure. Hosted workflows include direct API uploads, dashboard draft attestations, CI/SDK submissions, optional runtime report upload, and MLVScan.Bot scan or watch submissions.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>You must have the right to submit any file, package, URL, metadata, or Discord attachment you ask MLVScan to process.</li>
+        <li>Direct API reports and dashboard drafts are private by default unless you publish an attestation or public report surface.</li>
+        <li>Published attestations are public verification records and may expose hashes, verdicts, timestamps, source metadata, badges, and sanitized evidence.</li>
+        <li>Uploaded file objects may be deleted after duplicate or successful clean scans. Findings, incomplete results, and failed scans may keep temporary scan objects for review, but production temporary scan objects expire after 7 days. Reports, hashes, filenames, source records, review records, and other operational metadata may be retained as described in the Privacy Policy.</li>
+        <li>We may limit, suspend, or remove access to hosted services, API keys, bot features, webhook sinks, or public records to protect the service, users, or third parties.</li>
+      </ul>
 
       <h2 id="license">License</h2>
       <p className="text-gray-300 mb-4">
@@ -137,8 +163,10 @@ export default function TermsContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">GitHub Pages:</strong> Hosts the web scanner. Subject to GitHub's Terms of Service.</li>
         <li><strong className="text-white">NuGet.org:</strong> Hosts packages. Subject to NuGet's terms.</li>
-        <li><strong className="text-white">MLVScan API:</strong> Optional report upload from the runtime plugin when enabled. Subject to the API's terms.</li>
-        <li><strong className="text-white">Nexus Mods/Thunderstore:</strong> Distribution platforms with their own terms.</li>
+        <li><strong className="text-white">MLVScan API:</strong> Hosted submissions from API, dashboard, SDK/CI, bot, platform, and optional runtime report-upload workflows.</li>
+        <li><strong className="text-white">Cloudflare:</strong> Hosts MLVScan API, dashboard storage, MLVScan.Bot, queues, and related infrastructure.</li>
+        <li><strong className="text-white">Discord:</strong> Used for community support, dashboard sign-in when enabled, and MLVScan.Bot interactions, attachments, messages, and webhooks.</li>
+        <li><strong className="text-white">Nexus Mods/Thunderstore:</strong> Distribution platforms and source-watch providers with their own terms.</li>
       </ul>
 
       <h2 id="modification-of-terms">Modification of Terms</h2>

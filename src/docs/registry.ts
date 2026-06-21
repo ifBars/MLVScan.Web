@@ -271,8 +271,8 @@ const docs: DocMeta[] = [
   },
   {
     id: 'api-adoption',
-    title: 'API Adoption',
-    description: 'Hosted API overview for platform uploads, private reports, and optional attestations',
+    title: 'Hosted Scanning API',
+    description: 'Hosted API overview for mod attestations, platform upload scanning, and private reports',
     slug: 'api-adoption',
     contentPath: 'api-adoption.mdx',
     section: 'for-developers',
@@ -281,7 +281,7 @@ const docs: DocMeta[] = [
   },
   {
     id: 'api-integration-flow',
-    title: 'API Integration Flow',
+    title: 'Upload Scan Flow',
     description: 'Upload artifacts, reuse existing reports, poll private reports, and publish attestations',
     slug: 'api-integration-flow',
     contentPath: 'api-integration-flow.mdx',
@@ -291,7 +291,7 @@ const docs: DocMeta[] = [
   },
   {
     id: 'api-sdks',
-    title: 'API SDKs',
+    title: 'Integration SDKs',
     description: 'C# and TypeScript SDK usage for hosted MLVScan API integrations',
     slug: 'api-sdks',
     contentPath: 'api-sdks.mdx',
@@ -301,8 +301,8 @@ const docs: DocMeta[] = [
   },
   {
     id: 'ci-attestations',
-    title: 'CI Attestations',
-    description: 'Partner API-key automation for release attestations and GitHub Actions',
+    title: 'Mod Attestations',
+    description: 'Partner API-key automation for release attestations, badges, and GitHub Actions',
     slug: 'ci-attestations',
     contentPath: 'ci-attestations.mdx',
     section: 'for-developers',
@@ -357,7 +357,7 @@ const libraryTitles: Record<NonNullable<DocMeta['library']>, string> = {
 export const docSections: DocSection[] = [
   { id: 'getting-started', title: 'Getting Started', order: 0 },
   { id: 'libraries', title: 'Libraries', order: 1 },
-  { id: 'for-developers', title: 'For Developers', order: 2 },
+  { id: 'for-developers', title: 'Mod Authors & Platforms', order: 2 },
   { id: 'resources', title: 'Resources', order: 3 },
 ]
 

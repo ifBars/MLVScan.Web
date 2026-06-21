@@ -5,9 +5,9 @@ export default function ApiAdoptionContent() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
-        The MLVScan API lets developers, CI systems, and mod distribution platforms submit exact
-        release artifacts for hosted analysis, poll private reports, and optionally publish public
-        verification records.
+        The MLVScan API lets mod authors, CI systems, Discord automation, and mod distribution
+        platforms submit exact release artifacts for hosted analysis, poll private reports, and
+        optionally publish public verification records.
       </p>
 
       <div className="rounded-lg border border-teal-900/50 bg-teal-950/20 p-4 mb-8">
@@ -54,7 +54,7 @@ export default function ApiAdoptionContent() {
       <h2 id="adoption-paths">Adoption Paths</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Link to="/docs/api-integration-flow" className="rounded-lg border border-gray-700 bg-gray-900/40 p-4 hover:border-teal-500 transition-colors">
-          <h3 className="text-lg text-white font-semibold">API Integration Flow</h3>
+          <h3 className="text-lg text-white font-semibold">Upload Scan Flow</h3>
           <p className="text-sm text-gray-400">
             Upload files, reuse existing reports by hash, poll private reports, and publish optional attestations.
           </p>
@@ -82,6 +82,21 @@ export default function ApiAdoptionContent() {
         as a normal backoff signal and avoid tight polling loops.
       </p>
 
+      <h2 id="data-retention">Data Retention</h2>
+      <p className="text-gray-300 mb-4">
+        Hosted API submissions are private by default, but they are server-side submissions. One-time
+        upload URLs currently expire after 15 minutes. Duplicate uploaded objects are deleted when the
+        API can reuse an existing active-schema report. Uploaded file objects for successful clean
+        scans are deleted after processing, while private report metadata such as hashes, filenames,
+        source records, statuses, and submission IDs may be retained for report reuse and audit.
+      </p>
+      <p className="text-gray-300 mb-8">
+        Uploaded file objects that produce findings, incomplete results, or failed scans may be held
+        temporarily with the private report for malware triage, false-positive analysis, scanner
+        debugging, support, and abuse prevention. In production, temporary scan objects are covered by
+        a 7-day R2 lifecycle expiration rule. See the <Link to="/docs/privacy" className="text-teal-400 hover:text-teal-300">Privacy Policy</Link> for the full hosted-data retention model.
+      </p>
+
       <h2 id="endpoint-summary">Endpoint Summary</h2>
       <div className="overflow-x-auto mb-8">
         <table className="min-w-full text-sm text-gray-300">
@@ -105,9 +120,9 @@ export default function ApiAdoptionContent() {
 
       <h2 id="related-docs">Related Docs</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300">
-        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">API Integration Flow</Link></li>
-        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">API SDKs</Link></li>
-        <li><Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">CI Attestations</Link></li>
+        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">Upload Scan Flow</Link></li>
+        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">Integration SDKs</Link></li>
+        <li><Link to="/docs/ci-attestations" className="text-teal-400 hover:text-teal-300">Mod Attestations</Link></li>
         <li><Link to="/docs/automated-reporting-data-handling" className="text-teal-400 hover:text-teal-300">Automated Reporting &amp; Data Handling</Link></li>
         <li><a href="https://api.mlvscan.com/docs" className="text-teal-400 hover:text-teal-300">Interactive API Reference</a></li>
       </ul>

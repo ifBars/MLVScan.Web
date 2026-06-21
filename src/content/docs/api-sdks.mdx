@@ -13,13 +13,13 @@ export default function ApiSdksContent() {
       <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
         <h3 className="mt-0 text-amber-200 font-semibold mb-2">Prefer local scans when you do not need the hosted API</h3>
         <p className="text-sm text-gray-300 mb-3">
-          If your integration can scan files locally, start with <code>MLVScan.Core</code> or{" "}
+          If your mod tooling can scan files locally, start with <code>MLVScan.Core</code> or{" "}
           <code>MLVScan.DevCLI</code>. Those paths avoid API rate limits, keep artifacts on the
-          caller&apos;s machine, and are the better fit for local developer tooling and CI jobs that do
+          caller&apos;s machine, and are the better fit for local mod-author tooling and CI jobs that do
           not need hosted reports or public attestations.
         </p>
         <p className="text-sm text-gray-300">
-          Use the API SDKs when you specifically need the hosted API surface: account-owned
+          Use the integration SDKs when you specifically need the hosted API surface: account-owned
           submissions, private report polling, public attestation publishing, or a system boundary
           where local scanning is not practical.
         </p>
@@ -102,8 +102,8 @@ if (report.result?.disposition?.blockingRecommended) {
 
       <h2 id="related-docs">Related Docs</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300">
-        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">API Adoption</Link></li>
-        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">API Integration Flow</Link></li>
+        <li><Link to="/docs/api-adoption" className="text-teal-400 hover:text-teal-300">Hosted Scanning API</Link></li>
+        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">Upload Scan Flow</Link></li>
         <li><a href="https://api.mlvscan.com/docs" className="text-teal-400 hover:text-teal-300">Interactive API Reference</a></li>
       </ul>
     </>

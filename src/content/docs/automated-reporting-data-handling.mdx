@@ -2,11 +2,14 @@ export default function AutomatedReportingDataHandlingContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> March 24, 2026
+        <strong className="text-white">Last Updated:</strong> June 21, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
         The <strong className="text-white">MLVScan runtime plugin</strong> (MelonLoader and BepInEx) offers an <strong className="text-white">optional</strong> feature to send scan reports and assemblies to the MLVScan API. This helps improve detection rules and reduce false positives. <strong className="text-teal-400">This feature is off by default and requires your explicit consent.</strong>
+      </p>
+      <p className="text-gray-300 mb-6">
+        This page is specifically about runtime plugin report upload. Other hosted MLVScan workflows, such as direct API uploads, dashboard draft attestations, SDK/CI submissions, and MLVScan.Bot scans, are intentional server-side submission paths covered by the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a> and related API docs.
       </p>
 
       <h2 id="what-data">What Data May Be Sent (When Enabled)</h2>
@@ -60,7 +63,7 @@ export default function AutomatedReportingDataHandlingContent() {
 
       <h2 id="web-scanner">Web Scanner and Other Components</h2>
       <p className="text-gray-300 mb-6">
-        <strong className="text-white">The public web-based MLVScan scanner never uploads your files.</strong> That scanner runs fully in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API by default. Two separate opt-in flows can send data to the MLVScan API: the optional runtime report upload feature, and the developer dashboard attestation workflow where submitting a draft uploads a DLL or EXE for private server-side analysis. Publishing a public attestation is a later, explicit step after that private draft exists.
+        <strong className="text-white">The public web-based MLVScan scanner never uploads your files.</strong> That scanner runs fully in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API by default. Hosted submission paths are separate: optional runtime report upload, direct API uploads, dashboard draft attestations, SDK/CI integrations, and MLVScan.Bot scan submissions send selected files or provider artifacts to the MLVScan API for private server-side analysis. Publishing a public attestation is a later, explicit step after that private draft exists.
       </p>
 
       <h2 id="api-retention">API Data Handling and Retention</h2>
@@ -68,10 +71,13 @@ export default function AutomatedReportingDataHandlingContent() {
         Submissions sent to the MLVScan API are:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Stored for triage and false positive analysis</li>
+        <li>Stored for triage and false positive analysis when retention is needed for security review, scanner improvement, abuse prevention, or support</li>
         <li>Used to improve detection rules and reduce false positives</li>
+        <li>Deduplicated by file hash and schema version so identical bytes can reuse existing reports</li>
+        <li>Deleted at the uploaded-file level after a successful clean scan, while report metadata such as hashes, filenames, status, and source records may still be retained</li>
+        <li>Held temporarily at the uploaded-file level when findings, incomplete results, or failed scans require investigation or support; production temporary scan objects expire automatically after 7 days</li>
         <li>Kept private by default unless a dashboard user explicitly publishes a public attestation for a completed scan</li>
-        <li>Subject to the MLVScan API privacy and retention policy</li>
+        <li>Subject to the MLVScan API privacy and retention policy, including the broader hosted-service and bot data handling described in the Privacy Policy</li>
       </ul>
       <p className="text-gray-300 mb-6">
         For full details on data storage, retention, and third-party services, see the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a>.
