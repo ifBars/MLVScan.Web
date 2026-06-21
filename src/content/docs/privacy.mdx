@@ -26,6 +26,17 @@ export default function PrivacyContent() {
         <li><strong className="text-white">Public publishing:</strong> Hosted reports are private by default unless you explicitly publish an attestation, public report, badge, or integration-managed public record.</li>
       </ul>
 
+      <h2 id="private-vs-public">Private Reports vs Public Records</h2>
+      <p className="text-gray-300 mb-4">
+        Uploading or submitting a file to a hosted MLVScan workflow creates a private hosted submission and report by default. A private report is not the same thing as a public attestation.
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li><strong className="text-white">Private hosted reports:</strong> Direct API uploads, dashboard drafts, SDK/CI uploads, bot scan submissions, and optional runtime report uploads are private unless a separate public publishing step happens.</li>
+        <li><strong className="text-white">Public publishing requires an action:</strong> A report becomes public only through an explicit publish step, such as a dashboard publish action, an automation publish endpoint, a public source-linked report workflow, or a configured platform/bot workflow that intentionally posts results.</li>
+        <li><strong className="text-white">Public records disclose verification data:</strong> Public attestations, badges, signed JSON documents, public source-linked report pages, and public bot notifications may expose hashes, verdicts, timestamps, source metadata, report status, and sanitized evidence.</li>
+        <li><strong className="text-white">Discord and source-watch visibility:</strong> Bot messages and webhook alerts are visible wherever the bot or configured operator sends them, even when the underlying raw API report remains private.</li>
+      </ul>
+
       <h2 id="ecosystem-components">Ecosystem Components</h2>
 
       <h3 id="mlvscan-web">MLVScan.Web (Web Scanner)</h3>
@@ -209,7 +220,7 @@ export default function PrivacyContent() {
 
       <h2 id="data-retention">Data Retention</h2>
       <p className="text-gray-300 mb-4">
-        Hosted API retention depends on what was submitted and what the scan found. Production uploaded scan objects stored under the API's temporary R2 scan prefix are covered by a 7-day lifecycle expiration rule. Report records, hashes, source metadata, public attestations, review records, account data, and bot configuration are separate database or public-record data and are retained according to the purposes below.
+        Hosted API retention depends on what was submitted and what the scan found. Production uploaded scan objects stored under the API's temporary R2 scan prefix are covered by a 7-day lifecycle expiration rule. Clean and duplicate upload objects may be deleted sooner by application cleanup. Report records, hashes, source metadata, public attestations, review records, account data, and bot configuration are separate database or public-record data and are retained according to the purposes below.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Web Scanner:</strong> Files exist in memory only during scanning and are cleared after the browser session or page state no longer holds them. The WASM module may be cached by your browser according to standard HTTP caching rules.</li>
@@ -222,6 +233,7 @@ export default function PrivacyContent() {
         <li><strong className="text-white">Private reports and metadata:</strong> Private reports, hashes, filenames, source metadata, submission records, review overrides, and operational records may be retained while they are needed for report reuse, moderation history, security research, abuse prevention, support, and scanner improvement.</li>
         <li><strong className="text-white">Dashboard attestations:</strong> Draft records remain private until deleted or published. Published attestations, public reports, badges, and signed documents remain public until revoked or removed.</li>
         <li><strong className="text-white">Bot records:</strong> Bot configuration, source-watch state, notification history, submission mappings, and review records are retained as needed to operate watches, avoid duplicate scans, audit alerts, and support moderation workflows.</li>
+        <li><strong className="text-white">Staging and development:</strong> Staging and local development environments may not have the same lifecycle rules as production and should not be treated as production retention guarantees.</li>
       </ul>
 
       <h2 id="security-measures">Security Measures</h2>
@@ -246,6 +258,27 @@ export default function PrivacyContent() {
         <li><strong className="text-white">Hosted submissions and accounts:</strong> Contact us if you need help with dashboard account data, API keys, private submissions, public attestations, or bot-related records.</li>
         <li><strong className="text-white">Public attestations:</strong> Published public reports and badges are designed for verification. They can be revoked or removed when appropriate, but third parties may have already cached or copied public material.</li>
       </ul>
+
+      <h2 id="requests-removals">Requests and Removals</h2>
+      <p className="text-gray-300 mb-4">
+        For hosted data access, correction, deletion, false-positive, or public-record removal requests, contact ifbars by email or Discord:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-4 ml-4">
+        <li>Email: <a href="mailto:ifbars@mlvscan.com" className="text-teal-400 hover:underline">ifbars@mlvscan.com</a></li>
+        <li>Discord: contact <strong className="text-white">ifbars</strong> directly, or use the MLVScan community Discord at <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">discord.gg/UD4K4chKak</a></li>
+      </ul>
+      <p className="text-gray-300 mb-4">
+        Include as much relevant context as you can so the record can be found quickly:
+      </p>
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Submission ID, private report URL, public report URL, or attestation URL/share ID</li>
+        <li>Source URL, Nexus Mods or Thunderstore page, package name, file name, hash, or artifact key</li>
+        <li>Discord message link, channel, guild, bot interaction, or webhook alert details when the request involves MLVScan.Bot</li>
+        <li>Dashboard/API account, partner name, or API integration name when the request involves authenticated hosted submissions</li>
+      </ul>
+      <p className="text-gray-300 mb-6">
+        MLVScan can remove or delete private hosted records where feasible. Public attestations, public reports, badges, and bot notifications may be revoked, removed, or corrected when appropriate, but third parties may have already cached, copied, or re-shared public material. Some records may also need to be retained where necessary for abuse prevention, security review, audit history, legal obligations, or service integrity.
+      </p>
 
       <h2 id="hosting-privacy">Hosting and Provider Logs</h2>
       <p className="text-gray-300 mb-4">
@@ -276,6 +309,7 @@ export default function PrivacyContent() {
         If you have questions about this privacy policy or any MLVScan component, please:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Email <a href="mailto:ifbars@mlvscan.com" className="text-teal-400 hover:underline">ifbars@mlvscan.com</a></li>
         <li>Open an issue at <a href="https://github.com/ifBars/MLVScan/issues" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/issues</a></li>
         <li>Join our Discord: <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">discord.gg/UD4K4chKak</a></li>
       </ul>

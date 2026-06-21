@@ -93,10 +93,14 @@ export default function TermsContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li>You must have the right to submit any file, package, URL, metadata, or Discord attachment you ask MLVScan to process.</li>
         <li>Direct API reports and dashboard drafts are private by default unless you publish an attestation or public report surface.</li>
+        <li>Uploading a file for hosted scanning does not automatically publish a public attestation; public publication requires a separate dashboard, automation, source-linked, platform, or bot workflow.</li>
         <li>Published attestations are public verification records and may expose hashes, verdicts, timestamps, source metadata, badges, and sanitized evidence.</li>
         <li>Uploaded file objects may be deleted after duplicate or successful clean scans. Findings, incomplete results, and failed scans may keep temporary scan objects for review, but production temporary scan objects expire after 7 days. Reports, hashes, filenames, source records, review records, and other operational metadata may be retained as described in the Privacy Policy.</li>
         <li>We may limit, suspend, or remove access to hosted services, API keys, bot features, webhook sinks, or public records to protect the service, users, or third parties.</li>
       </ul>
+      <p className="text-gray-300 mb-6">
+        For deletion, correction, false-positive, or public-record removal requests, contact <a href="mailto:ifbars@mlvscan.com" className="text-teal-400 hover:underline">ifbars@mlvscan.com</a> or ifbars on Discord. See the <a href="/docs/privacy#requests-removals" className="text-teal-400 hover:underline">Privacy Policy</a> for the identifiers that help locate hosted records.
+      </p>
 
       <h2 id="license">License</h2>
       <p className="text-gray-300 mb-4">
@@ -199,6 +203,7 @@ export default function TermsContent() {
         If you have questions about these Terms, please:
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Email <a href="mailto:ifbars@mlvscan.com" className="text-teal-400 hover:underline">ifbars@mlvscan.com</a></li>
         <li>Open an issue at <a href="https://github.com/ifBars/MLVScan/issues" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan/issues</a></li>
         <li>Join our Discord: <a href="https://discord.gg/UD4K4chKak" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">discord.gg/UD4K4chKak</a></li>
       </ul>

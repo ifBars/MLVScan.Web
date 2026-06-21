@@ -76,11 +76,11 @@ export default function AutomatedReportingDataHandlingContent() {
         <li>Deduplicated by file hash and schema version so identical bytes can reuse existing reports</li>
         <li>Deleted at the uploaded-file level after a successful clean scan, while report metadata such as hashes, filenames, status, and source records may still be retained</li>
         <li>Held temporarily at the uploaded-file level when findings, incomplete results, or failed scans require investigation or support; production temporary scan objects expire automatically after 7 days</li>
-        <li>Kept private by default unless a dashboard user explicitly publishes a public attestation for a completed scan</li>
+        <li>Kept private by default unless a separate dashboard, automation, source-linked, platform, or bot workflow explicitly publishes a public record</li>
         <li>Subject to the MLVScan API privacy and retention policy, including the broader hosted-service and bot data handling described in the Privacy Policy</li>
       </ul>
       <p className="text-gray-300 mb-6">
-        For full details on data storage, retention, and third-party services, see the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a>.
+        For full details on data storage, retention, public publishing, and removal requests, see the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a>.
       </p>
     </>
   )
