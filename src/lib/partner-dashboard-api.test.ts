@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   clearPartnerDashboardSessionState,
@@ -11,10 +11,21 @@ import {
   updatePartnerBadgePreferences,
 } from "./partner-dashboard-api"
 
+const localApiBaseUrl = "http://localhost:3000"
+
+function expectedLocalApiUrl(path: string): string {
+  return `${localApiBaseUrl}${path}`
+}
+
 describe("partner-dashboard-api", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_PUBLIC_API_BASE_URL", localApiBaseUrl)
+  })
+
   afterEach(() => {
     clearPartnerDashboardSessionState()
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
   })
 
   it("reuses the session csrf token for attestation badge config updates", async () => {
@@ -130,7 +141,7 @@ describe("partner-dashboard-api", () => {
     expect(result.badge?.display?.showRuntime).toBe(false)
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://localhost:3000/partner/attestations/attestation-1/badge-config",
+      expectedLocalApiUrl("/partner/attestations/attestation-1/badge-config"),
       expect.objectContaining({
         method: "POST",
         credentials: "include",
@@ -186,7 +197,7 @@ describe("partner-dashboard-api", () => {
     expect(partner.defaultBadgeStyle).toBe("split-pill")
     expect(partner.defaultBadgeSlots.leftDetail).toBe("verification")
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/partner/badge-preferences",
+      expectedLocalApiUrl("/partner/badge-preferences"),
       expect.objectContaining({
         method: "POST",
       }),
@@ -289,7 +300,7 @@ describe("partner-dashboard-api", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://localhost:3000/partner/attestations/attestation-1/metadata",
+      expectedLocalApiUrl("/partner/attestations/attestation-1/metadata"),
       expect.objectContaining({
         method: "POST",
       }),
@@ -338,7 +349,7 @@ describe("partner-dashboard-api", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://localhost:3000/partner/attestations/attestation-1",
+      expectedLocalApiUrl("/partner/attestations/attestation-1"),
       expect.objectContaining({
         method: "DELETE",
       }),

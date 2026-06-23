@@ -43,7 +43,10 @@ jobs:
       - name: Restore Core tools and packages
         run: |
           dotnet tool restore
-          dotnet restore ../MLVScan.Core/MLVScan.Core.csproj
+          dotnet restore ../MLVScan.Core/MLVScan.Core.Tests/MLVScan.Core.Tests.csproj
+
+      - name: Verify Core version drift guard
+        run: dotnet test ../MLVScan.Core/MLVScan.Core.Tests/MLVScan.Core.Tests.csproj --filter "FullyQualifiedName~MLVScanVersionsTests.CoreVersion_MatchesDirectoryBuildPropsVersion"
 
       - name: Build Core
         run: dotnet build ../MLVScan.Core/MLVScan.Core.csproj -c Release --no-restore

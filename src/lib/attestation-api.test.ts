@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   PublicAttestationNotFoundError,
@@ -70,16 +70,24 @@ const payload: PublicAttestationPayload = {
   revokedAt: null,
 }
 
+const localApiBaseUrl = "http://localhost:3000"
+
+function expectedLocalApiUrl(path: string): string {
+  return `${localApiBaseUrl}${path}`
+}
+
 describe("attestation-api", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_PUBLIC_API_BASE_URL", localApiBaseUrl)
+  })
+
   afterEach(() => {
     vi.unstubAllGlobals()
-    delete import.meta.env.VITE_PUBLIC_SITE_URL
+    vi.unstubAllEnvs()
   })
 
   it("builds localhost badge URLs on the API fallback path", () => {
-    expect(buildAttestationBadgeUrl("att_test")).toBe(
-      "http://localhost:3000/public/attestations/att_test/badge.svg",
-    )
+    expect(buildAttestationBadgeUrl("att_test")).toBe(expectedLocalApiUrl("/public/attestations/att_test/badge.svg"))
   })
 
   it("keeps hosted badge URLs on the public site origin", () => {
@@ -106,7 +114,7 @@ describe("attestation-api", () => {
     expect(result.badge?.runtimeLabel).toBe("IL2CPP")
     expect(result.badge?.display?.showFile).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/public/attestations/att_test",
+      expectedLocalApiUrl("/public/attestations/att_test"),
       expect.objectContaining({
         method: "GET",
       }),
