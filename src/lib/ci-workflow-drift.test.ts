@@ -17,6 +17,7 @@ describe("CI workflow drift guards", () => {
 
     expect(deploy).toContain("git clone --depth 1 https://github.com/ifBars/MLVScan.Core ../MLVScan.Core")
     expect(deploy).toContain("MLVScan.Core.Tests/MLVScan.Core.Tests.csproj")
+    expect(deploy).toContain("dotnet workload restore ../MLVScan.Core/MLVScan.Core.Tests/MLVScan.Core.Tests.csproj")
     expect(deploy).toContain("MLVScanVersionsTests.CoreVersion_MatchesDirectoryBuildPropsVersion")
     expect(deploy).toContain("bun run docs:generate")
     expect(deploy).toContain("bun run build")
