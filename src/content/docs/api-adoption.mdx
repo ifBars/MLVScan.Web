@@ -22,7 +22,7 @@ export default function ApiAdoptionContent() {
 
       <h2 id="base-urls">Base URLs</h2>
       <p className="text-gray-300 mb-4">
-        Production integrations should default to <code>https://api.mlvscan.com</code>. The Worker also
+        Public integrations should default to <code>https://api.mlvscan.com</code>. The Worker also
         serves interactive reference docs at <code>/docs</code> and an OpenAPI document at{" "}
         <code>/openapi.json</code>.
       </p>
@@ -70,11 +70,12 @@ export default function ApiAdoptionContent() {
       <h2 id="rate-limits">Rate Limits</h2>
       <p className="text-gray-300 mb-4">
         The hosted API has rate limits because uploads and report generation use shared MLVScan
-        infrastructure. Current production limits are:
+        infrastructure. Current hosted limits are:
       </p>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-4">
         <li>Anonymous requests: <code>60 requests per minute</code> per source IP.</li>
-        <li>Authenticated API-key requests: <code>1000 requests per minute</code> per API key.</li>
+        <li>Self-serve API-key requests: <code>120 requests per minute</code> per API key.</li>
+        <li>Approved partner or internal API-key requests: <code>1000 requests per minute</code> per API key.</li>
         <li>Partner/dashboard automation routes: <code>60 requests per minute</code> per account or session context.</li>
       </ul>
       <p className="text-gray-300 mb-8">
@@ -93,7 +94,7 @@ export default function ApiAdoptionContent() {
       <p className="text-gray-300 mb-8">
         Uploaded file objects that produce findings, incomplete results, or failed scans may be held
         temporarily with the private report for malware triage, false-positive analysis, scanner
-        debugging, support, and abuse prevention. In production, temporary scan objects are covered by
+        debugging, support, and abuse prevention. Temporary scan objects are covered by
         a 7-day R2 lifecycle expiration rule. Uploading a file does not publish a public attestation;
         publication is a separate dashboard, automation, source-linked, platform, or bot action. See
         the <Link to="/docs/privacy" className="text-teal-400 hover:text-teal-300">Privacy Policy</Link>{" "}

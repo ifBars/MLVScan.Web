@@ -11,7 +11,7 @@ export default function CiAttestationsContent() {
         API keys support private upload, report polling, draft creation, public
         attestation publishing, and README badge updates from CI. Mod authors can use this to
         attest their own releases, while platforms can use the same primitives to bind upload-time
-        scans to the exact files they accepted. The production flow is:
+        scans to the exact files they accepted. The release flow is:
         build your release artifact, upload those exact bytes, create or reuse a draft for a stable
         artifact lineage, publish the current attestation, and write the canonical badge URL into the README.
       </p>
@@ -364,7 +364,7 @@ jobs:
         <li>Use <code>artifactVersion</code> for display only. It does not define lineage grouping.</li>
         <li>The dashboard submit flow now lets you declare key, version, display name, and canonical source URL up front, then revise those draft values from the ledger before publish.</li>
         <li>There is one MLVScan badge family. Density and metadata slots can be configured, but README badges should normally consume the canonical published <code>badgeUrl</code> exactly as returned.</li>
-        <li>The canonical <code>badgeUrl</code> stays on <code>mlvscan.com</code>. Production may redirect that URL to the static badge asset host, but clients and workflows should not hardcode the asset hostname.</li>
+        <li>The canonical <code>badgeUrl</code> stays on <code>mlvscan.com</code>. It may redirect to the static badge asset host, but clients and workflows should not hardcode the asset hostname.</li>
         <li>Superseded pages and badges stay reachable, which is useful while Thunderstore, r2modman, or other downstream surfaces are still propagating the new release.</li>
       </ul>
 
