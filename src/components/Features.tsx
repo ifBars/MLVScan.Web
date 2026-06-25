@@ -316,7 +316,7 @@ const Features = () => {
                 <div>
                   <h4 className="font-bold text-foreground">Lets You Trust Known-Good Mods</h4>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Safe mods can be approved by their unique file fingerprint, and developer mode helps explain false positives when they happen.
+                    Clean mods pass without extra approval, and developer mode helps explain false positives when they happen.
                   </p>
                 </div>
               </div>
@@ -325,7 +325,7 @@ const Features = () => {
                 <div>
                   <h4 className="font-bold text-foreground">Works For Mod Developers Too</h4>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Developers can scan releases in scripts or GitHub Actions and catch risky behavior before shipping to players.
+                    Developers can scan releases in scripts or GitHub Actions and catch suspicious behavior before shipping to players.
                   </p>
                 </div>
               </div>

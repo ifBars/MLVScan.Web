@@ -949,7 +949,7 @@ function InspectorPage() {
             <div className="inspector-kicker">Local-first analysis</div>
             <h2>Open assemblies, inspect findings, and view code in the desktop app.</h2>
           </div>
-          <a href="https://github.com/ifBars/MLVScan/releases" className="btn-primary">
+          <a href="https://github.com/ifBars/MLVInspector/releases" className="btn-primary">
             Download
           </a>
         </div>
