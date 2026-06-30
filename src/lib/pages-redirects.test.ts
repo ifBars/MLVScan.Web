@@ -25,6 +25,9 @@ describe("Cloudflare Pages redirects", () => {
     const coreApiRuleIndex = lines.findIndex((line) =>
       isRedirectRule(line, "/docs/reference/core/api/", "/docs/reference/core/api/MLVScan", "302")
     )
+    const sourceLookupDocsRuleIndex = lines.findIndex((line) =>
+      isRedirectRule(line, "/docs/api-source-provider-lookups", "/docs/api-source-provider-lookups/", "301")
+    )
     const referenceSelfRewriteIndex = lines.findIndex((line) =>
       isRedirectRule(line, "/docs/reference/*", "/docs/reference/:splat", "200")
     )
@@ -46,6 +49,7 @@ describe("Cloudflare Pages redirects", () => {
 
     expect(attestationPageRuleIndex).toBeGreaterThanOrEqual(0)
     expect(coreApiRuleIndex).toBeGreaterThanOrEqual(0)
+    expect(sourceLookupDocsRuleIndex).toBeGreaterThanOrEqual(0)
     expect(referenceSelfRewriteIndex).toBe(-1)
     expect(assetsRuleIndex).toBeGreaterThanOrEqual(0)
     expect(iconRuleIndex).toBeGreaterThanOrEqual(0)

@@ -1,6 +1,7 @@
 # Preserve published static assets before SPA fallback.
 /docs/reference/core/api/ /docs/reference/core/api/MLVScan 302
 /docs/reference/core/api /docs/reference/core/api/MLVScan 302
+/docs/api-source-provider-lookups /docs/api-source-provider-lookups/ 301
 /schemas/*      /schemas/:splat      200
 /_framework/*   /_framework/:splat   200
 /assets/*       /assets/:splat       200
