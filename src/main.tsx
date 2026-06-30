@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 
 document.documentElement.classList.add('dark')
+document.documentElement.dataset.assetRouting = '2026-06-30'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

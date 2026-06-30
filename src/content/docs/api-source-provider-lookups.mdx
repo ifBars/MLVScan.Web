@@ -1,0 +1,159 @@
+import { Link } from "react-router-dom"
+import { CodeBlock } from "@/components/docs/mdx/CodeBlock"
+
+export default function ApiSourceProviderLookupsContent() {
+  return (
+    <>
+      <p className="text-lg text-gray-200 mb-6">
+        Source provider lookups let an integration find public reports MLVScan has already indexed
+        from supported providers such as Nexus Mods and Thunderstore. This is the same report-discovery
+        path used by MLVScan.Bot lookup commands and source-linked public report pages.
+      </p>
+
+      <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
+        <h3 className="mt-0 text-amber-200 font-semibold mb-2">Lookup does not scan or crawl providers</h3>
+        <p className="text-sm text-gray-300">
+          Source lookup searches MLVScan&apos;s existing source index. It does not upload bytes, start a
+          scan, or query the whole Nexus Mods or Thunderstore catalog. If a mod has never been scanned
+          through a source-linked workflow, the lookup can return no results even if the mod exists on
+          the provider.
+        </p>
+      </div>
+
+      <h2 id="when-to-use-source-lookup">When to use source lookup</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
+        <li>A mod manager wants to show the latest known MLVScan report for a provider mod page.</li>
+        <li>A telemetry backend wants to enrich newly observed mods with an existing public report when one is already available.</li>
+        <li>A moderation tool knows a Nexus mod ID or Thunderstore package name and wants recent source-linked report handles.</li>
+      </ul>
+
+      <h2 id="identity-model">Identity model</h2>
+      <p className="text-gray-300 mb-4">
+        SDK callers use one typed <code>MlvScanSource</code> value so provider and game cannot be mixed
+        accidentally. The wrapper maps that source to the API&apos;s provider and game filters.
+      </p>
+      <div className="overflow-x-auto mb-8">
+        <table className="min-w-full text-sm text-gray-300">
+          <thead className="text-left text-gray-100">
+            <tr>
+              <th className="border-b border-gray-700 py-2 pr-4">SDK source</th>
+              <th className="border-b border-gray-700 py-2 pr-4">Provider</th>
+              <th className="border-b border-gray-700 py-2">Game/community</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4"><code>MlvScanSource.NexusModsSchedule1</code></td>
+              <td className="border-b border-gray-800 py-2 pr-4"><code>nexusmods</code></td>
+              <td className="border-b border-gray-800 py-2"><code>schedule1</code></td>
+            </tr>
+            <tr>
+              <td className="border-b border-gray-800 py-2 pr-4"><code>MlvScanSource.ThunderstoreScheduleI</code></td>
+              <td className="border-b border-gray-800 py-2 pr-4"><code>thunderstore</code></td>
+              <td className="border-b border-gray-800 py-2"><code>schedule-i</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="search-by-nexus-mod-id">Search by Nexus mod ID</h2>
+      <p className="text-gray-300 mb-4">
+        If the integration already has the Nexus Mods mod ID, use <code>ModId</code>. Include reports
+        when you need recent submission handles without making another source-detail request.
+      </p>
+      <CodeBlock language="csharp" className="mb-8">{`using MLVScan.ApiClient;
+
+var client = new MlvScanClient(Environment.GetEnvironmentVariable("MLVSCAN_API_KEY"));
+
+var sources = await client.ListSourcesAsync(new MlvScanSourceLookupOptions
+{
+    Source = MlvScanSource.NexusModsSchedule1,
+    ModId = "1194",
+    IncludeReports = true,
+    Limit = 1,
+});
+
+var source = sources.FirstOrDefault();
+if (source?.LatestSubmissionId is null)
+{
+    Console.WriteLine("No source-linked MLVScan report is indexed for that Nexus mod yet.");
+    return;
+}
+
+var publicReport = await client.GetPublicReportAsync(source.LatestSubmissionId);
+
+Console.WriteLine(publicReport.Classification);
+Console.WriteLine(publicReport.Headline);
+Console.WriteLine(publicReport.Summary);`}</CodeBlock>
+
+      <h2 id="search-by-mod-name">Search by mod name</h2>
+      <p className="text-gray-300 mb-4">
+        Name search uses <code>Query</code>. It searches recorded source metadata such as display name,
+        filename, source key, package name, mod ID, and file ID. Treat the results as matches to review,
+        not as a guaranteed exact-name resolver.
+      </p>
+      <CodeBlock language="csharp" className="mb-8">{`var sources = await client.ListSourcesAsync(new MlvScanSourceLookupOptions
+{
+    Source = MlvScanSource.NexusModsSchedule1,
+    Query = "S1API",
+    IncludeReports = true,
+    Limit = 5,
+});
+
+foreach (var source in sources)
+{
+    Console.WriteLine(
+        $"{source.DisplayName} | mod id: {source.ModId} | latest submission: {source.LatestSubmissionId}");
+}
+
+var bestMatch = sources.FirstOrDefault();
+if (bestMatch?.LatestSubmissionId is not null)
+{
+    var publicReport = await client.GetPublicReportAsync(bestMatch.LatestSubmissionId);
+    Console.WriteLine(publicReport.Headline);
+}`}</CodeBlock>
+
+      <h2 id="raw-report-vs-public-report">Raw report vs public report</h2>
+      <p className="text-gray-300 mb-4">
+        Use the public report shape for a webclient or user-facing mod-manager UI. It is sanitized,
+        source-aware, and does not require exposing an API key in the browser. Use the raw operational
+        report only from a trusted backend that has a <code>reports:read</code> key and needs the full
+        scanner payload.
+      </p>
+      <CodeBlock language="csharp" className="mb-8">{`// User-facing source-linked report.
+var publicReport = await client.GetPublicReportAsync(source.LatestSubmissionId);
+
+// Backend-only raw scanner result.
+var rawReport = await client.GetReportAsync(source.LatestSubmissionId);`}</CodeBlock>
+
+      <h2 id="typescript-example">TypeScript example</h2>
+      <p className="text-gray-300 mb-4">
+        TypeScript integrations use the same source concept through <code>MlvScanSources</code>.
+      </p>
+      <CodeBlock language="typescript" className="mb-8">{`import { MlvScanClient, MlvScanSources } from "@mlvscan/api-client"
+
+const client = new MlvScanClient({
+  apiKey: process.env.MLVSCAN_API_KEY,
+})
+
+const sources = await client.listSources({
+  source: MlvScanSources.NexusModsSchedule1,
+  query: "S1API",
+  includeReports: true,
+  limit: 5,
+})
+
+const latestSubmissionId = sources[0]?.latestSubmissionId
+const publicReport = latestSubmissionId
+  ? await client.getPublicReport(latestSubmissionId)
+  : null`}</CodeBlock>
+
+      <h2 id="related-docs">Related Docs</h2>
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li><Link to="/docs/api-sdks" className="text-teal-400 hover:text-teal-300">Integration SDKs</Link></li>
+        <li><Link to="/docs/api-integration-flow" className="text-teal-400 hover:text-teal-300">Upload Scan Flow</Link></li>
+        <li><a href="https://api.mlvscan.com/docs" className="text-teal-400 hover:text-teal-300">Interactive API Reference</a></li>
+      </ul>
+    </>
+  )
+}

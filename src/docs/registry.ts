@@ -300,6 +300,16 @@ const docs: DocMeta[] = [
     keywords: ['sdk', 'csharp', 'c#', 'typescript', 'npm', 'nuget', 'kiota', 'openapi', 'api client'],
   },
   {
+    id: 'api-source-provider-lookups',
+    title: 'Source Provider Lookups',
+    description: 'Find Nexus Mods and Thunderstore source-linked reports through the SDKs',
+    slug: 'api-source-provider-lookups',
+    contentPath: 'api-source-provider-lookups.mdx',
+    section: 'for-developers',
+    status: 'stable',
+    keywords: ['sdk', 'source lookup', 'source provider', 'nexus mods', 'thunderstore', 'mod id', 'mod name', 'public reports', 'source-linked reports'],
+  },
+  {
     id: 'ci-attestations',
     title: 'Mod Attestations',
     description: 'Partner API-key automation for release attestations, badges, and GitHub Actions',

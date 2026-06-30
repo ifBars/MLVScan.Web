@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/attestations/*",
+    "/docs/reference/*",
+    "/assets/*",
+    "/_framework/*",
+    "/data/*",
+    "/examples/*",
+    "/icon.png",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/vite.svg"
+  ]
+}

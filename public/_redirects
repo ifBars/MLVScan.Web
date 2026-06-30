@@ -1,8 +1,14 @@
 # Preserve published static assets before SPA fallback.
-/docs/reference/* /docs/reference/:splat 200
+/docs/reference/core/api/ /docs/reference/core/api/MLVScan 302
+/docs/reference/core/api /docs/reference/core/api/MLVScan 302
 /schemas/*      /schemas/:splat      200
 /_framework/*   /_framework/:splat   200
+/assets/*       /assets/:splat       200
+/data/*         /data/:splat         200
+/examples/*     /examples/:splat     200
+/icon.png       /icon.png            200
+/robots.txt     /robots.txt          200
+/sitemap.xml    /sitemap.xml         200
+/vite.svg       /vite.svg            200
 /attestations/:shareId/badge.svg https://api.mlvscan.com/public/attestations/:shareId/badge.svg 302
-
-# SPA fallback for Cloudflare Pages
-/*              /index.html          200
+/attestations/:shareId / 200
