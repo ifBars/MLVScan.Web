@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 interface TocItem {
   id: string
@@ -13,6 +14,7 @@ interface DocTableOfContentsProps {
 export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
   const [headings, setHeadings] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
+  const location = useLocation()
 
   // Extract headings from DOM - memoized to prevent infinite loops
   const extractHeadings = useCallback((): TocItem[] => {
@@ -85,20 +87,6 @@ export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [headings, activeId])
 
-  const handleClick = useCallback((id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      const offset = 100
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - offset
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      })
-    }
-  }, [])
-
   if (headings.length === 0) {
     return null
   }
@@ -111,9 +99,13 @@ export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
         </h3>
         <nav className="space-y-1">
           {headings.map((heading) => (
-            <button
+            <Link
               key={heading.id}
-              onClick={() => handleClick(heading.id)}
+              to={{
+                pathname: location.pathname,
+                search: location.search,
+                hash: `#${encodeURIComponent(heading.id)}`,
+              }}
               className={`block w-full text-left text-sm py-1 px-2 rounded transition-colors ${
                 heading.level === 3 ? 'ml-4' : ''
               } ${
@@ -124,7 +116,7 @@ export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
               title={heading.text}
             >
               <span className="block truncate">{heading.text}</span>
-            </button>
+            </Link>
           ))}
         </nav>
       </div>

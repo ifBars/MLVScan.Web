@@ -53,7 +53,7 @@ const PLATFORMS = [
 
 const Features = () => {
   return (
-    <section id="features" className="relative py-32 px-4 overflow-hidden">
+    <section id="features" className="relative pt-16 pb-32 px-4 overflow-hidden">
       <div className="container mx-auto max-w-6xl space-y-24">
 
         {/* Section Header */}

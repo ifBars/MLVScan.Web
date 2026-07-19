@@ -399,7 +399,7 @@
   }
 
   .docs-prose h2 {
-    @apply mt-12 mb-4 scroll-mt-28 border-t border-slate-800/80 pt-8 text-2xl font-semibold leading-tight text-white;
+    @apply mt-12 mb-4 scroll-mt-32 border-t border-slate-800/80 pt-8 text-2xl font-semibold leading-tight text-white;
     font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
   }
 
@@ -408,7 +408,7 @@
   }
 
   .docs-prose h3 {
-    @apply mt-8 mb-3 scroll-mt-28 text-lg font-semibold leading-snug text-slate-100;
+    @apply mt-8 mb-3 scroll-mt-32 text-lg font-semibold leading-snug text-slate-100;
     font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
   }
 

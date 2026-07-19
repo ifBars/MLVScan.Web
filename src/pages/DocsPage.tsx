@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { type DocMeta } from '@/docs/registry'
 import { DocChrome } from '@/components/docs/DocChrome'
 import { DocHeader, DocResources } from '@/components/docs/mdx'
+import { scrollToDocsAnchor } from '@/lib/docs-anchor'
 import Seo from '@/components/seo/Seo'
 import { getDocSeoPage } from '@/seo/routes'
 
@@ -13,32 +15,66 @@ interface DocsPageProps {
 
 const DocsPage = ({ doc }: DocsPageProps) => {
   const [Content, setContent] = useState<React.ComponentType | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loadedDocId, setLoadedDocId] = useState<string | null>(null)
+  const lastPathRef = useRef<string | null>(null)
+  const location = useLocation()
+  const loading = loadedDocId !== doc.id
 
   useEffect(() => {
-    const loadDoc = async () => {
-      setLoading(true)
+    let cancelled = false
 
+    const loadDoc = async () => {
       try {
         const importPath = `../content/docs/${doc.contentPath}`
         const loadComponent = docModules[importPath]
         if (loadComponent) {
           const module = await loadComponent()
-          setContent(() => module.default)
+          if (!cancelled) {
+            setContent(() => module.default)
+          }
         } else {
           console.error(`Doc module not found: ${importPath}`)
-          setContent(null)
+          if (!cancelled) {
+            setContent(null)
+          }
         }
       } catch (error) {
         console.error('Failed to load doc:', error)
-        setContent(null)
+        if (!cancelled) {
+          setContent(null)
+        }
       }
 
-      setLoading(false)
+      if (!cancelled) {
+        setLoadedDocId(doc.id)
+      }
     }
 
-    loadDoc()
+    void loadDoc()
+
+    return () => {
+      cancelled = true
+    }
   }, [doc])
+
+  useEffect(() => {
+    if (loading) {
+      return
+    }
+
+    const isSameDocument = lastPathRef.current === location.pathname
+    const frame = window.requestAnimationFrame(() => {
+      if (location.hash) {
+        scrollToDocsAnchor(location.hash, isSameDocument ? 'smooth' : 'auto')
+      } else if (lastPathRef.current !== location.pathname) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      }
+
+      lastPathRef.current = location.pathname
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [loading, location.hash, location.pathname])
 
   if (loading) {
     return (

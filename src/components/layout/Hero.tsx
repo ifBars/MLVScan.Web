@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[90vh] flex flex-col justify-center pt-32 pb-20 px-4 overflow-hidden">
+    <section className="relative min-h-[64vh] flex flex-col justify-center pt-32 pb-4 px-4 overflow-hidden">
       <div className="container mx-auto max-w-6xl relative z-10 md:-translate-y-6">
         <div className="flex flex-col items-center text-center">
           <h1 className="font-display text-4xl sm:text-5xl md:text-[3.35rem] lg:text-6xl font-bold leading-[1.08] text-foreground text-balance max-w-4xl mb-4 animate-in fade-in slide-in-from-bottom-5 duration-200 delay-100">
@@ -51,8 +51,8 @@ const Hero = () => {
             <p className="text-xs font-medium text-muted-foreground/50 uppercase tracking-widest mb-4">Trusted by the modding community</p>
             <div className="grid grid-cols-2 gap-8 md:gap-16">
               {[
-                { label: "Downloads", value: "80k+" },
-                { label: "Endorsements", value: "500+" },
+                { label: "Downloads", value: "90k+" },
+                { label: "Endorsements", value: "600+" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center">
                   <div className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{stat.value}</div>
