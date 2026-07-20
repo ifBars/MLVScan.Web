@@ -4,7 +4,7 @@ export default function PrivacyContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> July 19, 2026
+        <strong className="text-white">Last Updated:</strong> July 20, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -169,10 +169,10 @@ export default function PrivacyContent() {
 
       <h2 id="privacy-safe-analytics">Privacy-Safe Hosted-Service Analytics</h2>
       <p className="text-gray-300 mb-4">
-        Hosted MLVScan API services record limited server-side product events in Cloudflare Workers Analytics Engine so we can understand aggregate feature use, authenticated repeat use, reliability, invalid-credential attempts, and possible abuse. These events contain bounded categories such as the product action, route family, authentication tier and state, response class, request method, environment, duration, and schema version.
+        Hosted MLVScan API services record limited server-side product events in Cloudflare Workers Analytics Engine so we can understand aggregate feature use, authenticated repeat use, reliability, invalid-credential attempts, possible abuse, and whether traffic came from MLVScan's own automation. These events contain bounded categories such as the product action, route family, authentication tier and state, response class, request method, environment, duration, schema version, and a traffic-source category.
       </p>
       <p className="text-gray-300 mb-4">
-        Authenticated API-key and partner activity is grouped using a dedicated keyed pseudonym. Anonymous activity is aggregated by route family. Product events do not include raw account identifiers, API keys, IP addresses, request IDs, full request paths, user agents, filenames, content hashes, source URLs, uploaded content, scan findings, or dispositions. Cloudflare retains Analytics Engine data for approximately three months.
+        Authenticated API-key and partner activity is grouped using a dedicated keyed pseudonym. Anonymous activity is aggregated by route family. Calls authenticated with MLVScan.Bot's dedicated internal API key are labeled only as <code>mlvscan_bot</code>, derived from trusted server-side key ownership metadata rather than a caller-provided tracking header. Product events do not include raw account identifiers, API keys, IP addresses, request IDs, full request paths, user agents, filenames, content hashes, source URLs, uploaded content, scan findings, or dispositions. Cloudflare retains Analytics Engine data for approximately three months.
       </p>
       <p className="text-gray-300 mb-4">
         This measurement applies only to recognized hosted-service actions. Local-only browser, Core, CLI, MCP, and loader scans do not emit product analytics events. Health checks, documentation views, scanner metadata requests, CORS preflights, and unknown routes are also excluded.
