@@ -167,18 +167,23 @@ export default function PrivacyContent() {
         MLVScan does not use analytics, advertising, or cross-site tracking cookies. The public web scanner uses browser storage only to cache static assets such as the WASM module. The dashboard and admin dashboard use essential session and CSRF cookies so authenticated account actions can work securely. Discord OAuth may also use short-lived state during login. These cookies are not used for advertising or analytics.
       </p>
 
-      <h2 id="no-analytics">No Analytics</h2>
+      <h2 id="privacy-safe-analytics">Privacy-Safe Hosted-Service Analytics</h2>
       <p className="text-gray-300 mb-4">
-        We do not use analytics or tracking services in MLVScan components, including:
+        Hosted MLVScan API services record limited server-side product events in Cloudflare Workers Analytics Engine so we can understand aggregate feature use, authenticated repeat use, reliability, invalid-credential attempts, and possible abuse. These events contain bounded categories such as the product action, route family, authentication tier and state, response class, request method, environment, duration, and schema version.
+      </p>
+      <p className="text-gray-300 mb-4">
+        Authenticated API-key and partner activity is grouped using a dedicated keyed pseudonym. Anonymous activity is aggregated by route family. Product events do not include raw account identifiers, API keys, IP addresses, request IDs, full request paths, user agents, filenames, content hashes, source URLs, uploaded content, scan findings, or dispositions. Cloudflare retains Analytics Engine data for approximately three months.
+      </p>
+      <p className="text-gray-300 mb-4">
+        This measurement applies only to recognized hosted-service actions. Local-only browser, Core, CLI, MCP, and loader scans do not emit product analytics events. Health checks, documentation views, scanner metadata requests, CORS preflights, and unknown routes are also excluded.
+      </p>
+      <p className="text-gray-300 mb-4">
+        MLVScan does not currently use client-side analytics trackers, analytics cookies, session replay, advertising identifiers, or services such as Google Analytics, PostHog, Plausible, Fathom, Hotjar, Microsoft Application Insights, or Sentry.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Google Analytics</li>
-        <li>Plausible</li>
-        <li>Fathom</li>
-        <li>Hotjar</li>
-        <li>Microsoft Application Insights</li>
-        <li>Sentry or other error tracking</li>
-        <li>Any other analytics or advertising tracker</li>
+        <li>Product analytics are used only for service operation, adoption measurement, abuse review, and reliability improvements.</li>
+        <li>Actor pseudonyms are not exposed in routine reports and are not used for advertising or cross-site profiling.</li>
+        <li>MLVScan does not sell analytics data.</li>
       </ul>
 
       <h2 id="open-source">Open Source</h2>
