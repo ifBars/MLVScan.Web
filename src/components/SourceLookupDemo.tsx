@@ -41,12 +41,13 @@ const SourceLookupDemo = () => {
   return (
     <section className="px-4 pt-6 pb-8 sm:pb-10">
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
-          <h2 className="font-display text-3xl font-bold leading-tight text-foreground lg:whitespace-nowrap">
-            Check a mod page in seconds.
+        <div className="space-y-2">
+          <h2 className="font-display text-3xl font-bold leading-tight text-foreground">
+            Check a Schedule 1 mod page in seconds.
           </h2>
-          <p className="text-sm leading-6 text-muted-foreground lg:whitespace-nowrap lg:text-right">
-            Swap the Nexus Mods or Thunderstore domain for <span className="font-medium text-teal-300">mlvscan.com</span> to open its latest public report.
+          <p className="max-w-4xl text-sm leading-6 text-muted-foreground">
+            For supported mods, replace the Nexus Mods or Thunderstore domain with{" "}
+            <span className="font-medium text-teal-300">mlvscan.com</span> to open the latest public report.
           </p>
         </div>
 
