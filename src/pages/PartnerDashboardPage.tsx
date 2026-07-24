@@ -1627,17 +1627,17 @@ function consumePartnerDashboardReturnPath(): string | null {
 function getOAuthErrorMessage(errorCode: string | null): string {
   switch (errorCode) {
     case "discord_denied":
-      return "Discord sign-in was canceled before the Worker could issue a session."
+      return "Discord sign-in was canceled."
     case "discord_failed":
-      return "Discord sign-in failed. Retry the OAuth flow."
+      return "Discord sign-in failed. Retry again later, Discord may be down."
     case "signup_failed":
-      return "Discord sign-in succeeded, but the Worker could not create the partner record."
+      return "Discord sign-in succeeded, but the Worker could not create the partner record. Try again later or contact ifbars on discord for support."
     case "suspended":
-      return "This account is suspended. Internal operators must reactivate it from the admin workflow."
+      return "This account is suspended."
     case "account_too_new":
       return "The Discord account does not meet the minimum account-age requirement."
     case "mfa_required":
-      return "Multi-factor authentication is required before Discord sign-in is allowed."
+      return "Multi-factor authentication must be enabled on Discord to login."
     default:
       return ""
   }
@@ -1799,4 +1799,3 @@ function getInitials(name: string): string {
       .join("") || "PD"
   )
 }
-
