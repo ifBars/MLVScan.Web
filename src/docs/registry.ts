@@ -302,7 +302,7 @@ const docs: DocMeta[] = [
   {
     id: 'api-source-provider-lookups',
     title: 'Source Provider Lookups',
-    description: 'Find Nexus Mods and Thunderstore source-linked reports through the SDKs',
+    description: 'Find active-provider reports or frozen, potentially outdated Nexus history through the SDKs',
     slug: 'api-source-provider-lookups',
     contentPath: 'api-source-provider-lookups.mdx',
     section: 'for-developers',

@@ -32,6 +32,9 @@ describe("threat family registry", () => {
 
   it("keeps the registry aligned with current Core threat family ids", () => {
     expect(allThreatFamilies.map((family) => family.id)).toEqual([
+      "family-pawns-app-dropper-v1",
+      "family-blockchain-java-stager-v1",
+      "family-remote-text-shell-exec-v1",
       "family-resource-shell32-tempcmd-v2",
       "family-powershell-iwr-dlbat-v1",
       "family-webdownload-stage-exec-v3",
@@ -39,16 +42,28 @@ describe("threat family registry", () => {
       "family-remote-script-pipe-shell-v1",
       "family-encoded-powershell-tempcmd-stager-v1",
       "family-hex-remote-config-tempcmd-stager-v1",
-      "family-dynamic-assembly-reflection-loader-v1",
+      "family-dynamic-assembly-reflection-loader-v2",
       "family-obfuscated-metadata-loader-v2",
     ])
   })
 
   it("exposes pages for the new quarantine behavior families", () => {
+    expect(getThreatFamilyById("family-pawns-app-dropper-v1")?.sampleNames).toEqual([
+      "BetterPatrols.dll",
+      "BloodAndBanners.Core.dll",
+    ])
+    expect(getThreatFamilyById("family-blockchain-java-stager-v1")?.sampleNames).toEqual([
+      "ValleyPolygamy.dll",
+      "ValleyDrone.dll",
+      "ValleyMorning.dll",
+    ])
+    expect(getThreatFamilyById("family-remote-text-shell-exec-v1")?.sampleNames).toEqual([
+      "AutoBarnCoopDoor.dll",
+    ])
     expect(getThreatFamilyById("family-encoded-powershell-tempcmd-stager-v1")?.slug).toBe(
       "encoded-powershell-tempcmd-stager-v1",
     )
-    expect(getThreatFamilyById("family-dynamic-assembly-reflection-loader-v1")?.sampleNames).toContain(
+    expect(getThreatFamilyById("family-dynamic-assembly-reflection-loader-v2")?.sampleNames).toContain(
       "iiModdedV5.dll",
     )
     expect(getThreatFamilyById("family-remote-script-pipe-shell-v1")?.sampleNames).toEqual([
@@ -83,6 +98,16 @@ describe("threat family registry", () => {
 
     for (const familyId of advisoryFamilyIds) {
       expect(getThreatFamilyById(familyId)).toBeDefined()
+    }
+  })
+
+  it("resolves every family advisory back to the same family", () => {
+    for (const family of allThreatFamilies) {
+      for (const slug of family.advisorySlugs) {
+        const advisory = allAdvisories.find((candidate) => candidate.slug === slug)
+        expect(advisory, `${family.id} points to missing advisory ${slug}`).toBeDefined()
+        expect(advisory?.familyId).toBe(family.id)
+      }
     }
   })
 })

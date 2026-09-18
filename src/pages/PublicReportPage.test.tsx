@@ -20,12 +20,12 @@ const publicReportPayload: PublicReportPayload = {
     provider: "nexusmods",
     game: "schedule1",
     sourceKey: "schedule1:1966:6293",
-    displayName: "Keybind Manager",
-    author: "Bars",
-    version: "1.0.1",
-    fileName: "Keybind Manager.zip",
-    packageFileName: "Keybind Manager.zip",
-    sourceUrl: "https://www.nexusmods.com/schedule1/mods/1966",
+    displayName: null,
+    author: null,
+    version: null,
+    fileName: null,
+    packageFileName: null,
+    sourceUrl: null,
   },
   fileName: "KeybindManager.dll",
   contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
@@ -119,7 +119,7 @@ describe("PublicReportPage", () => {
 
     await renderPublicReportPage()
 
-    expect(await screen.findByText("Keybind Manager")).toBeTruthy()
+    expect(await screen.findByRole("heading", { name: "KeybindManager.dll" })).toBeTruthy()
     expect(screen.getByText("Starts a process")).toBeTruthy()
     expect(screen.getByText("Show Advanced (1)")).toBeTruthy()
     expect(screen.queryByText("References broad network APIs")).toBeNull()

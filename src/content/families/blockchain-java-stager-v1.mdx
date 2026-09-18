@@ -1,0 +1,34 @@
+export default function BlockchainJavaStagerFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        Observed in malicious Stardew Valley SMAPI packages, this family conceals Java payload
+        staging behind blockchain RPC service discovery,
+        fixed-key string decoding, or an embedded JAR bootstrap. The resulting Java child process
+        is hidden, elevated, or supplied with a second payload through redirected input.
+      </p>
+
+      <h2>Observed Variants</h2>
+      <ul>
+        <li><strong>EVM-resolved JAR:</strong> resolves service data through RPC calls, decodes runtime strings, writes a JAR, and launches Java hidden or elevated</li>
+        <li><strong>Embedded JAR bootstrap:</strong> materializes an embedded archive and transfers another payload to a concealed Java process through redirected standard input</li>
+      </ul>
+
+      <h2>Quarantine Coverage</h2>
+      <p>
+        The current cluster covers <code>ValleyPolygamy.dll</code>, <code>ValleyDrone.dll</code>,
+        and <code>ValleyMorning.dll</code>. Their manifests use the <code>StardewLabs</code> identity
+        and require SMAPI 4.0. Their packaging differs, but the Java staging and concealed execution chain is stable.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>CoordinatedPayloadDeliveryRule</code> for Java archive staging</li>
+        <li><code>EncodedStringPipelineRule</code> for fixed-key decoded runtime and network strings</li>
+        <li><code>EmbeddedArchivePayloadRule</code> for ZIP/JAR materialization</li>
+        <li><code>ProcessStartRule</code> for hidden, elevated, or redirected Java execution</li>
+      </ul>
+    </>
+  )
+}

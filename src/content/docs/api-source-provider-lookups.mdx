@@ -5,25 +5,30 @@ export default function ApiSourceProviderLookupsContent() {
   return (
     <>
       <p className="text-lg text-gray-200 mb-6">
-        Source provider lookups let an integration find public reports MLVScan has already indexed
-        from supported providers such as Nexus Mods and Thunderstore. This is the same report-discovery
-        path used by MLVScan.Bot lookup commands and source-linked public report pages.
+        Source provider lookups let an integration find public reports MLVScan has already indexed.
+        This is the same report-discovery path used by MLVScan.Bot lookup commands and source-linked
+        public report pages.
       </p>
 
       <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 mb-8">
-        <h3 className="mt-0 text-amber-200 font-semibold mb-2">Lookup does not scan or crawl providers</h3>
+        <h3 className="mt-0 text-amber-200 font-semibold mb-2">Nexus results are frozen historical records</h3>
         <p className="text-sm text-gray-300">
           Source lookup searches MLVScan&apos;s existing source index. It does not upload bytes, start a
-          scan, or query the whole Nexus Mods or Thunderstore catalog. If a mod has never been scanned
-          through a source-linked workflow, the lookup can return no results even if the mod exists on
-          the provider.
+          scan, or query a provider catalog. Nexus Mods updated its Terms of Service on May 12, 2026.
+          MLVScan stopped automated Nexus lookups and downloads after that update. Nexus records are
+          no longer updated, may already be outdated, and will become progressively staler as files
+          and mod pages change on Nexus. They must not be treated as a
+          current inventory or current safety status. Exact mod ID or source-key lookups remain only
+          to retrieve MLVScan-authored reports that were indexed previously. Broad Nexus listing and
+          name search return no records, Nexus-supplied presentation metadata is omitted, and new
+          upload metadata does not create Nexus source-index records.
         </p>
       </div>
 
       <h2 id="when-to-use-source-lookup">When to use source lookup</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-8">
         <li>A mod manager wants to show the latest known MLVScan report for a provider mod page.</li>
-        <li>A telemetry backend wants to enrich newly observed mods with an existing public report when one is already available.</li>
+        <li>A telemetry backend wants to associate an exact known source identity with an existing public report.</li>
         <li>A moderation tool knows a Nexus mod ID or Thunderstore package name and wants recent source-linked report handles.</li>
       </ul>
 
@@ -58,8 +63,11 @@ export default function ApiSourceProviderLookupsContent() {
 
       <h2 id="search-by-nexus-mod-id">Search by Nexus mod ID</h2>
       <p className="text-gray-300 mb-4">
-        If the integration already has the Nexus Mods mod ID, use <code>ModId</code>. Include reports
-        when you need recent submission handles without making another source-detail request.
+        Use <code>ModId</code> only to retrieve an exact, previously indexed historical record. A
+        successful response does not mean the Nexus mod or file is still available, unchanged, or
+        represented by the latest Nexus release. Treat returned source IDs and MLVScan report fields
+        as archival MLVScan data; Nexus presentation metadata is intentionally null. The C# and
+        TypeScript wrappers reject broad Nexus lookup options before sending a request.
       </p>
       <CodeBlock language="csharp" className="mb-8">{`using MLVScan.ApiClient;
 
@@ -86,15 +94,16 @@ Console.WriteLine(publicReport.Classification);
 Console.WriteLine(publicReport.Headline);
 Console.WriteLine(publicReport.Summary);`}</CodeBlock>
 
-      <h2 id="search-by-mod-name">Search by mod name</h2>
+      <h2 id="search-by-package-name">Search active providers by package name</h2>
       <p className="text-gray-300 mb-4">
         Name search uses <code>Query</code>. It searches recorded source metadata such as display name,
         filename, source key, package name, mod ID, and file ID. Treat the results as matches to review,
-        not as a guaranteed exact-name resolver.
+        not as a guaranteed exact-name resolver. Broad Nexus name search is disabled; this example uses
+        the active Thunderstore source index.
       </p>
       <CodeBlock language="csharp" className="mb-8">{`var sources = await client.ListSourcesAsync(new MlvScanSourceLookupOptions
 {
-    Source = MlvScanSource.NexusModsSchedule1,
+    Source = MlvScanSource.ThunderstoreScheduleI,
     Query = "S1API",
     IncludeReports = true,
     Limit = 5,
@@ -138,7 +147,7 @@ const client = new MlvScanClient({
 
 const sources = await client.listSources({
   source: MlvScanSources.NexusModsSchedule1,
-  query: "S1API",
+  modId: "1194",
   includeReports: true,
   limit: 5,
 })
@@ -147,6 +156,12 @@ const latestSubmissionId = sources[0]?.latestSubmissionId
 const publicReport = latestSubmissionId
   ? await client.getPublicReport(latestSubmissionId)
   : null`}</CodeBlock>
+
+      <p className="text-sm text-gray-400 mb-8">
+        Nexus SDK calls must include <code>modId</code> or <code>sourceKey</code>. Free-text search,
+        package-name search, and pages after page 1 are rejected. The API reads only MLVScan&apos;s
+        historical index and never calls Nexus.
+      </p>
 
       <h2 id="related-docs">Related Docs</h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-300">

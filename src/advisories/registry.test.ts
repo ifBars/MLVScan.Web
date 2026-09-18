@@ -53,6 +53,9 @@ describe('Advisory Registry', () => {
 
     it('keeps advisory-backed quarantine sample names registered in threat families', () => {
       const sampleAdvisorySlugs: Record<string, string> = {
+        'AutoBarnCoopDoor.dll': '2026-09-malware-autobarncoopdoor',
+        'BetterPatrols.dll': '2026-09-malware-pawns-app-dropper',
+        'BloodAndBanners.Core.dll': '2026-09-malware-pawns-app-dropper',
         'CustomTV_IL2CPP.dll': '2025-12-malware-customtv-il2cpp',
         'DynamicOrders.dll': '2026-04-malware-dynamicorders',
         'EndlessGraffiti.dll': '2026-01-malware-endlessgraffiti',
@@ -69,6 +72,9 @@ describe('Advisory Registry', () => {
         'Skitching.dll': '2026-03-malware-skitching',
         'StorageHub.dll': '2026-03-malware-storagehub',
         'UnlimitedGraffiti.dll': '2026-03-malware-unlimitedgraffiti',
+        'ValleyDrone.dll': '2026-09-malware-blockchain-java-stager',
+        'ValleyMorning.dll': '2026-09-malware-blockchain-java-stager',
+        'ValleyPolygamy.dll': '2026-09-malware-blockchain-java-stager',
         'vortex_backuprtilizer.dll': '2026-03-malware-vortex-backuprtilizer',
       }
 

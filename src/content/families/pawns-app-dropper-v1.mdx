@@ -1,0 +1,40 @@
+export default function PawnsAppDropperFamilyContent() {
+  return (
+    <>
+      <h2>Behavior Pattern</h2>
+      <p>
+        Observed in malicious Mount &amp; Blade II: Bannerlord packages, this family downloads an
+        archive into a per-user directory, extracts an executable,
+        writes application state that includes supplied credentials, creates a Windows{" "}
+        <code>CurrentVersion\Run</code> entry, and starts the installed payload with hidden-window settings.
+      </p>
+
+      <h2>Why It Clusters Cleanly</h2>
+      <ul>
+        <li>Archive delivery and extraction occur in the same setup chain</li>
+        <li>The payload is installed beneath the current user profile</li>
+        <li>Persistence uses a per-user Run key</li>
+        <li>The installed executable is launched with concealed process settings</li>
+      </ul>
+
+      <h2>Observed Variants</h2>
+      <p>
+        Quarantine coverage includes two <code>BetterPatrols.dll</code>{" "}builds and{" "}
+        <code>BloodAndBanners.Core.dll</code>. The companion <code>BloodAndBanners.dll</code>{" "}
+        wrapper does not carry the full chain by itself; the malicious behavior is in the bundled core assembly.
+      </p>
+      <p>
+        The BetterPatrols samples used Bannerlord module metadata. One observed listing used the page
+        title <strong>Useful Patrols</strong> while the packaged file retained the Better Patrols identity.
+      </p>
+
+      <h2>Key Signals In MLVScan</h2>
+      <ul>
+        <li><code>CoordinatedPayloadDeliveryRule</code> for the archive-to-persistence chain</li>
+        <li><code>DataInfiltrationRule</code> for remote archive acquisition</li>
+        <li><code>RegistryRule</code> for Run-key persistence</li>
+        <li><code>ProcessStartRule</code> for the hidden installed-payload launch</li>
+      </ul>
+    </>
+  )
+}

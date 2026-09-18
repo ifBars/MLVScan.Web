@@ -2,6 +2,42 @@ import type { ThreatFamilyMeta } from './types'
 
 const families: ThreatFamilyMeta[] = [
   {
+    id: 'family-pawns-app-dropper-v1',
+    slug: 'pawns-app-dropper-v1',
+    title: 'Pawns.app Credential-Seeded Autorun Dropper',
+    summary:
+      'Observed in malicious Mount & Blade II: Bannerlord packages that download and extract an archive under the user profile, seed application state, establish Windows Run-key persistence, and launch the installed payload hidden.',
+    contentPath: 'pawns-app-dropper-v1.mdx',
+    aliases: ['user-profile archive autorun dropper'],
+    sampleNames: ['BetterPatrols.dll', 'BloodAndBanners.Core.dll'],
+    advisorySlugs: ['2026-09-malware-pawns-app-dropper'],
+    behaviorTags: ['bannerlord', 'archive', 'user-profile', 'run-key', 'persistence', 'hidden-execution'],
+  },
+  {
+    id: 'family-blockchain-java-stager-v1',
+    slug: 'blockchain-java-stager-v1',
+    title: 'Blockchain-Resolved Java Payload Stager',
+    summary:
+      'Observed in malicious Stardew Valley SMAPI packages that use blockchain RPC service discovery and fixed-key decoding to retrieve or embed a Java archive, then execute it through a concealed Java child process.',
+    contentPath: 'blockchain-java-stager-v1.mdx',
+    aliases: ['EVM-resolved Java archive stager'],
+    sampleNames: ['ValleyPolygamy.dll', 'ValleyDrone.dll', 'ValleyMorning.dll'],
+    advisorySlugs: ['2026-09-malware-blockchain-java-stager'],
+    behaviorTags: ['stardew-valley', 'smapi', 'blockchain-rpc', 'xor', 'java', 'jar', 'redirected-io', 'hidden-execution'],
+  },
+  {
+    id: 'family-remote-text-shell-exec-v1',
+    slug: 'remote-text-shell-exec-v1',
+    title: 'Remote Text Hidden Shell Executor',
+    summary:
+      'Observed in a malicious Stardew Valley SMAPI package that retrieves remote text, parses or rewrites it into runtime-computed command arguments, and executes the result through a concealed system shell.',
+    contentPath: 'remote-text-shell-exec-v1.mdx',
+    aliases: ['remote text dynamic shell executor'],
+    sampleNames: ['AutoBarnCoopDoor.dll'],
+    advisorySlugs: ['2026-09-malware-autobarncoopdoor'],
+    behaviorTags: ['stardew-valley', 'smapi', 'remote-text', 'dynamic-command', 'powershell', 'hidden-execution', 'command-and-control'],
+  },
+  {
     id: 'family-resource-shell32-tempcmd-v2',
     slug: 'resource-shell32-tempcmd-v2',
     title: 'Embedded Resource Temp CMD Dropper',
@@ -124,12 +160,12 @@ const families: ThreatFamilyMeta[] = [
     behaviorTags: ['hex-encoding', 'byte-array-strings', 'webclient', 'reflection', 'temp-cmd', 'hidden-window'],
   },
   {
-    id: 'family-dynamic-assembly-reflection-loader-v1',
-    slug: 'dynamic-assembly-reflection-loader-v1',
+    id: 'family-dynamic-assembly-reflection-loader-v2',
+    slug: 'dynamic-assembly-reflection-loader-v2',
     title: 'Dynamic Assembly Reflection Loader',
     summary:
       'Opaque assembly bytes are loaded at runtime and invoked through reflection, separating a visible mod wrapper from the executable payload.',
-    contentPath: 'dynamic-assembly-reflection-loader-v1.mdx',
+    contentPath: 'dynamic-assembly-reflection-loader-v2.mdx',
     aliases: ['Assembly.Load reflective payload loader'],
     sampleNames: [
       'FPSCounter.dll',

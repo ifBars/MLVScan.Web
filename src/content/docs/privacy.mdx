@@ -113,7 +113,7 @@ export default function PrivacyContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Discord interactions:</strong> Slash commands and buttons may include Discord guild, channel, user, message, attachment, and interaction identifiers needed to respond to the request.</li>
         <li><strong className="text-white">Manual scan uploads:</strong> Files submitted through a bot command are fetched from Discord and sent to the MLVScan API for hosted analysis.</li>
-        <li><strong className="text-white">Source watches:</strong> Operator-configured Nexus Mods, Thunderstore, or webhook watches may store source identifiers, filenames, source URLs, report IDs, policy settings, and notification history.</li>
+        <li><strong className="text-white">Source watches:</strong> Active Thunderstore, generic URL, or webhook watches may store source identifiers, filenames, source URLs, report IDs, policy settings, and notification history. Retired Nexus watch records may remain for audit and report-history purposes but are no longer polled or downloaded.</li>
         <li><strong className="text-white">No separate scanner:</strong> The bot uses the MLVScan API as the scan authority; it does not run its own scanner implementation.</li>
         <li><strong className="text-white">Repository:</strong> <a href="https://github.com/ifBars/MLVScan.Bot" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">github.com/ifBars/MLVScan.Bot</a></li>
       </ul>
@@ -127,7 +127,7 @@ export default function PrivacyContent() {
         <li><strong className="text-white">NuGet and package delivery:</strong> Installing MLVScan.Core or DevCLI downloads packages from package hosts.</li>
         <li><strong className="text-white">Runtime report upload:</strong> If enabled, the runtime plugin sends assemblies and metadata to the MLVScan API. This is off by default.</li>
         <li><strong className="text-white">API, dashboard, SDK, and CI submissions:</strong> Files and metadata you submit are sent to the MLVScan API for hosted analysis.</li>
-        <li><strong className="text-white">MLVScan.Bot:</strong> Discord commands, source watches, and webhook delivery require network calls to Discord, the configured source provider, and the MLVScan API.</li>
+        <li><strong className="text-white">MLVScan.Bot:</strong> Discord commands, active non-Nexus source watches, and webhook delivery require network calls to Discord, the configured source provider, and the MLVScan API. Exact Nexus lookup searches only MLVScan&apos;s existing index.</li>
       </ul>
       <p className="text-gray-300 mb-6">
         During public web or DevCLI scanning: <strong className="text-white">no scan data is sent to any server</strong>. Hosted API, dashboard, CI, SDK, and bot workflows are intentional server-side submission paths, and a public attestation is only created later if you explicitly publish it or configure an integration to publish it.
@@ -153,7 +153,7 @@ export default function PrivacyContent() {
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Submitted artifacts:</strong> DLL, EXE, ZIP, or package bytes you upload directly, submit through a dashboard/SDK/CI integration, enable through runtime report upload, or submit through MLVScan.Bot.</li>
         <li><strong className="text-white">Scan metadata:</strong> File names, hashes, sizes, scan status, schema version, scanner version, findings, dispositions, threat-family matches, and report identifiers.</li>
-        <li><strong className="text-white">Source metadata:</strong> Optional provider information such as Nexus Mods or Thunderstore source kind, source key, title, author, version, file name, package file name, and source URL.</li>
+        <li><strong className="text-white">Source metadata:</strong> Optional provider information such as source kind, source key, title, author, version, file name, package file name, and source URL. Public historical Nexus responses omit Nexus-supplied presentation fields and retain only exact source identifiers plus MLVScan report data.</li>
         <li><strong className="text-white">Account metadata:</strong> Dashboard account identifiers, Discord-backed account data when you sign in with Discord, API key records, scopes, session state, CSRF state, attestation drafts, and published attestation metadata.</li>
         <li><strong className="text-white">Bot metadata:</strong> Discord guild, channel, user, message, interaction, webhook sink, watch, policy, notification, submission, and review-override identifiers needed to operate bot commands and alerts.</li>
         <li><strong className="text-white">Infrastructure logs:</strong> Standard security and operational logs such as timestamps, route names, status codes, rate-limit decisions, and source IP information may be processed by hosting infrastructure.</li>
@@ -202,7 +202,8 @@ export default function PrivacyContent() {
         <li><strong className="text-white">GitHub Pages:</strong> Hosts static site assets. GitHub's servers receive standard HTTP requests to deliver website files.</li>
         <li><strong className="text-white">Cloudflare:</strong> Hosts MLVScan API, MLVScan.Bot, dashboard/API storage, queues, and related infrastructure. Cloudflare may process standard request and infrastructure data while serving these services.</li>
         <li><strong className="text-white">Discord:</strong> Used for community support, dashboard sign-in when Discord OAuth is enabled, and MLVScan.Bot commands, attachments, messages, webhooks, and interaction delivery.</li>
-        <li><strong className="text-white">Nexus Mods and Thunderstore:</strong> Source-watch integrations may call official provider APIs to inspect configured mod sections and retrieve files selected for scanning.</li>
+        <li><strong className="text-white">Thunderstore:</strong> Active source-watch integrations may call its public API to inspect configured package sections and retrieve files selected for scanning.</li>
+        <li><strong className="text-white">Nexus Mods:</strong> Nexus polling and downloads are retired. Exact Nexus lookups search only historical records already held by MLVScan and do not call Nexus.</li>
         <li><strong className="text-white">NuGet.org:</strong> Hosts MLVScan.Core and MLVScan.DevCLI packages.</li>
         <li><strong className="text-white">GitHub:</strong> Hosts source repositories and example workflows.</li>
       </ul>

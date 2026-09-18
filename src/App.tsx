@@ -13,7 +13,6 @@ const HomePage = lazy(() => import("@/pages/HomePage"))
 const ScanPage = lazy(() => import("@/pages/ScanPage"))
 const AttestationPage = lazy(() => import("@/pages/AttestationPage"))
 const PublicReportPage = lazy(() => import("@/pages/PublicReportPage"))
-const SourceReportRedirectPage = lazy(() => import("@/pages/SourceReportRedirectPage"))
 const InspectorPage = lazy(() => import("@/pages/InspectorPage"))
 const PartnerDashboardPage = lazy(() => import("@/pages/PartnerDashboardPage"))
 const DocsLayout = lazy(() => import("@/components/docs/DocsLayout"))
@@ -59,8 +58,6 @@ function App() {
             <Route path="/status" element={<LazyRoute><StatusPage /></LazyRoute>} />
             <Route path="/attestations/:shareId" element={<LazyRoute><AttestationPage /></LazyRoute>} />
             <Route path="/reports/:submissionId" element={<LazyRoute fallback={<PublicReportSkeleton />}><PublicReportPage /></LazyRoute>} />
-            <Route path="/schedule1/mods/:modId" element={<LazyRoute><SourceReportRedirectPage /></LazyRoute>} />
-            <Route path="/c/:community/p/:namespace/:packageName" element={<LazyRoute><SourceReportRedirectPage /></LazyRoute>} />
             <Route path="/inspector" element={<LazyRoute><InspectorPage /></LazyRoute>} />
             <Route path="/docs" element={
               <LazyRoute>
