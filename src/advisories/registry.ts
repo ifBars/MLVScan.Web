@@ -3,6 +3,28 @@ import type { AdvisoryMeta } from './types'
 
 const advisories: AdvisoryMeta[] = [
   {
+    id: 'malware-sunrise-furrow-coach-2026',
+    title: 'Malware Analysis: Malicious Sunrise Furrow Coach Package',
+    slug: '2026-09-malware-sunrise-furrow-coach',
+    type: 'malware-analysis',
+    familyId: 'family-blockchain-java-stager-v1',
+    publishedDate: '2026-09-19',
+    description: 'Analysis of a malicious Stardew Valley SMAPI package distributed as Sunrise Furrow Coach that resolves infrastructure through blockchain RPC, downloads a Java payload and runtime, launches it hidden or elevated, and sends host and process data to the resolved service.',
+    contentPath: '2026-09-malware-sunrise-furrow-coach.mdx',
+    keywords: ['malware', 'stardew-valley', 'smapi', 'nexus-mods', 'sunrise-furrow-coach', 'blockchain-rpc', 'java', 'xor', 'uac', 'data-exfiltration'],
+  },
+  {
+    id: 'malware-meowtopia-2026',
+    title: 'Malware Analysis: Malicious Meowtopia Package',
+    slug: '2026-09-malware-meowtopia',
+    type: 'malware-analysis',
+    familyId: 'family-webdownload-stage-exec-v3',
+    publishedDate: '2026-09-19',
+    description: 'Analysis of a malicious Stardew Valley SMAPI package distributed as Meowtopia that downloads a DLL and executable into a per-user application-data directory and launches the executable with hidden-process settings.',
+    contentPath: '2026-09-malware-meowtopia.mdx',
+    keywords: ['malware', 'stardew-valley', 'smapi', 'nexus-mods', 'meowtopia', 'dropbox', 'download-and-execute', 'appdata', 'hidden-execution'],
+  },
+  {
     id: 'malware-autobarncoopdoor-2026',
     title: 'Malware Analysis: Malicious AutoBarnCoopDoor Package',
     slug: '2026-09-malware-autobarncoopdoor',

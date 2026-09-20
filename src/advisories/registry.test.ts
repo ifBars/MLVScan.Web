@@ -63,6 +63,7 @@ describe('Advisory Registry', () => {
         'LongLastingFertilizer.dll': '2026-03-malware-longlastingfertilizer',
         'MelonLoaderMod55.dll': '2026-03-malware-customer-search-bar',
         'MoreTrees.dll': '2026-02-malware-moretrees',
+        'Meowtopia.dll': '2026-09-malware-meowtopia',
         'NoMoreTrash.dll': '2025-12-malware-nomoretrash',
         'NoPolice.dll': '2026-03-malware-nopolice',
         'RealRadio.dll': '2025-12-malware-realandwaitingtimeonfire',
@@ -75,6 +76,7 @@ describe('Advisory Registry', () => {
         'ValleyDrone.dll': '2026-09-malware-blockchain-java-stager',
         'ValleyMorning.dll': '2026-09-malware-blockchain-java-stager',
         'ValleyPolygamy.dll': '2026-09-malware-blockchain-java-stager',
+        'SunriseFurrowCoach.dll': '2026-09-malware-sunrise-furrow-coach',
         'vortex_backuprtilizer.dll': '2026-03-malware-vortex-backuprtilizer',
       }
 

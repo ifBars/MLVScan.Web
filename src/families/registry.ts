@@ -21,8 +21,8 @@ const families: ThreatFamilyMeta[] = [
       'Observed in malicious Stardew Valley SMAPI packages that use blockchain RPC service discovery and fixed-key decoding to retrieve or embed a Java archive, then execute it through a concealed Java child process.',
     contentPath: 'blockchain-java-stager-v1.mdx',
     aliases: ['EVM-resolved Java archive stager'],
-    sampleNames: ['ValleyPolygamy.dll', 'ValleyDrone.dll', 'ValleyMorning.dll'],
-    advisorySlugs: ['2026-09-malware-blockchain-java-stager'],
+    sampleNames: ['ValleyPolygamy.dll', 'ValleyDrone.dll', 'ValleyMorning.dll', 'SunriseFurrowCoach.dll'],
+    advisorySlugs: ['2026-09-malware-sunrise-furrow-coach', '2026-09-malware-blockchain-java-stager'],
     behaviorTags: ['stardew-valley', 'smapi', 'blockchain-rpc', 'xor', 'java', 'jar', 'redirected-io', 'hidden-execution'],
   },
   {
@@ -88,9 +88,11 @@ const families: ThreatFamilyMeta[] = [
       'StorageHub.dll',
       'UnlimitedGraffiti.dll',
       'vortex_backuprtilizer.dll',
+      'Meowtopia.dll',
     ],
     advisorySlugs: [
       '2026-04-malware-dynamicorders',
+      '2026-09-malware-meowtopia',
       '2026-03-malware-vortex-backuprtilizer',
       '2026-03-malware-storagehub',
       '2026-03-malware-skitching',

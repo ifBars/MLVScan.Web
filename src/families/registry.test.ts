@@ -56,6 +56,7 @@ describe("threat family registry", () => {
       "ValleyPolygamy.dll",
       "ValleyDrone.dll",
       "ValleyMorning.dll",
+      "SunriseFurrowCoach.dll",
     ])
     expect(getThreatFamilyById("family-remote-text-shell-exec-v1")?.sampleNames).toEqual([
       "AutoBarnCoopDoor.dll",
