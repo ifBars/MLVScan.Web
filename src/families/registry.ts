@@ -89,10 +89,12 @@ const families: ThreatFamilyMeta[] = [
       'UnlimitedGraffiti.dll',
       'vortex_backuprtilizer.dll',
       'Meowtopia.dll',
+      'KrobusCourier.dll',
     ],
     advisorySlugs: [
       '2026-04-malware-dynamicorders',
       '2026-09-malware-meowtopia',
+      '2026-09-malware-krobus-courier',
       '2026-03-malware-vortex-backuprtilizer',
       '2026-03-malware-storagehub',
       '2026-03-malware-skitching',

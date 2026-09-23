@@ -3,6 +3,17 @@ import type { AdvisoryMeta } from './types'
 
 const advisories: AdvisoryMeta[] = [
   {
+    id: 'malware-krobus-courier-2026',
+    title: 'Malware Analysis: Malicious Krobus Courier Package',
+    slug: '2026-09-malware-krobus-courier',
+    type: 'malware-analysis',
+    familyId: 'family-webdownload-stage-exec-v3',
+    publishedDate: '2026-09-22',
+    description: 'Analysis of a malicious Stardew Valley SMAPI package distributed as Krobus Courier that downloads an executable into the mod directory, removes Windows download-zone protections, and launches the payload automatically.',
+    contentPath: '2026-09-malware-krobus-courier.mdx',
+    keywords: ['malware', 'stardew-valley', 'smapi', 'nexus-mods', 'krobus-courier', 'dropbox', 'download-and-execute', 'zone-identifier', 'unblock-file', 'powershell'],
+  },
+  {
     id: 'malware-sunrise-furrow-coach-2026',
     title: 'Malware Analysis: Malicious Sunrise Furrow Coach Package',
     slug: '2026-09-malware-sunrise-furrow-coach',

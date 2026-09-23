@@ -60,6 +60,7 @@ describe('Advisory Registry', () => {
         'DynamicOrders.dll': '2026-04-malware-dynamicorders',
         'EndlessGraffiti.dll': '2026-01-malware-endlessgraffiti',
         'FasterGrowth.dll': '2026-01-malware-fastergrowth',
+        'KrobusCourier.dll': '2026-09-malware-krobus-courier',
         'LongLastingFertilizer.dll': '2026-03-malware-longlastingfertilizer',
         'MelonLoaderMod55.dll': '2026-03-malware-customer-search-bar',
         'MoreTrees.dll': '2026-02-malware-moretrees',
