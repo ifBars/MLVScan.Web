@@ -4,7 +4,7 @@ export default function PrivacyContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> July 20, 2026
+        <strong className="text-white">Last Updated:</strong> September 24, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -226,7 +226,7 @@ export default function PrivacyContent() {
 
       <h2 id="data-retention">Data Retention</h2>
       <p className="text-gray-300 mb-4">
-        Hosted API retention depends on what was submitted and what the scan found. Production uploaded scan objects stored under the API's temporary R2 scan prefix are covered by a 7-day lifecycle expiration rule. Clean and duplicate upload objects may be deleted sooner by application cleanup. Report records, hashes, source metadata, public attestations, review records, account data, and bot configuration are separate database or public-record data and are retained according to the purposes below.
+        Hosted API retention depends on what was submitted and what the scan found. Production uploaded scan objects stored under the API's temporary R2 scan prefix are covered by a lifecycle rule that targets deletion once an object is 30 days old; Cloudflare may process deletion asynchronously. Clean and duplicate upload objects may be deleted sooner by application cleanup. Report records, hashes, source metadata, public attestations, review records, account data, and bot configuration are separate database or public-record data and are retained according to the purposes below.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
         <li><strong className="text-white">Web Scanner:</strong> Files exist in memory only during scanning and are cleared after the browser session or page state no longer holds them. The WASM module may be cached by your browser according to standard HTTP caching rules.</li>
@@ -235,7 +235,7 @@ export default function PrivacyContent() {
         <li><strong className="text-white">One-time upload URLs:</strong> Presigned upload URLs expire after a short window, currently 15 minutes. Expiration of the upload URL does not delete a file that was already uploaded successfully.</li>
         <li><strong className="text-white">Duplicate hosted uploads:</strong> When uploaded bytes match an existing active-schema report, MLVScan reuses the existing report and deletes the redundant uploaded object when a temporary object was created.</li>
         <li><strong className="text-white">Clean hosted uploads:</strong> After a successful scan with no findings, the uploaded file object is deleted. The scan report, content hash, filename, submission record, and related metadata may still be retained for report reuse, audit, abuse prevention, and source-history purposes.</li>
-        <li><strong className="text-white">Findings or failed scans:</strong> Submitted file objects that produce findings, incomplete results, or failed scans may be held temporarily for manual review, scanner debugging, false-positive handling, support, and abuse prevention. In production, the temporary R2 scan object is automatically expired after 7 days even if application cleanup does not delete it sooner.</li>
+        <li><strong className="text-white">Findings or failed scans:</strong> Submitted file objects that produce findings, incomplete results, or failed scans may be held temporarily for manual review, scanner debugging, false-positive handling, support, and abuse prevention. In production, the temporary R2 scan object's lifecycle rule targets deletion once it is 30 days old, even if application cleanup has not deleted it sooner. Lifecycle deletion may not occur at the exact 30-day mark.</li>
         <li><strong className="text-white">Private reports and metadata:</strong> Private reports, hashes, filenames, source metadata, submission records, review overrides, and operational records may be retained while they are needed for report reuse, moderation history, security research, abuse prevention, support, and scanner improvement.</li>
         <li><strong className="text-white">Dashboard attestations:</strong> Draft records remain private until deleted or published. Published attestations, public reports, badges, and signed documents remain public until revoked or removed.</li>
         <li><strong className="text-white">Bot records:</strong> Bot configuration, source-watch state, notification history, submission mappings, and review records are retained as needed to operate watches, avoid duplicate scans, audit alerts, and support moderation workflows.</li>

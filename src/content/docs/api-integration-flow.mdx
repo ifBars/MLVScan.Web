@@ -154,7 +154,7 @@ done`}</CodeBlock>
         <p className="text-sm text-gray-300">
           Files with findings, incomplete results, or failed scans may be held temporarily for security
           review, scanner debugging, false-positive handling, support, and abuse prevention. In
-          production, temporary scan objects expire automatically after 7 days. Private report metadata
+          production, the R2 lifecycle rule targets temporary scan objects for deletion once they are 30 days old; deletion may be asynchronous. Private report metadata
           such as hashes, filenames, source records, statuses, and submission IDs may be retained for
           report reuse and audit. Uploading a file does not automatically publish a public attestation.
           See the{" "}

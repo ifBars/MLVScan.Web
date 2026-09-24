@@ -2,7 +2,7 @@ export default function TermsContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> July 19, 2026
+        <strong className="text-white">Last Updated:</strong> September 24, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -95,7 +95,7 @@ export default function TermsContent() {
         <li>Direct API reports and dashboard drafts are private by default unless you publish an attestation or public report surface.</li>
         <li>Uploading a file for hosted scanning does not automatically publish a public attestation; public publication requires a separate dashboard, automation, source-linked, platform, or bot workflow.</li>
         <li>Published attestations are public verification records and may expose hashes, verdicts, timestamps, source metadata, badges, and sanitized evidence.</li>
-        <li>Uploaded file objects may be deleted after duplicate or successful clean scans. Findings, incomplete results, and failed scans may keep temporary scan objects for review, but production temporary scan objects expire after 7 days. Reports, hashes, filenames, source records, review records, and other operational metadata may be retained as described in the Privacy Policy.</li>
+        <li>Uploaded file objects may be deleted after duplicate or successful clean scans. Findings, incomplete results, and failed scans may keep temporary scan objects for review; the production R2 lifecycle rule targets their deletion once they are 30 days old, with asynchronous processing. Reports, hashes, filenames, source records, review records, and other operational metadata may be retained as described in the Privacy Policy.</li>
         <li>Recognized hosted-service actions may produce limited server-side product analytics for service operation, adoption measurement, abuse review, and reliability. The fields, exclusions, pseudonymization, and retention period are described in the Privacy Policy.</li>
         <li>We may limit, suspend, or remove access to hosted services, API keys, bot features, webhook sinks, or public records to protect the service, users, or third parties.</li>
       </ul>

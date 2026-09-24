@@ -2,7 +2,7 @@ export default function AutomatedReportingDataHandlingContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> July 19, 2026
+        <strong className="text-white">Last Updated:</strong> September 24, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -78,7 +78,7 @@ export default function AutomatedReportingDataHandlingContent() {
         <li>Used to improve detection rules and reduce false positives</li>
         <li>Deduplicated by file hash and schema version so identical bytes can reuse existing reports</li>
         <li>Deleted at the uploaded-file level after a successful clean scan, while report metadata such as hashes, filenames, status, and source records may still be retained</li>
-        <li>Held temporarily at the uploaded-file level when findings, incomplete results, or failed scans require investigation or support; production temporary scan objects expire automatically after 7 days</li>
+        <li>Held temporarily at the uploaded-file level when findings, incomplete results, or failed scans require investigation or support; the production R2 lifecycle rule targets deletion of temporary scan objects once they are 30 days old, with asynchronous processing</li>
         <li>Kept private by default unless a separate dashboard, automation, source-linked, platform, or bot workflow explicitly publishes a public record</li>
         <li>Subject to the MLVScan API privacy and retention policy, including the broader hosted-service and bot data handling described in the Privacy Policy</li>
       </ul>
