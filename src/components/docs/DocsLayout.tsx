@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom"
 import DocsSidebar from "./DocsSidebar"
 import DocsSearch from "./DocsSearch"
-import { Menu, PanelLeftOpen, X } from "lucide-react"
+import { ChevronRight, Menu, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getDocBySlug } from "@/docs/registry"
 
@@ -72,6 +72,7 @@ const DocsLayout = () => {
         >
           {/* Desktop: sidebar column */}
           <aside
+            id="desktop-docs-sidebar"
             aria-hidden={!desktopSidebarOpen}
             inert={!desktopSidebarOpen}
             className={`hidden overflow-clip bg-slate-950 transition-opacity duration-200 lg:-mt-16 lg:block ${
@@ -89,20 +90,6 @@ const DocsLayout = () => {
 
           {/* Main column */}
           <div className="min-w-0">
-            {!desktopSidebarOpen && (
-              <div className="hidden px-4 pt-5 lg:block lg:px-8">
-                <button
-                  type="button"
-                  aria-label="Show documentation sidebar"
-                  onClick={() => setDesktopSidebarOpen(true)}
-                  className="inline-flex min-h-9 items-center gap-2 rounded-md border border-slate-800 bg-slate-950 px-3 text-sm font-medium text-slate-300 transition hover:border-slate-700 hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-                >
-                  <PanelLeftOpen className="size-4" />
-                  <span>Show navigation</span>
-                </button>
-              </div>
-            )}
-
             {/* Mobile header */}
             <div
               className={`lg:hidden sticky z-30 border-b border-slate-800 bg-slate-950 px-4 py-3 transition-all duration-300 ${
@@ -135,6 +122,19 @@ const DocsLayout = () => {
           </div>
         </div>
       </div>
+
+      {!desktopSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Show documentation sidebar"
+          aria-controls="desktop-docs-sidebar"
+          title="Show navigation"
+          onClick={() => setDesktopSidebarOpen(true)}
+          className="group fixed left-0 top-1/2 z-30 hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-slate-700 bg-slate-950/95 text-slate-300 shadow-md shadow-black/30 transition-[width,background-color,color] duration-200 hover:w-9 hover:border-teal-500/70 hover:bg-slate-900 hover:text-teal-300 focus-visible:w-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 motion-reduce:transition-none lg:flex"
+        >
+          <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transition-none" />
+        </button>
+      )}
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
