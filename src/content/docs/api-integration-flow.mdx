@@ -19,12 +19,20 @@ export default function ApiIntegrationFlowContent() {
 
       <h2 id="uploading-files">Uploading Files</h2>
       <p className="text-gray-300 mb-4">
+        The default scan automatically retries with deep analysis when normal bounded work is
+        incomplete. Add <code>scanProfile=deep</code> to force the larger budgets from the start.
+        Deep uploads have separate report reuse, so an earlier default scan cannot satisfy a
+        forced deep request. Completed reports expose <code>metadata.scanMode</code> and{" "}
+        <code>analysisCompleteness</code>; deep results can still be incomplete.
+      </p>
+      <p className="text-gray-300 mb-4">
         Use direct multipart upload for artifacts under the API limit. Include <code>X-API-Key</code> so
         the submission is owned by your account and can be read later with the same account key.
       </p>
       <CodeBlock language="bash" className="mb-6">{`upload_json=$(curl -fsS \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
   -F "file=@dist/YourMod.dll" \\
+  -F "scanProfile=deep" \\
   -F 'metadata={"sourceHint":"https://example.com/mods/your-mod","loaderType":"BepInEx6Mono"}' \\
   https://api.mlvscan.com/files)
 
@@ -36,7 +44,7 @@ submission_id=$(echo "$upload_json" | jq -r '.data.id')`}</CodeBlock>
       </p>
       <CodeBlock language="bash" className="mb-8">{`upload_url_json=$(curl -fsS \\
   -H "X-API-Key: $MLVSCAN_API_KEY" \\
-  "https://api.mlvscan.com/files/upload_url?filename=YourMod.dll&contentType=application/octet-stream")
+  "https://api.mlvscan.com/files/upload_url?filename=YourMod.dll&contentType=application/octet-stream&scanProfile=deep")
 
 upload_url=$(echo "$upload_url_json" | jq -r '.data.upload_url')
 submission_id=$(echo "$upload_url_json" | jq -r '.data.submission_id')
