@@ -73,6 +73,7 @@ type StatusResponse = {
 
 type StatusSnapshot = {
   checkedAt: Date
+  measuredAt: Date | null
   status: ComponentState
   uptime: StatusUptime
   components: StatusComponent[]
@@ -261,13 +262,13 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
   }
 }
 
-async function fetchStatus(apiBaseUrl: string): Promise<StatusSnapshot> {
+async function fetchStatus(apiBaseUrl: string, live = false): Promise<StatusSnapshot> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS)
   const start = performance.now()
 
   try {
-    const response = await fetch(`${apiBaseUrl}/status`, {
+    const response = await fetch(`${apiBaseUrl}/status${live ? "?live=1" : ""}`, {
       headers: {
         Accept: "application/json",
       },
@@ -282,7 +283,8 @@ async function fetchStatus(apiBaseUrl: string): Promise<StatusSnapshot> {
     }
 
     return {
-      checkedAt: new Date(body.timestamp),
+      checkedAt: new Date(),
+      measuredAt: new Date(body.timestamp),
       status: body.status,
       uptime: body.uptime,
       components: [
@@ -309,6 +311,7 @@ async function fetchStatus(apiBaseUrl: string): Promise<StatusSnapshot> {
 function buildErrorSnapshot(detail: string, latencyMs: number | null): StatusSnapshot {
   return {
     checkedAt: new Date(),
+    measuredAt: null,
     status: "outage",
     uptime: {
       windowDays: UPTIME_WINDOW_DAYS,
@@ -467,6 +470,7 @@ export default function StatusPage() {
   )
   const [snapshot, setSnapshot] = useState<StatusSnapshot>(() => ({
     checkedAt: new Date(),
+    measuredAt: null,
     status: "checking",
     uptime: {
       windowDays: UPTIME_WINDOW_DAYS,
@@ -490,32 +494,47 @@ export default function StatusPage() {
           : component,
       ),
     }))
-    setSnapshot(await fetchStatus(apiBaseUrl))
+    setSnapshot(await fetchStatus(apiBaseUrl, true))
     setIsRefreshing(false)
   }, [apiBaseUrl])
 
   useEffect(() => {
     let cancelled = false
 
-    void fetchStatus(apiBaseUrl).then((nextSnapshot) => {
+    void fetchStatus(apiBaseUrl, true).then((nextSnapshot) => {
       if (!cancelled) {
         setSnapshot(nextSnapshot)
       }
     })
 
     const intervalId = window.setInterval(() => {
-      void refresh()
+      void fetchStatus(apiBaseUrl).then((nextSnapshot) => {
+        if (!cancelled) {
+          setSnapshot((current) =>
+            current.measuredAt && nextSnapshot.measuredAt && nextSnapshot.measuredAt < current.measuredAt
+              ? { ...current, checkedAt: nextSnapshot.checkedAt }
+              : nextSnapshot,
+          )
+        }
+      })
     }, REFRESH_INTERVAL_MS)
 
     return () => {
       cancelled = true
       window.clearInterval(intervalId)
     }
-  }, [apiBaseUrl, refresh])
+  }, [apiBaseUrl])
 
   const liveCount = countLiveComponents(snapshot.components)
   const uptimeLabel = formatUptimePercentage(snapshot.uptime.percentage)
   const checkedAtLabel = snapshot.checkedAt.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+  const measuredAtLabel = snapshot.measuredAt?.toLocaleString(undefined, {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -576,7 +595,8 @@ export default function StatusPage() {
               </div>
               <div className="border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Last checked</div>
-                <div className="mt-2 text-xl font-semibold text-white">{checkedAtLabel}</div>
+                <div className="mt-2 text-xl font-semibold text-white">{snapshot.status === "checking" && !snapshot.measuredAt ? "Checking…" : checkedAtLabel}</div>
+                {measuredAtLabel ? <div className="mt-1 text-xs text-slate-500">Components measured {measuredAtLabel}</div> : null}
               </div>
             </div>
 
@@ -722,9 +742,11 @@ export default function StatusPage() {
                         <div className="flex items-start gap-3">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />
                           <div>
-                            <div className="font-medium text-white">No incidents reported</div>
+                            <div className="font-medium text-white">{snapshot.measuredAt ? "No incidents reported" : "Incident history unavailable"}</div>
                             <p className="mt-1 text-sm leading-6 text-slate-300">
-                              Current component feed last refreshed {checkedAtLabel}. Future incident and maintenance posts will appear here.
+                              {measuredAtLabel
+                                ? `Current component feed measured ${measuredAtLabel}. Future incident and maintenance posts will appear here.`
+                                : "Incident history will appear when the status endpoint responds."}
                             </p>
                           </div>
                         </div>
