@@ -10,7 +10,7 @@ import {
 } from "@/lib/scan-result-view"
 
 const createResult = (overrides: Partial<ScanResult> = {}): ScanResult => ({
-  schemaVersion: "1.3.0",
+  schemaVersion: "1.4.0",
   metadata: {
     coreVersion: "1.0.0",
     platformVersion: "1.0.0",

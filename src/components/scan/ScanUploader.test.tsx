@@ -46,7 +46,7 @@ const createDeferred = <T,>(): Deferred<T> => {
 }
 
 const createScanResult = (fileName: string): ScanResult => ({
-  schemaVersion: "1.3.0",
+  schemaVersion: "1.4.0",
   metadata: {
     coreVersion: "1.0.0",
     platformVersion: "1.0.0",
