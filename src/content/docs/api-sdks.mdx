@@ -39,7 +39,8 @@ await using var file = File.OpenRead("dist/YourMod.dll");
 var upload = await client.UploadFileAsync(
     file,
     "YourMod.dll",
-    "application/octet-stream");
+    "application/octet-stream",
+    forceDeep: true);
 
 var submissionId = upload.Data?.Id
     ?? throw new InvalidOperationException("Upload response did not include a submission ID.");
@@ -69,9 +70,10 @@ const client = new MlvScanClient({
 const file = await Bun.file("dist/YourMod.dll").arrayBuffer()
 const upload = await client.uploadFile(file, "YourMod.dll", {
   contentType: "application/octet-stream",
-  metadata: {
+  forceDeep: true,
+  metadataJson: JSON.stringify({
     sourceHint: "https://example.com/mods/your-mod",
-  },
+  }),
 })
 
 const submissionId = upload.data?.id
@@ -87,6 +89,24 @@ const report = await client.waitForReport(submissionId, {
 if (report.result?.disposition?.blockingRecommended) {
   throw new Error(report.result.disposition.headline ?? "MLVScan blocked this artifact.")
 }`}</CodeBlock>
+
+      <h2 id="deep-scans">Deep scans</h2>
+      <p className="text-gray-300 mb-4">
+        Hosted uploads automatically retry with larger analysis budgets when a normal scan is incomplete.
+        Pass <code>forceDeep: true</code> in either SDK to use those budgets from the start. The C#
+        wrapper accepts it on <code>UploadFileAsync</code> and <code>CreateUploadUrlAsync</code>;
+        TypeScript accepts it in the <code>uploadFile</code> options or the second argument to{" "}
+        <code>createUploadUrl</code>.
+      </p>
+      <CodeBlock language="typescript" className="mb-4">{`const direct = await client.uploadFile(file, "YourMod.dll", { forceDeep: true })
+const large = await client.createUploadUrl("LargeMod.dll", { forceDeep: true })`}</CodeBlock>
+      <p className="text-gray-300 mb-8">
+        Forced deep uploads reuse only existing deep reports for the same bytes and schema. Check{" "}
+        <code>report.result?.metadata?.scanMode</code> and{" "}
+        <code>report.result?.analysisCompleteness</code> after polling. Deep analysis remains bounded;
+        an incomplete result can still require manual review. This option is available in API and
+        SDK version 1.5.0 or later.
+      </p>
 
       <h2 id="generated-client-access">Generated Client Access</h2>
       <p className="text-gray-300 mb-4">
