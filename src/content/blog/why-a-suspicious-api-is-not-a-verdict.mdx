@@ -1,0 +1,63 @@
+A mod decodes a Base64 string. Another launches a process. A third uses reflection
+to load a type. Those are all things malware can do, but seeing one of them
+doesn't tell you enough to call a mod malicious.
+
+Legitimate mods use the same APIs. A useful scanner has to look at the context
+without losing the evidence that makes a dangerous chain stand out.
+
+## What happens around the call?
+
+Consider a Base64 decode. It might be ordinary data handling. It might also be
+one step in reconstructing a hidden command, writing a payload, and starting it.
+The interesting question is what the decoded value participates in.
+
+In July, Core's Base64 detection was narrowed to the actual framework decoding
+APIs, and ordinary decoding could be suppressed when the surrounding method
+didn't supply the relevant context. Encoded payloads, staging, reflection, and
+execution evidence still mattered. A nearby string-processing pattern was also
+tightened so ordinary abbreviation code wasn't treated as encoded decoding.
+
+The point was to reduce noise while keeping useful evidence. Removing a noisy
+signal entirely can also remove a clue that matters when it appears as part of
+a larger chain.
+
+## Findings and verdicts answer different questions
+
+A finding records something the scanner noticed. The final disposition combines
+that evidence with threat-family matching and other supported context. Exact
+known-malicious sample hashes can also produce a known-threat result.
+
+That's why an API name or a severity label on its own isn't the whole verdict.
+The report needs to distinguish an observed capability from a correlated
+behavior pattern and a known threat.
+
+The same distinction applies to author guidance. An alternative API can be
+useful for a particular design, but replacing an API just to make a warning go
+away doesn't establish that the behavior is safe.
+
+## The restart example
+
+The [October update](/blog/october-update-core-1-9-1-loader-2-1-7) is a recent
+example of this approach. A narrowly verified restart script can retain its
+execution findings and a **Suspicious** disposition, while carrying a
+non-blocking recommendation for the loader.
+
+The evidence stays visible. The recommendation becomes more specific to the
+behavior the scanner could establish. Unsupported or ambiguous restart paths
+don't automatically get the same treatment.
+
+## Regression coverage needs both sides
+
+Detection changes need checks against benign software as well as known malicious
+samples. A change that catches one more bad pattern but starts flagging normal
+mods needs more work. So does a false-positive fix that accidentally hides a
+known malicious chain.
+
+Those corpora help catch regressions; they aren't proof that every benign mod
+will pass or every malicious mod will be found. If you hit a false positive,
+the report and the exact version you scanned are useful starting points for
+an [issue](https://github.com/ifBars/MLVScan/issues).
+
+For the underlying change, see the
+[contextual Base64 detection commit](https://github.com/ifBars/MLVScan.Core/commit/52dd6ad)
+and the [current Core explanation](https://github.com/ifBars/MLVScan.Core#readme).

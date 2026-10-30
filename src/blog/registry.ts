@@ -16,12 +16,39 @@ export type BlogPost = {
 const posts: BlogPost[] = [
   {
     slug: 'welcome-to-the-mlvscan-blog',
-    title: 'A place for what comes next',
-    description: 'Library updates, engineering notes, and a closer look at where MLVScan is headed.',
+    title: 'Why MLVScan has a blog',
+    description: 'A home for library updates, engineering notes, and upcoming ideas, with room to explain the thinking behind them.',
     publishedDate: '2026-10-30',
     author: 'Bars',
     category: 'Updates',
     tags: ['MLVScan', 'Community'],
+  },
+  {
+    slug: 'october-update-core-1-9-1-loader-2-1-7',
+    title: 'The October update: better command recovery, fewer false alarms',
+    description: 'What Core 1.9.1, loader 2.1.7, and DevCLI 1.3.1 change for players and mod authors.',
+    publishedDate: '2026-10-30',
+    author: 'Bars',
+    category: 'Updates',
+    tags: ['Releases', 'Core', 'MelonLoader', 'BepInEx', 'DevCLI'],
+  },
+  {
+    slug: 'why-a-suspicious-api-is-not-a-verdict',
+    title: 'Why a suspicious API call is not the whole verdict',
+    description: 'Base64, process launches, and reflection can all have legitimate uses. The surrounding behavior matters.',
+    publishedDate: '2026-10-30',
+    author: 'Bars',
+    category: 'Engineering',
+    tags: ['Detection', 'False positives', 'Static analysis'],
+  },
+  {
+    slug: 'scan-your-mod-before-the-release',
+    title: 'Scan your mod before the release',
+    description: 'Use the release guard to check a compiled DLL in CI, retain the report, and optionally publish an attestation.',
+    publishedDate: '2026-10-30',
+    author: 'Bars',
+    category: 'Engineering',
+    tags: ['CI', 'GitHub Actions', 'Attestations', 'Mod authors'],
   },
 ]
 

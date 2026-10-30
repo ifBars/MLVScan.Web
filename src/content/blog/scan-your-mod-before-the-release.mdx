@@ -1,0 +1,64 @@
+The point where a DLL is ready to ship is a useful place to scan it. You've got
+the compiled artifact in front of you, and there's still time to inspect a
+report before the release goes out.
+
+The [MLVScan release guard](https://github.com/ifBars/MLVScan.Action) packages
+that check into a reusable GitHub Action. It runs DevCLI on the runner, saves a
+schema report, and applies a disposition threshold to the result.
+
+## Start with the local check
+
+Add the guard after the step that builds your mod. Point it at the actual DLL
+you intend to release; the path below is an example to replace with your own.
+
+```yaml
+- name: Scan release DLL
+  uses: ifBars/MLVScan.Action@v1
+  with:
+    artifact: src/MyMod/bin/Release/netstandard2.1/MyMod.dll
+    devcli-version: "1.3.1"
+```
+
+This explicitly selects the October DevCLI release. The action's own default
+is pinned separately, so updating DevCLI doesn't silently change every existing
+workflow.
+
+By default, the guard fails on **Suspicious** or **KnownThreat** and writes
+`mlvscan-report.json` before enforcing that gate. That gives you evidence to
+review when a check fails. A separate artifact-upload step can retain the
+report with the workflow run.
+
+A classification gate can intentionally be stricter than a loader's blocking
+policy. For example, the restart advisories described in the
+[October update](/blog/october-update-core-1-9-1-loader-2-1-7) still fail a
+`Suspicious` threshold. Review the result before treating a failed check as a
+confirmed infection.
+
+## Publishing is a separate choice
+
+The local gate doesn't upload the DLL to the hosted API. Hosted publication is
+an explicit option: enable `publish-attestation`, provide an API key through a
+repository secret, and give the artifact a stable lineage key.
+
+That flow uploads the DLL and publishes an MLVScan attestation with a public
+report URL and badge URL. The distinction matters: a local scan and a public
+report have different data-sharing consequences.
+
+The [attestation guide](/docs/ci-attestations) explains the setup, metadata,
+and current versus superseded records. Keep Mono and IL2CPP builds in separate
+lineages so a badge for one build doesn't stand in for the other.
+
+## Scan the bytes you ship
+
+Place the check after compilation, and publish the artifact you actually
+scanned. If a later step rebuilds or changes the DLL, scan that output too.
+
+An attestation is a record of a scan result, not a guarantee of safety. It
+doesn't replace source review or establish that a later download contains the
+same bytes. Its value is giving authors and readers something concrete to
+inspect alongside a release.
+
+The action repository includes
+[workflow examples](https://github.com/ifBars/MLVScan.Action#proven-workflow-shapes)
+for pull requests, releases, separate runtime builds, and artifacts produced by
+an earlier job. Start with the shape closest to your existing release process.
