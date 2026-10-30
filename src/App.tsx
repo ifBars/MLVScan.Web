@@ -19,6 +19,8 @@ const DocsLayout = lazy(() => import("@/components/docs/DocsLayout"))
 const DocsPage = lazy(() => import("@/pages/DocsPage"))
 const AdvisoriesPage = lazy(() => import("@/pages/AdvisoriesPage"))
 const ThreatFamiliesPage = lazy(() => import("@/pages/ThreatFamiliesPage"))
+const BlogPage = lazy(() => import("@/pages/BlogPage"))
+const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"))
 const StatusPage = lazy(() => import("@/pages/StatusPage"))
 
 function LoadingSpinner() {
@@ -54,6 +56,8 @@ function App() {
           <Route path="/dashboard/*" element={<LazyRoute><PartnerDashboardPage /></LazyRoute>} />
           <Route element={<MarketingShell />}>
             <Route path="/" element={<LazyRoute><HomePage /></LazyRoute>} />
+            <Route path="/blog" element={<LazyRoute><BlogPage /></LazyRoute>} />
+            <Route path="/blog/:slug" element={<LazyRoute><BlogPostPage /></LazyRoute>} />
             <Route path="/scan" element={<LazyRoute><ScanPage /></LazyRoute>} />
             <Route path="/status" element={<LazyRoute><StatusPage /></LazyRoute>} />
             <Route path="/attestations/:shareId" element={<LazyRoute><AttestationPage /></LazyRoute>} />

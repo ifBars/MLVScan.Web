@@ -33,6 +33,7 @@ const Navbar = () => {
     { name: "Scan", href: "/scan", external: false },
     { name: "Inspector", href: "/inspector", external: false },
     { name: "Docs", href: "/docs", external: false },
+    { name: "Blog", href: "/blog", external: false },
     { name: "Advisories", href: "/advisories", external: false },
     { name: "Threat Families", href: "/advisories/families", external: false },
   ]
@@ -61,7 +62,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden xl:flex items-center gap-5">
             {navLinks.map((link) => (
               link.external === false ? (
                 <Link
@@ -91,7 +92,7 @@ const Navbar = () => {
           </div>
 
           {/* CTAs */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4">
             <Link
               to="/status"
               className="inline-flex items-center gap-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
@@ -102,7 +103,7 @@ const Navbar = () => {
             <Button variant="outline" size="sm" asChild>
               <Link to={getPartnerDashboardPath("home")}>Dashboard</Link>
             </Button>
-            <Button size="sm" className="hidden md:flex" asChild>
+            <Button size="sm" className="hidden xl:flex" asChild>
               <a href="https://github.com/ifBars/MLVScan/releases" target="_blank" rel="noopener noreferrer">
                 <Download data-icon="inline-start" />
                 Download
@@ -114,7 +115,7 @@ const Navbar = () => {
           <button
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
-            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="xl:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -124,7 +125,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden navbar-glass border-t border-white/10">
+        <div className="xl:hidden navbar-glass border-t border-white/10">
           <div className="container mx-auto flex flex-col gap-4 px-4 py-4">
             {navLinks.map((link) => (
               link.external === false ? (

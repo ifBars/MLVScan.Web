@@ -16,6 +16,7 @@ const Footer = () => {
       { name: "GitHub", href: "https://github.com/ifBars/MLVScan" },
     ],
     resources: [
+      { name: "Blog", href: "/blog", internal: true },
       { name: "Documentation", href: "/docs", internal: true },
       { name: "Status", href: "/status", internal: true },
       { name: "Advisories", href: "/advisories", internal: true },
