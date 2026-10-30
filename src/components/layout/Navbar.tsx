@@ -46,23 +46,30 @@ const Navbar = () => {
         } ${navVisible ? "navbar-visible" : "navbar-hidden"}`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="grid h-16 grid-cols-[1fr_auto] items-center gap-4 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
-              <img
-                src={`${import.meta.env.BASE_URL}icon.png`}
-                alt="MLVScan"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white font-display">
-              MLVScan
-            </span>
-          </Link>
+          <div className="flex min-w-0 items-center gap-4">
+            <Link to="/" className="flex shrink-0 items-center gap-2">
+              <div className="w-11 h-11 rounded-xl bg-black/30 backdrop-blur-md border border-white/10 shadow-glow flex items-center justify-center overflow-hidden">
+                <img
+                  src={`${import.meta.env.BASE_URL}icon.png`}
+                  alt="MLVScan"
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-white font-display">
+                MLVScan
+              </span>
+            </Link>
+            {isDocs && (
+              <div className="hidden w-52 min-w-0 xl:block 2xl:w-64">
+                <DocsSearch />
+              </div>
+            )}
+          </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center gap-5">
+          <div className="hidden items-center justify-self-center gap-5 whitespace-nowrap xl:flex">
             {navLinks.map((link) => (
               link.external === false ? (
                 <Link
@@ -84,15 +91,10 @@ const Navbar = () => {
                 </a>
               )
             ))}
-            {isDocs && (
-              <div className="w-64">
-                <DocsSearch />
-              </div>
-            )}
           </div>
 
           {/* CTAs */}
-          <div className="hidden xl:flex items-center gap-4">
+          <div className="hidden items-center justify-self-end gap-4 whitespace-nowrap xl:flex">
             <Link
               to="/status"
               className="inline-flex items-center gap-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
