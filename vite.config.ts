@@ -1,3 +1,4 @@
+import { buildBlogFeed } from "./src/blog/feed"
 import { defineConfig, loadEnv, normalizePath, type Plugin, type ResolvedConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -191,6 +192,8 @@ function staticSeoPagesPlugin(): Plugin {
         fs.writeFileSync(outputPath, html)
       }
 
+      fs.mkdirSync(path.join(outDir, 'blog'), { recursive: true })
+      fs.writeFileSync(path.join(outDir, 'blog/feed.xml'), buildBlogFeed(), 'utf8')
       fs.writeFileSync(path.join(outDir, 'robots.txt'), buildRobotsTxt(), 'utf8')
       fs.writeFileSync(path.join(outDir, 'sitemap.xml'), buildSitemapXml(pages), 'utf8')
     },

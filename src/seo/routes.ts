@@ -1,3 +1,5 @@
+import { allBlogPosts } from "../blog/registry"
+import { getBlogSeoPage, getBlogPostSeoPage } from "../blog/seo"
 import { allAdvisories } from "../advisories/registry"
 import type { AdvisoryMeta } from "../advisories/types"
 import { homeFaqs } from "../content/homeFaq"
@@ -498,6 +500,8 @@ export function getStaticSeoPages(): SeoPage[] {
 
   const staticPages = [
     getHomeSeoPage(),
+    getBlogSeoPage(),
+    ...allBlogPosts.map(getBlogPostSeoPage),
     getScanSeoPage(),
     getInspectorSeoPage(),
     getStatusSeoPage(),

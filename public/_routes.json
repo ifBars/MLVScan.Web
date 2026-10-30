@@ -5,6 +5,7 @@
     "/attestations/*",
     "/docs/reference/*",
     "/assets/*",
+    "/blog/feed.xml",
     "/_framework/*",
     "/data/*",
     "/examples/*",

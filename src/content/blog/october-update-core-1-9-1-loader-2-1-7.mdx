@@ -1,0 +1,83 @@
+The October 28 releases bring better command recovery and more precise handling
+of legitimate behavior. The goal is to give people a more useful explanation of
+what a mod does, while keeping dangerous possibilities visible.
+
+There are three version numbers here because these are separate packages:
+
+<div className="overflow-x-auto rounded-lg border border-slate-800" role="region" aria-label="Release versions" tabIndex={0}>
+<table className="min-w-[36rem]">
+  <thead><tr><th>Package</th><th>Release</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td>MLVScan.Core</td><td>1.9.1</td><td>The shared static-analysis engine</td></tr>
+    <tr><td>MLVScan</td><td>2.1.7</td><td>The MelonLoader and BepInEx plugin</td></tr>
+    <tr><td>MLVScan.DevCLI</td><td>1.3.1</td><td>The command-line scanner for local checks and CI</td></tr>
+  </tbody>
+</table>
+</div>
+
+## A restart can deserve a warning without being blocked
+
+Launching another process is worth inspecting. It can also be part of a mod's
+restart feature, which makes a blanket rule frustrating for both players and
+authors.
+
+Core 1.9.1 recognizes a narrowly supported local restart-script pattern. When
+the written script and its launcher can be connected, and the script matches
+the supported operations, the result can stay **Suspicious** with a non-blocking
+recommendation. Loader 2.1.7 respects that recommendation and still shows an
+advisory in its console and report.
+
+That doesn't turn every restart script into an allowed exception. Unresolved
+launch bindings, extra risky operations, incomplete analysis, or a known threat
+match prevent this advisory treatment. It also isn't a clean verdict for the
+rest of the assembly.
+
+## More of the command is visible
+
+Malicious code doesn't always hand a complete command to the process launcher.
+Parts may be encoded, transformed, returned by a helper, or written into a
+script first.
+
+The new Core release follows more supported encoding and string-transform
+chains, recovers encoded commands, and exposes supported bound script bodies
+to detection and reporting. DevCLI 1.3.1 makes that recovered evidence easier
+to inspect in its output.
+
+When a value has several possible sources, the scanner retains those alternatives
+within its analysis limits. A harmless-looking candidate doesn't erase another
+candidate that could launch a dangerous target or write to a persistence path.
+Values that depend on runtime input can still remain unresolved.
+
+## Deep analysis still has limits
+
+Core's configurable deep analysis arrived in 1.9.0. Version 1.9.1 extends the
+larger budgets to process-value recovery too. DevCLI's retry and deep modes can
+use those budgets, and report when a limit is still reached.
+
+More analysis can take longer, and it doesn't make ambiguous runtime values
+certain. A partial result needs to stay visibly partial.
+
+## What changes when you update?
+
+Loader 2.1.7 includes builds for MelonLoader, BepInEx 5, BepInEx 6 Mono, and
+BepInEx 6 IL2CPP. It also carries the blocking recommendation through the signed
+scan cache. Older cache entries are invalidated and rescanned.
+
+There's one detail for CI users: DevCLI's classification gate is unchanged.
+A `Suspicious` result still fails a `--fail-on-disposition Suspicious` check,
+including an advisory result that the loader wouldn't block. Automation that
+intends to follow the blocking recommendation needs to read
+`disposition.blockingRecommended` from the schema report instead.
+
+MLVScan still uses static analysis. These changes improve the evidence and the
+decision around it; they don't guarantee that every command can be recovered
+or that a mod is safe.
+
+## Release notes
+
+- [MLVScan.Core 1.9.1](https://github.com/ifBars/MLVScan.Core/releases/tag/v1.9.1)
+- [MLVScan loader 2.1.7](https://github.com/ifBars/MLVScan/releases/tag/v2.1.7)
+- [MLVScan.DevCLI 1.3.1](https://github.com/ifBars/MLVScan.DevCLI/releases/tag/v1.3.1)
+
+For setup and usage, start with the [loader guide](/docs/libraries/mlvscan/getting-started)
+or the [DevCLI guide](/docs/libraries/devcli/usage-and-ci).
