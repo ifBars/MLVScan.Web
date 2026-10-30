@@ -31,7 +31,8 @@ export default function BlogPage() {
           <input aria-label="Search blog posts" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search posts…" className="w-full rounded-lg border border-white/10 bg-gray-950/50 py-2 pl-10 pr-3 text-sm text-white placeholder:text-gray-500 focus-visible:outline-2 focus-visible:outline-teal-400" />
         </div>
       </div>
-      <div aria-live="polite" aria-atomic="true">
+      <p role="status" className="sr-only">{posts.length === 1 ? '1 post found' : `${posts.length} posts found`}</p>
+      <div>
         {posts.length === 0 ? (
           <div className="border-y border-white/10 py-16 text-center">
             <h2 className="text-xl font-semibold text-white">No posts found</h2>

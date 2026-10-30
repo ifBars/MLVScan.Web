@@ -62,7 +62,7 @@ const Navbar = () => {
               </span>
             </Link>
             {isDocs && (
-              <div className="hidden w-52 min-w-0 xl:block 2xl:w-64">
+              <div className="hidden w-52 min-w-0 lg:block 2xl:w-64">
                 <DocsSearch />
               </div>
             )}
@@ -127,7 +127,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="xl:hidden navbar-glass border-t border-white/10">
+        <div className="xl:hidden navbar-glass max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10">
           <div className="container mx-auto flex flex-col gap-4 px-4 py-4">
             {navLinks.map((link) => (
               link.external === false ? (
