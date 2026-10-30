@@ -35,8 +35,12 @@
 }
 
 .blog-prose table {
-  display: block;
-  overflow-x: auto;
+  width: 100%;
+  border: 0;
+}
+
+.blog-prose th {
+  text-align: left;
 }
 
 .blog-prose img {
