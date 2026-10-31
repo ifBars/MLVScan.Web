@@ -33,6 +33,8 @@ import type { ScanResult } from '@mlvscan/wasm-core'
         <li><code>findings[].visibility</code> separates default findings from advanced diagnostics so consumer UIs can hide noisy heuristics by default.</li>
         <li><code>threatFamilies[]</code> carries known malware family matches, including <code>matchKind</code>, <code>confidence</code>, <code>exactHashMatch</code>, and matched rules.</li>
         <li><code>threatFamilies[].evidence[]</code> provides family evidence details such as <code>pattern</code>, <code>methodLocation</code>, <code>callChainId</code>, and <code>dataFlowChainId</code>.</li>
+        <li><code>threatFamilies[].relatedFindingIds</code> lists the findings that directly back each family match. It is narrower than <code>disposition.relatedFindingIds</code>, which covers every finding retained for the overall verdict. Available from Core 1.9.2.</li>
+        <li><code>findings[].attributes</code> exposes values a rule resolved, such as <code>target</code>, <code>targetKind</code> (<code>Executable</code>, <code>Script</code>, <code>Url</code>, <code>Path</code>, or <code>Unresolved</code>), <code>targetCandidates</code> for ambiguous targets, <code>arguments</code>, and <code>indicators</code> like <code>WindowStyle=Hidden</code>. Use these for grouping and display instead of parsing <code>description</code>. Process launch findings populate them from Core 1.9.2.</li>
         <li><code>findings[].riskScore</code> for scoring-based rules.</li>
         <li><code>findings[].callChainId</code> and <code>findings[].dataFlowChainId</code> for stable linking.</li>
         <li><code>findings[].developerGuidance</code> for inline remediation context.</li>

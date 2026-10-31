@@ -119,15 +119,15 @@ describe("ScanReport", () => {
   it("shows incomplete scans as manual review without opening advanced diagnostics", () => {
     renderScanReport(createResult())
 
-    expect(screen.getAllByText("Manual Review Required").length).toBeGreaterThan(0)
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Manual review required")
     expect(screen.getByText("Analysis was incomplete")).toBeTruthy()
     expect(
-      screen.getAllByText(
+      screen.getByText(
         "Warning: Some parts of the assembly could not be scanned. Please ensure this is a valid Unity mod. This doesn't necessarily mean the mod is malicious."
-      ).length
-    ).toBeGreaterThan(0)
-    expect(screen.getByText("Manual review")).toBeTruthy()
-    expect(screen.queryByText("No Known Threats Detected")).toBeNull()
+      )
+    ).toBeTruthy()
+    expect(screen.getByText("Incomplete analysis")).toBeTruthy()
+    expect(screen.queryByText("No known threats")).toBeNull()
   })
 
   it("shows the attestation CTA for clean publishable scans", () => {
@@ -145,6 +145,7 @@ describe("ScanReport", () => {
     expect(screen.queryByText("Copy Nexus Markdown")).toBeNull()
     expect(screen.getByText("Learn More")).toBeTruthy()
     expect(screen.getByText(/Screenshot only/)).toBeTruthy()
+    expect(screen.getByText("This file did not produce any findings.")).toBeTruthy()
   })
 
   it("does not show the attestation CTA for blocked results", () => {
@@ -166,5 +167,79 @@ describe("ScanReport", () => {
     }))
 
     expect(screen.queryByText("Publishing this mod?")).toBeNull()
+  })
+
+  it("groups known-threat findings and separates verdict evidence from context", () => {
+    const hiddenLaunch = createFinding({
+      id: "hidden-launch",
+      ruleId: "ProcessStartRule",
+      description: "Detected Process.Start call which could execute arbitrary programs.",
+      severity: "Critical",
+      location: "Mod.Loader.DownloadAndLaunch:627",
+      visibility: "Default",
+      attributes: {
+        target: "svchost.exe",
+        targetKind: "Executable",
+        indicators: ["CreateNoWindow=true", "WindowStyle=Hidden"],
+      },
+    })
+    const links = Array.from({ length: 3 }, (_, index) =>
+      createFinding({
+        id: `link-${index}`,
+        ruleId: "ProcessStartRule",
+        description: "Detected Process.Start call which could execute arbitrary programs.",
+        severity: "Medium",
+        location: `Mod.Menu.Buttons.Open${index}:5`,
+        visibility: "Default",
+        attributes: { target: "github.com", targetKind: "Url" },
+      })
+    )
+
+    renderScanReport(createResult({
+      findings: [hiddenLaunch, ...links],
+      summary: {
+        totalFindings: 4,
+        countBySeverity: { Critical: 1, Medium: 3 },
+        triggeredRules: ["ProcessStartRule"],
+      },
+      threatFamilies: [{
+        familyId: "family-dynamic-assembly-reflection-loader-v2",
+        variantId: "variant-a",
+        displayName: "Dynamic code loader with hidden system-binary-name launch",
+        summary: "Loads code and launches a hidden system binary.",
+        matchKind: "BehaviorVariant",
+        confidence: 0.96,
+        exactHashMatch: false,
+        matchedRules: ["ProcessStartRule"],
+        advisorySlugs: [],
+        evidence: [],
+        relatedFindingIds: ["hidden-launch"],
+      }],
+      disposition: {
+        classification: "KnownThreat",
+        headline: "Likely malware detected",
+        summary: "This file matches a known malware family.",
+        blockingRecommended: true,
+        primaryThreatFamilyId: "family-dynamic-assembly-reflection-loader-v2",
+        relatedFindingIds: ["hidden-launch", "link-0", "link-1", "link-2"],
+      },
+    }))
+
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Likely malware")
+    expect(screen.getByText("Dynamic code loader with hidden system-binary-name launch")).toBeTruthy()
+    expect(screen.getByText("Launches a hidden program")).toBeTruthy()
+    expect(screen.getByText("Opens web links")).toBeTruthy()
+    expect(screen.getByText("github.com ×3")).toBeTruthy()
+    expect(screen.getAllByText("Used")).toHaveLength(1)
+    expect(screen.getAllByText("Context")).toHaveLength(1)
+    expect(screen.getByText("No console window, Hidden window")).toBeTruthy()
+
+    const familyFindingsButton = screen.getByRole("button", { pressed: false, name: /1/ })
+    act(() => {
+      familyFindingsButton.click()
+    })
+
+    expect(screen.getByText(/Showing findings behind/)).toBeTruthy()
+    expect(screen.queryByText("Opens web links")).toBeNull()
   })
 })

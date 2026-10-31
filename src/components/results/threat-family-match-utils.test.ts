@@ -27,6 +27,7 @@ const createMatch = (overrides: Partial<ThreatFamily> = {}): ThreatFamily => ({
   confidence: 0.5,
   exactHashMatch: false,
   matchedRules: [],
+  relatedFindingIds: [],
   advisorySlugs: [],
   evidence: [createEvidence()],
   ...overrides,

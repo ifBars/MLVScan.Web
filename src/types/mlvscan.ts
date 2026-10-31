@@ -8,6 +8,8 @@ export type {
   DataFlowPattern,
   DeveloperGuidance,
   Finding,
+  FindingAttributes,
+  FindingTargetKind,
   FindingVisibility,
   ScanInput,
   ScanMetadata,

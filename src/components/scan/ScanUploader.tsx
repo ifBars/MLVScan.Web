@@ -409,24 +409,24 @@ const ScanUploader = () => {
         )}
 
         {status === "complete" && result && (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            {reviewFile && getResultPresentationClassification(result) !== "Clean" && <section aria-label="Private sample review" className="rounded-xl border border-teal-400/25 bg-teal-400/5 p-5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="max-w-xl">
-                  <h3 className="text-xl font-semibold text-white">Want us to take a closer look?</h3>
-                  <p className="mt-2 text-sm leading-6 text-gray-400">Report a possible false positive or send a suspicious sample for private review. Your file stays local until you agree and submit.</p>
-                </div>
-                <Button type="button" variant="outline" aria-expanded={reviewOpen} aria-controls="scan-private-review" onClick={() => setReviewOpen(!reviewOpen)}>{reviewOpen ? 'Hide review form' : 'Submit this sample'}</Button>
-              </div>
-              <div id="scan-private-review" hidden={!reviewOpen} className="mt-5">
-                <PrivateReviewForm selectedFile={reviewFile} initialKind="unsure" />
-              </div>
-            </section>}
+          <div className="animate-in slide-in-from-bottom-4 duration-500">
             <ScanReport
               result={result}
               onReset={resetScan}
               onCreateAttestation={attestationFile ? handleCreateAttestation : undefined}
             />
+            {reviewFile && getResultPresentationClassification(result) !== "Clean" && <section aria-label="Private sample review" className="mt-6 border-t border-slate-800/80 pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="max-w-xl">
+                  <h3 className="text-sm font-medium text-white">Want us to take a closer look?</h3>
+                  <p className="mt-0.5 text-xs leading-5 text-slate-400">Report a possible false positive or send a suspicious sample for private review. Your file stays local until you agree and submit.</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" className="h-8 rounded-[4px]" aria-expanded={reviewOpen} aria-controls="scan-private-review" onClick={() => setReviewOpen(!reviewOpen)}>{reviewOpen ? 'Hide review form' : 'Submit this sample'}</Button>
+              </div>
+              <div id="scan-private-review" hidden={!reviewOpen} className="mt-5">
+                <PrivateReviewForm selectedFile={reviewFile} initialKind="unsure" />
+              </div>
+            </section>}
           </div>
         )}
       </div>

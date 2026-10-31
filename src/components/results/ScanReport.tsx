@@ -1,68 +1,19 @@
-import { useMemo, useState } from "react"
-import {
-  BadgeCheck,
-  BookOpen,
-  CheckCircle,
-  FileCode,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldOff,
-} from "lucide-react"
-import type { Finding, ScanResult, Severity } from "@/types/mlvscan"
-import { Badge } from "@/components/ui/badge"
+import { useMemo, useRef, useState } from "react"
+import type { ScanResult } from "@/types/mlvscan"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import ThreatFamilyMatches from "@/components/results/ThreatFamilyMatches"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import CallChainViewer from "@/components/scan/CallChainViewer"
-import DataFlowViewer from "@/components/scan/DataFlowViewer"
+import { ActionList, ReportHeader } from "@/components/results/ReportHeader"
+import { FamilyTable, type FamilySelection } from "@/components/results/FamilyTable"
+import { FindingsTable } from "@/components/results/FindingsTable"
+import { Eyebrow } from "@/components/results/report-primitives"
 import {
   getActionItems,
   getAdvancedFindings,
   getDefaultFindings,
-  getDisplayedFindings,
   getIncompleteScanFinding,
   getResultClassification,
   getResultPresentationClassification,
 } from "@/lib/scan-result-view"
-import { cn, formatBytes, formatDate, getSeverityBadgeColor } from "@/lib/utils"
-import { patternLabelMap } from "@/components/results/threat-family-match-utils"
-
-const severityOrder: Record<Severity, number> = {
-  Critical: 4,
-  High: 3,
-  Medium: 2,
-  Low: 1,
-}
-
-const severityList: Array<Severity | "All"> = ["All", "Critical", "High", "Medium", "Low"]
-
-const verdictPresets = {
-  Clean: {
-    label: "No Known Threats Detected",
-    message: "No known malware families or correlated suspicious behavior were retained.",
-    icon: ShieldCheck,
-    tone: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
-  },
-  Suspicious: {
-    label: "Suspicious Behavior Detected",
-    message: "This file was flagged as suspicious. It may be malicious, but it may also be a false positive.",
-    icon: ShieldAlert,
-    tone: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  },
-  ManualReviewRequired: {
-    label: "Manual Review Required",
-    message: "MLVScan could not complete full analysis for this file. Review the scan warning before treating it as clean.",
-    icon: ShieldAlert,
-    tone: "bg-yellow-500/10 text-yellow-200 border-yellow-500/30",
-  },
-  KnownThreat: {
-    label: "Likely Malware Detected",
-    message: "This file matched a known malicious sample or malware family pattern.",
-    icon: ShieldOff,
-    tone: "bg-red-500/10 text-red-300 border-red-500/30",
-  },
-} as const
+import { getVerdictFindingIds } from "@/lib/finding-groups"
 
 interface ScanReportProps {
   result: ScanResult
@@ -70,484 +21,111 @@ interface ScanReportProps {
   onCreateAttestation?: () => void
 }
 
-const getFindingKey = (finding: Finding, index: number) => finding.id ?? `${index}`
+const fallbackSummaries = {
+  Clean: "No known malware families or correlated suspicious behavior were retained.",
+  Suspicious: "This file was flagged as suspicious. It may be malicious, but it may also be a false positive.",
+  KnownThreat: "This file matched a known malicious sample or malware family pattern.",
+  ManualReviewRequired:
+    "MLVScan could not complete full analysis for this file. Review the warning below before treating it as clean.",
+} as const
 
-const getFindingSummary = (finding: Finding) => {
-  if (finding.dataFlowChain?.pattern && patternLabelMap[finding.dataFlowChain.pattern]) {
-    return patternLabelMap[finding.dataFlowChain.pattern]
-  }
-
-  if (finding.description) {
-    return finding.description
-  }
-
-  return "Suspicious behavior detected"
+function AttestationPrompt({ onCreateAttestation }: { onCreateAttestation: () => void }) {
+  return (
+    <section
+      aria-label="Publish attestation"
+      className="flex flex-col gap-3 border-b border-slate-800/80 py-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div className="max-w-2xl">
+        <h2 className="text-sm font-medium text-white">Publishing this mod?</h2>
+        <p className="mt-0.5 text-xs leading-5 text-slate-400">
+          A screenshot does not prove which file was scanned. An attestation ties this result to the file&apos;s
+          SHA256 hash and scanner version, with a public URL, badge, and share text.
+        </p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <Button size="sm" className="h-8 rounded-[4px]" onClick={onCreateAttestation}>
+          Create Attestation
+        </Button>
+        <Button size="sm" variant="ghost" className="h-8 rounded-[4px]" asChild>
+          <a href="/docs/ci-attestations">Learn More</a>
+        </Button>
+      </div>
+    </section>
+  )
 }
 
 const ScanReport = ({ result, onReset, onCreateAttestation }: ScanReportProps) => {
   const baseClassification = getResultClassification(result)
-  const presentationClassification = getResultPresentationClassification(result)
-  const verdict = verdictPresets[presentationClassification]
-  const VerdictIcon = verdict.icon
-  const familyMatches = result.threatFamilies ?? []
+  const classification = getResultPresentationClassification(result)
   const defaultFindings = useMemo(() => getDefaultFindings(result), [result])
   const advancedFindings = useMemo(() => getAdvancedFindings(result), [result])
   const incompleteScanFinding = useMemo(() => getIncompleteScanFinding(result), [result])
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [activeSeverity, setActiveSeverity] = useState<Severity | "All">("All")
-  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const verdictFindingIds = useMemo(() => getVerdictFindingIds(result), [result])
+  const [familySelection, setFamilySelection] = useState<FamilySelection | null>(null)
+  const findingsRef = useRef<HTMLDivElement>(null)
 
-  const displayedFindings = useMemo(
-    () => getDisplayedFindings(result, showAdvanced),
-    [result, showAdvanced]
-  )
+  const isManualReview = classification === "ManualReviewRequired"
+  const summary = isManualReview
+    ? fallbackSummaries.ManualReviewRequired
+    : result.disposition?.summary ?? fallbackSummaries[classification]
+  const blockingRecommended = result.disposition?.blockingRecommended ?? baseClassification !== "Clean"
+  const canCreateAttestation = Boolean(onCreateAttestation) && classification === "Clean" && !blockingRecommended
 
-  const sortedDisplayedFindings = useMemo(
-    () =>
-      [...displayedFindings].sort((a, b) => {
-        const order = severityOrder[b.severity] - severityOrder[a.severity]
-        return order !== 0 ? order : a.description.localeCompare(b.description)
-      }),
-    [displayedFindings]
-  )
-
-  const filteredFindings = useMemo(() => {
-    if (activeSeverity === "All") return sortedDisplayedFindings
-    return sortedDisplayedFindings.filter((finding) => finding.severity === activeSeverity)
-  }, [activeSeverity, sortedDisplayedFindings])
-
-  const effectiveSelectedKey = useMemo(() => {
-    if (filteredFindings.length === 0) return null
-
-    const keys = filteredFindings.map((finding, index) => getFindingKey(finding, index))
-    if (selectedKey && keys.includes(selectedKey)) return selectedKey
-    return keys[0]
-  }, [filteredFindings, selectedKey])
-
-  const selectedFinding = useMemo(() => {
-    if (!effectiveSelectedKey) return null
-    return filteredFindings.find((finding, index) => getFindingKey(finding, index) === effectiveSelectedKey) ?? null
-  }, [effectiveSelectedKey, filteredFindings])
-
-  const highlightedFindings = useMemo(() => {
-    if (presentationClassification === "ManualReviewRequired" && incompleteScanFinding) {
-      return [incompleteScanFinding]
-    }
-
-    if (defaultFindings.length > 0) {
-      return [...defaultFindings]
-        .sort((a, b) => severityOrder[b.severity] - severityOrder[a.severity])
-        .slice(0, 3)
-    }
-
-    if (showAdvanced) {
-      return sortedDisplayedFindings.slice(0, 3)
-    }
-
-    return []
-  }, [defaultFindings, incompleteScanFinding, presentationClassification, showAdvanced, sortedDisplayedFindings])
-
-  const dispositionHeadline =
-    presentationClassification === "ManualReviewRequired"
-      ? verdict.label
-      : result.disposition?.headline ?? verdict.label
-  const dispositionSummary =
-    presentationClassification === "ManualReviewRequired"
-      ? incompleteScanFinding?.description ?? verdict.message
-      : result.disposition?.summary ?? verdict.message
-  const blockingRecommended =
-    result.disposition?.blockingRecommended ?? baseClassification !== "Clean"
-  const dispositionStatLabel =
-    presentationClassification === "ManualReviewRequired" ? "Manual review" : presentationClassification
-  const canCreateAttestation =
-    Boolean(onCreateAttestation) &&
-    presentationClassification === "Clean" &&
-    !blockingRecommended
+  const selectFamily = (selection: FamilySelection) => {
+    setFamilySelection((current) => (current?.key === selection.key ? null : selection))
+    findingsRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" })
+  }
 
   return (
-    <div className="space-y-6">
-      <Card className="border-border/60">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-4">
-            <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border", verdict.tone)}>
-              <VerdictIcon className="h-6 w-6" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <CardTitle className="truncate text-2xl">{dispositionHeadline}</CardTitle>
-              <CardDescription className="mt-1 max-w-xl line-clamp-3">{dispositionSummary}</CardDescription>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="max-w-[220px] truncate font-mono">{result.input.fileName}</span>
-                <span>|</span>
-                <span>{formatBytes(result.input.sizeBytes)}</span>
-                <span>|</span>
-                <span>Scanned {formatDate(result.metadata.timestamp)}</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onReset}>
-              Scan Another
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg bg-muted/30 p-4">
-              <p className="text-sm text-muted-foreground">Outcome</p>
-              <p className="text-2xl font-bold text-foreground">{dispositionStatLabel}</p>
-            </div>
-            <div className="rounded-lg bg-emerald-500/5 p-4">
-              <p className="text-sm text-emerald-300/80">Retained Findings</p>
-              <p className="text-2xl font-bold text-emerald-200">{defaultFindings.length}</p>
-            </div>
-            <div className="rounded-lg bg-amber-500/5 p-4">
-              <p className="text-sm text-amber-300/80">Advanced Diagnostics</p>
-              <p className="text-2xl font-bold text-amber-200">{advancedFindings.length}</p>
-            </div>
-            <div className="rounded-lg bg-red-500/5 p-4">
-              <p className="text-sm text-red-300/80">Blocking Recommended</p>
-              <p className="text-2xl font-bold text-red-200">{blockingRecommended ? "Yes" : "No"}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {presentationClassification === "ManualReviewRequired" && (
-        <Card className="border-yellow-500/30 bg-yellow-500/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-yellow-300" />
-              <div className="space-y-1">
-                <p className="font-semibold text-yellow-100">Analysis was incomplete</p>
-                <p className="text-sm text-yellow-100/80">
-                  {incompleteScanFinding?.description ??
-                    "The scanner could not complete full IL analysis for this file. Review it manually before treating it as clean."}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {canCreateAttestation && (
-        <Card className="border-emerald-500/25 bg-emerald-500/5">
-          <CardHeader className="gap-3 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <BadgeCheck className="h-5 w-5 text-emerald-300" />
-                Publishing this mod?
-              </CardTitle>
-              <CardDescription className="max-w-3xl text-sm leading-6">
-                Screenshots are useful for quick sharing, but they do not prove which exact file was scanned.
-                Create a verifiable attestation tied to this file&apos;s SHA256 hash and scanner version.
-              </CardDescription>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-2">
-              <Button size="sm" onClick={onCreateAttestation}>
-                <BadgeCheck data-icon="inline-start" />
-                Create Attestation
-              </Button>
-              <Button size="sm" variant="ghost" asChild>
-                <a href="/docs/ci-attestations">
-                  <BookOpen data-icon="inline-start" />
-                  Learn More
-                </a>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 text-sm md:grid-cols-3">
-              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
-                <p className="text-xs text-muted-foreground">Public proof</p>
-                <p className="mt-1 font-medium text-foreground">Attestation URL and badge</p>
-              </div>
-              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
-                <p className="text-xs text-muted-foreground">Share text</p>
-                <p className="mt-1 font-medium text-foreground">Nexus and Thunderstore-ready embeds</p>
-              </div>
-              <div className="rounded-lg border border-emerald-500/20 bg-background/40 p-3">
-                <p className="text-xs text-muted-foreground">Verification summary</p>
-                <p className="mt-1 font-medium text-foreground">Hash, scanner version, date, and result</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <ThreatFamilyMatches
-        matches={familyMatches}
-        primaryThreatFamilyId={result.disposition?.primaryThreatFamilyId}
+    <article className="text-[13px] text-slate-100">
+      <ReportHeader
+        result={result}
+        classification={classification}
+        summary={summary}
+        defaultFindingCount={defaultFindings.length}
+        advancedFindingCount={advancedFindings.length}
+        onReset={onReset}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle>What it means</CardTitle>
-            <CardDescription>
-              {presentationClassification === "ManualReviewRequired"
-                ? "The scanner could not complete full analysis, so this file needs review before it can be treated as clean."
-                : "Retained findings support the primary verdict. Advanced diagnostics stay hidden unless you opt in."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {highlightedFindings.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-emerald-500/20 bg-emerald-500/5 p-6 text-center text-muted-foreground">
-                <CheckCircle className="mx-auto mb-3 h-8 w-8 text-emerald-500/50" />
-                <p className="font-medium text-foreground">No retained findings support the verdict.</p>
-                <p className="text-sm">
-                  {advancedFindings.length > 0
-                    ? "Advanced diagnostics exist, but they were not used for the default verdict."
-                    : "This file did not retain any suspicious findings."}
-                </p>
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {highlightedFindings.map((finding, index) => (
-                  <li key={getFindingKey(finding, index)} className="flex min-w-0 items-start gap-3">
-                    <div className={cn("mt-1 h-2.5 w-2.5 shrink-0 rounded-full", getSeverityBadgeColor(finding.severity))} />
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words text-sm font-medium text-foreground">{getFindingSummary(finding)}</p>
-                      <p className="truncate text-xs text-muted-foreground" title={finding.location}>
-                        {finding.location}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+      <ActionList items={getActionItems(result)} />
 
-            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
-              <h4 className="text-sm font-semibold text-foreground">Recommended actions</h4>
-              <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                {getActionItems(result).map((item) => (
-                  <li key={item} className="break-words">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+      {isManualReview && (
+        <section aria-label="Incomplete analysis" className="border-b border-slate-800/80 py-4">
+          <Eyebrow className="text-yellow-200/80">Analysis was incomplete</Eyebrow>
+          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-300">
+            {incompleteScanFinding?.description ??
+              "The scanner could not complete full IL analysis for this file. Review it manually before treating it as clean."}
+          </p>
+        </section>
+      )}
 
-        <Card className="min-w-0 overflow-hidden">
-          <CardHeader>
-            <CardTitle>File details</CardTitle>
-            <CardDescription>Verify trust and identify the exact file.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-2 overflow-hidden">
-              <span className="shrink-0 text-muted-foreground">File name</span>
-              <span className="max-w-[70%] truncate font-mono text-xs">{result.input.fileName}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Size</span>
-              <span>{formatBytes(result.input.sizeBytes)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Scan mode</span>
-              <span className="capitalize">{result.metadata.scanMode}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Scanner</span>
-              <span className="font-mono text-xs">{result.metadata.scannerVersion}</span>
-            </div>
-            {result.disposition?.primaryThreatFamilyId && (
-              <div className="flex items-center justify-between gap-2 overflow-hidden">
-                <span className="shrink-0 text-muted-foreground">Primary family</span>
-                <span className="max-w-[70%] truncate font-mono text-xs">{result.disposition.primaryThreatFamilyId}</span>
-              </div>
-            )}
-            {result.input.sha256Hash && (
-              <div className="min-w-0 rounded-md border border-border/50 bg-muted/20 p-3">
-                <p className="text-xs text-muted-foreground">SHA256</p>
-                <p className="mt-1 break-all font-mono text-xs text-foreground">{result.input.sha256Hash}</p>
-              </div>
-            )}
-            <div className="rounded-md border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
-              Static analysis can miss runtime behavior. Treat this report as guidance, not a guarantee.
-            </div>
-            <div className="rounded-md border border-border/50 bg-muted/10 p-3 text-xs text-muted-foreground">
-              Screenshot only - for verifiable proof, create an MLVScan attestation tied to this file hash.
-            </div>
-          </CardContent>
-        </Card>
+      {canCreateAttestation && onCreateAttestation && <AttestationPrompt onCreateAttestation={onCreateAttestation} />}
+
+      <FamilyTable
+        families={result.threatFamilies ?? []}
+        findings={result.findings}
+        primaryThreatFamilyId={result.disposition?.primaryThreatFamilyId}
+        selectedFamilyKey={familySelection?.key}
+        onSelectFamily={selectFamily}
+      />
+
+      <div ref={findingsRef} className="scroll-mt-24">
+        <FindingsTable
+          defaultFindings={defaultFindings}
+          advancedFindings={advancedFindings}
+          verdictFindingIds={verdictFindingIds}
+          familySelection={familySelection}
+          onClearFamily={() => setFamilySelection(null)}
+        />
       </div>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <Card className="flex min-h-[520px] min-w-0 flex-col overflow-hidden">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <CardTitle>Findings</CardTitle>
-                <CardDescription>
-                  Retained findings are shown by default. Advanced diagnostics are optional.
-                </CardDescription>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-                {advancedFindings.length > 0 && (
-                  <Button
-                    size="sm"
-                    variant={showAdvanced ? "secondary" : "outline"}
-                    onClick={() => setShowAdvanced((value) => !value)}
-                  >
-                    {showAdvanced ? "Hide Advanced" : `Show Advanced (${advancedFindings.length})`}
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {severityList.map((severity) => (
-                <Button
-                  key={severity}
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  variant={activeSeverity === severity ? "secondary" : "outline"}
-                  onClick={() => setActiveSeverity(severity)}
-                >
-                  {severity}
-                </Button>
-              ))}
-            </div>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden">
-            {filteredFindings.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border/60 bg-muted/10 p-6 text-center text-muted-foreground">
-                {advancedFindings.length > 0 && !showAdvanced
-                  ? "No retained findings match this filter. Advanced diagnostics are available."
-                  : "No findings match this filter."}
-              </div>
-            ) : (
-              <ScrollArea className="h-[420px] pr-3">
-                <div className="space-y-3">
-                  {filteredFindings.map((finding, index) => {
-                    const key = getFindingKey(finding, index)
-                    const isSelected = key === effectiveSelectedKey
-
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setSelectedKey(key)}
-                        className={cn(
-                          "w-full min-w-0 overflow-hidden rounded-lg border p-3 text-left transition-colors",
-                          isSelected ? "border-teal-400/60 bg-emerald-950/30" : "border-border/60 hover:bg-muted/30"
-                        )}
-                      >
-                        <div className="flex min-w-0 items-start gap-3">
-                          <Badge className={cn("mt-0.5 shrink-0 border border-border/40", getSeverityBadgeColor(finding.severity))}>
-                            {finding.severity}
-                          </Badge>
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                              {finding.visibility === "Advanced" && (
-                                <Badge variant="outline" className="text-[11px] text-amber-300">
-                                  Advanced
-                                </Badge>
-                              )}
-                            </div>
-                            <p
-                              className="break-all text-sm font-semibold leading-snug text-foreground whitespace-normal"
-                              title={finding.description}
-                            >
-                              {finding.description}
-                            </p>
-                            <p
-                              className="mt-1 break-all font-mono text-xs text-muted-foreground whitespace-normal"
-                              title={finding.location}
-                            >
-                              {finding.location}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="flex min-h-[520px] min-w-0 flex-col overflow-hidden">
-          <CardHeader>
-            <CardTitle>Evidence</CardTitle>
-            <CardDescription>Review the call path and data flow for the selected finding.</CardDescription>
-          </CardHeader>
-          <CardContent className="min-w-0 flex-1 space-y-4 overflow-y-auto">
-            {!selectedFinding ? (
-              <div className="rounded-lg border border-dashed border-border/60 bg-muted/10 p-6 text-center text-muted-foreground">
-                Select a finding to view evidence.
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="min-w-0 rounded-lg border border-border/50 bg-muted/20 p-4">
-                  <div className="flex min-w-0 items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex min-w-0 items-start gap-2">
-                        <Badge className={cn("mt-0.5 shrink-0 border border-border/40", getSeverityBadgeColor(selectedFinding.severity))}>
-                          {selectedFinding.severity}
-                        </Badge>
-                        <p
-                          className="min-w-0 break-all text-sm font-semibold leading-snug text-foreground whitespace-normal"
-                          title={selectedFinding.description}
-                        >
-                          {selectedFinding.description}
-                        </p>
-                      </div>
-                      <p
-                        className="break-all font-mono text-xs text-muted-foreground whitespace-normal opacity-80"
-                        title={selectedFinding.location}
-                      >
-                        {selectedFinding.location}
-                      </p>
-                    </div>
-                    <FileCode className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  </div>
-                </div>
-
-                {selectedFinding.codeSnippet && !selectedFinding.callChain && !selectedFinding.dataFlowChain && (
-                  <div className="space-y-2">
-                    <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Detected pattern
-                    </h5>
-                    <pre className="overflow-x-auto rounded-md border border-border/50 bg-muted/50 p-3 font-mono text-xs text-foreground">
-                      <code>{selectedFinding.codeSnippet}</code>
-                    </pre>
-                  </div>
-                )}
-
-                {selectedFinding.callChain && (
-                  <div className="min-w-0 space-y-2">
-                    <h5 className="text-xs font-semibold uppercase tracking-wider text-teal-300">
-                      Deep IL: Execution path
-                    </h5>
-                    <div className="overflow-hidden rounded-md border border-border/40">
-                      <CallChainViewer chain={selectedFinding.callChain} className="bg-background/50" />
-                    </div>
-                  </div>
-                )}
-
-                {selectedFinding.dataFlowChain && (
-                  <div className="min-w-0 space-y-2">
-                    <h5 className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
-                      Deep IL: Data flow
-                    </h5>
-                    <div className="overflow-hidden rounded-md border border-border/40">
-                      <DataFlowViewer chain={selectedFinding.dataFlowChain} className="bg-background/50" />
-                    </div>
-                  </div>
-                )}
-
-                {selectedFinding.visibility === "Advanced" && (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-100/80">
-                    This is an advanced diagnostic finding. It was not used as the primary verdict source.
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      <footer className="mt-6 text-xs leading-5 text-slate-500">
+        <p className="max-w-2xl">
+          Static analysis can miss runtime behavior. Treat this report as guidance, not a guarantee. Screenshot only -
+          for verifiable proof, create an MLVScan attestation tied to this file hash.
+        </p>
+      </footer>
+    </article>
   )
 }
 
