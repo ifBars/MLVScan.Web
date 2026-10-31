@@ -5,9 +5,9 @@ import { useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Upload, ShieldAlert, RefreshCw, FileWarning } from "lucide-react"
+import { Upload, ShieldAlert, RefreshCw, FileWarning, ServerCrash } from "lucide-react"
 import type { ScanResult, ScanStatus } from "@/types/mlvscan"
-import { scanAssemblyInWorker, type ScanProgress } from "@/lib/scanner"
+import { isScannerUnavailableError, scanAssemblyInWorker, type ScanProgress } from "@/lib/scanner"
 import { combineScanResults } from "@/lib/scan-result-aggregation"
 import { isSupportedAssemblyFileName, resolveUploadFiles } from "@/lib/upload-file"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
@@ -18,7 +18,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
 const INITIAL_SCAN_PROGRESS = 1
 const OVERALL_PROGRESS_CAP = 99
 const MIN_VISIBLE_COMPLETED_ASSEMBLY_PROGRESS = 90
-type UploadErrorKind = "invalid-file" | "file-size" | "scan"
+type UploadErrorKind = "invalid-file" | "file-size" | "scan" | "scanner-unavailable"
 
 const yieldToBrowser = () =>
   new Promise<void>((resolve) => {
@@ -179,7 +179,7 @@ const ScanUploader = () => {
     } catch (err) {
       console.error("Scan error:", err)
       setError(err instanceof Error ? err.message : "Failed to scan file. Please try again.")
-      setErrorKind("scan")
+      setErrorKind(isScannerUnavailableError(err) ? "scanner-unavailable" : "scan")
       setStatus("error")
       setCurrentScanName(null)
       setScanPhase(null)
@@ -373,6 +373,8 @@ const ScanUploader = () => {
                 }`}>
                   {errorKind === "file-size" ? (
                     <FileWarning className="w-8 h-8 text-amber-500" />
+                  ) : errorKind === "scanner-unavailable" ? (
+                    <ServerCrash className="w-8 h-8 text-red-500" />
                   ) : (
                     <ShieldAlert className="w-8 h-8 text-red-500" />
                   )}
@@ -386,7 +388,9 @@ const ScanUploader = () => {
                     ? "File Too Large"
                     : errorKind === "invalid-file"
                       ? "Unsupported File"
-                      : "Scan Failed"}
+                      : errorKind === "scanner-unavailable"
+                        ? "Scanner Unavailable: File Not Scanned"
+                        : "Scan Failed"}
                 </h3>
                 <p className={`max-w-md text-center text-sm mb-4 ${
                   errorKind === "file-size"
@@ -395,14 +399,26 @@ const ScanUploader = () => {
                 }`}>
                   {error}
                 </p>
+                {errorKind === "scanner-unavailable" && (
+                  <p className="mb-4 max-w-md text-center text-xs text-red-700/80 dark:text-red-200/80">
+                    Do not treat this file as safe. Reload the page to try again. If this keeps happening,
+                    the scanner may be temporarily down; scan the file locally with MLVScan.DevCLI instead.
+                  </p>
+                )}
                 {errorKind === "file-size" && (
                   <p className="mb-4 text-center text-xs text-amber-700/80 dark:text-amber-200/80">
                     Choose a smaller assembly or scan the file locally with MLVScan.DevCLI.
                   </p>
                 )}
-                <Button variant="outline" onClick={resetScan}>
-                  Try Again
-                </Button>
+                {errorKind === "scanner-unavailable" ? (
+                  <Button variant="outline" onClick={() => window.location.reload()}>
+                    Reload Page
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={resetScan}>
+                    Try Again
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

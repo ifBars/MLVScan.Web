@@ -1,5 +1,6 @@
 import * as wasmCore from '@mlvscan/wasm-core'
-import type { ScannerInitOptions, ScannerStatus } from '@mlvscan/wasm-core'
+import type { ScannerStatus } from '@mlvscan/wasm-core'
+import { assertRealScanResult, scannerInitOptions, ScannerUnavailableError } from './scanner-guard'
 import type { ScanResult } from '@/types/mlvscan'
 
 export type ScanProgress = {
@@ -49,11 +50,14 @@ const getBaseUrl = (): string => {
 }
 
 export const initScanner = async () => {
-  const options: ScannerInitOptions = {
-    baseUrl: getBaseUrl(),
-    useMock: false
+  try {
+    await wasmCore.initScanner(scannerInitOptions(getBaseUrl()))
+  } catch (error) {
+    throw new ScannerUnavailableError(error)
   }
-  return wasmCore.initScanner(options)
+  if (wasmCore.isMockScanner()) {
+    throw new ScannerUnavailableError(wasmCore.getInitError() ?? undefined)
+  }
 }
 
 export const scanAssembly = async (fileBytes: Uint8Array, fileName: string): Promise<ScanResult> => {
@@ -62,7 +66,7 @@ export const scanAssembly = async (fileBytes: Uint8Array, fileName: string): Pro
     await initScanner()
   }
   const result = await wasmCore.scanAssembly(fileBytes, fileName)
-  return result as ScanResult
+  return assertRealScanResult(result as ScanResult)
 }
 
 export const scanAssemblyInWorker = async (
@@ -75,7 +79,7 @@ export const scanAssemblyInWorker = async (
       if (!wasmCore.isScannerReady()) {
         await initScanner()
       }
-      return wasmScanner.scanAssemblyWithProgress(fileBytes, fileName, onProgress)
+      return assertRealScanResult(await wasmScanner.scanAssemblyWithProgress(fileBytes, fileName, onProgress))
     }
 
     return scanAssembly(fileBytes, fileName)
@@ -98,7 +102,11 @@ export const scanAssemblyInWorker = async (
         }
 
         if (response.ok) {
-          resolve(response.result)
+          try {
+            resolve(assertRealScanResult(response.result))
+          } catch (error) {
+            reject(error)
+          }
           return
         }
 
@@ -117,6 +125,7 @@ export const scanAssemblyInWorker = async (
       })
     })
   } catch (error) {
+    // The main thread loads the same runtime; retrying there only helps when the worker itself failed.
     console.warn('Scanner worker unavailable, falling back to main-thread scan.', error)
     return scanAssembly(fileBytes, fileName)
   } finally {
@@ -130,13 +139,14 @@ export const getScannerVersion = async () => wasmCore.getScannerVersion()
 
 export const getSchemaVersion = async () => wasmCore.getSchemaVersion()
 
-/** True when running in mock mode (requested or fallback). */
+/** True when wasm-core switched to its placeholder scanner. The site treats this as unavailable. */
 export const isMockScanner = () => wasmCore.isMockScanner()
 
-/** Error that caused fallback to mock, or null. */
+/** Error that stopped the WASM scanner from starting, or null. */
 export const getInitError = () => wasmCore.getInitError()
 
 /** Current scanner status for UI (ready, isMock, initError). */
 export const getScannerStatus = (): ScannerStatus => wasmCore.getScannerStatus()
 
 export type { ScannerStatus }
+export { ScannerUnavailableError, isScannerUnavailableError, isPlaceholderScanResult } from './scanner-guard'

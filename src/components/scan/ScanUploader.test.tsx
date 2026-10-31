@@ -12,12 +12,14 @@ import type { ScanResult } from "@/types/mlvscan"
 import ScanUploader from "@/components/scan/ScanUploader"
 import { combineScanResults } from "@/lib/scan-result-aggregation"
 import { scanAssemblyInWorker, type ScanProgress } from "@/lib/scanner"
+import { ScannerUnavailableError } from "@/lib/scanner-guard"
 
 vi.mock("@/lib/private-review", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/private-review")>()), submitPrivateReview: vi.fn() }))
 
-vi.mock("@/lib/scanner", () => ({
-  scanAssemblyInWorker: vi.fn(),
-}))
+vi.mock("@/lib/scanner", async () => {
+  const guard = await import("@/lib/scanner-guard")
+  return { scanAssemblyInWorker: vi.fn(), isScannerUnavailableError: guard.isScannerUnavailableError }
+})
 
 vi.mock("@/lib/browser-scan-attestation-handoff", () => ({
   saveBrowserScanAttestationHandoff: vi.fn(),
@@ -361,5 +363,22 @@ describe("ScanUploader", () => {
     expect(screen.getByText(/Browser scans support files up to 100.0 MB/)).toBeTruthy()
     expect(screen.getByText(/scan the file locally with MLVScan\.DevCLI/)).toBeTruthy()
     expect(scanAssemblyInWorker).not.toHaveBeenCalled()
+  })
+
+  it("shows that the file was not scanned when the scanner is unavailable", async () => {
+    vi.mocked(scanAssemblyInWorker).mockRejectedValue(new ScannerUnavailableError(new Error("integrity mismatch")))
+    renderScanUploader()
+
+    const bytes = new Uint8Array([0x4d, 0x5a])
+    const file = new File([bytes], "SomeMod.dll", { type: "application/octet-stream" })
+    Object.defineProperty(file, "arrayBuffer", { value: async () => new Uint8Array(bytes).buffer })
+    await act(async () => { fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [file] } }) })
+    for (let i = 0; i < 8; i++) { await act(async () => { vi.advanceTimersByTime(16) }); await flushAsyncWork() }
+
+    expect(screen.getByText("Scanner Unavailable: File Not Scanned")).toBeTruthy()
+    expect(screen.getByText(/this file was not scanned/i)).toBeTruthy()
+    expect(screen.getByText(/Do not treat this file as safe/)).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Reload Page" })).toBeTruthy()
+    expect(screen.queryByTestId("scan-report")).toBeNull()
   })
 })

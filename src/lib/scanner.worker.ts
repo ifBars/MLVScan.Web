@@ -2,6 +2,7 @@ import * as wasmCore from "@mlvscan/wasm-core"
 
 import type { ScanResult } from "@/types/mlvscan"
 import type { ScanProgress } from "@/lib/scanner"
+import { assertRealScanResult, scannerInitOptions } from "@/lib/scanner-guard"
 
 type WasmCoreWithProgress = typeof wasmCore & {
   scanAssemblyWithProgress?: (
@@ -42,10 +43,7 @@ type ScanWorkerResponse =
 let scannerInitPromise: Promise<void> | null = null
 
 const ensureScanner = (baseUrl: string): Promise<void> => {
-  scannerInitPromise ??= wasmCore.initScanner({
-    baseUrl,
-    useMock: false,
-  })
+  scannerInitPromise ??= wasmCore.initScanner(scannerInitOptions(baseUrl))
   return scannerInitPromise
 }
 
@@ -72,7 +70,7 @@ self.onmessage = async (event: MessageEvent<ScanWorkerRequest>) => {
       id: request.id,
       type: "result",
       ok: true,
-      result,
+      result: assertRealScanResult(result),
     } satisfies ScanWorkerResponse)
   } catch (error) {
     self.postMessage({

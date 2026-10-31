@@ -1,122 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { scanAssembly, initScanner, isScannerReady, getScannerVersion, getSchemaVersion } from './scanner';
+import { describe, it, expect } from 'vitest';
+import { initScanner, scanAssembly, isPlaceholderScanResult, isScannerUnavailableError, ScannerUnavailableError } from './scanner';
 import type { ScanResult } from '@/types/mlvscan';
 import * as fs from 'fs';
 import * as path from 'path';
 
-describe('scanner', () => {
-  describe('initScanner', () => {
-    it('should initialize scanner successfully', async () => {
-      await initScanner();
-      expect(isScannerReady()).toBe(true);
-    });
-
-    it('should only initialize once', async () => {
-      await initScanner();
-      const firstCall = isScannerReady();
-      await initScanner();
-      const secondCall = isScannerReady();
-      expect(firstCall).toBe(secondCall);
-    });
+// The .NET runtime cannot load under jsdom, which is exactly the "scanner unavailable" case.
+// Real WASM scans are covered by src/test/integration/scanner.test.ts.
+describe('scanner when the WASM runtime cannot load', () => {
+  it('rejects initialization instead of falling back to a placeholder scanner', async () => {
+    await expect(initScanner()).rejects.toBeInstanceOf(ScannerUnavailableError);
   });
 
-  describe('getScannerVersion', () => {
-    it('should return a version string', async () => {
-      const version = await getScannerVersion();
-      expect(typeof version).toBe('string');
-      expect(version.length).toBeGreaterThan(0);
-    });
+  it('never returns a result for a file it could not scan', async () => {
+    const bytes = new Uint8Array([0x4D, 0x5A, 0x90, 0x00]);
+    const outcome = await scanAssembly(bytes, 'test.dll').then(() => 'resolved', (error: unknown) => error);
+    expect(outcome).not.toBe('resolved');
+    expect(isScannerUnavailableError(outcome)).toBe(true);
   });
 
-  describe('getSchemaVersion', () => {
-    it('should return a version string', async () => {
-      const version = await getSchemaVersion();
-      expect(typeof version).toBe('string');
-      expect(version.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('scanAssembly', () => {
-    it('should return a valid ScanResult when WASM is available', async () => {
-      await initScanner();
-      
-      const mockDllBytes = new Uint8Array([
-        0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00
-      ]);
-      
-      const result = await scanAssembly(mockDllBytes, 'test.dll') as ScanResult;
-      
-      expect(result).toBeDefined();
-      expect(result.schemaVersion).toBeDefined();
-      expect(result.metadata).toBeDefined();
-      expect(result.input).toBeDefined();
-      expect(result.input.fileName).toBe('test.dll');
-      expect(result.summary).toBeDefined();
-      expect(Array.isArray(result.findings)).toBe(true);
-    });
-
-    it('should include metadata with scanner version', async () => {
-      await initScanner();
-      
-      const mockDllBytes = new Uint8Array([0x4D, 0x5A, 0x90, 0x00]);
-      const result = await scanAssembly(mockDllBytes, 'metadata-test.dll') as ScanResult;
-      
-      expect(result.metadata).toBeDefined();
-      expect(result.metadata.scannerVersion).toBeDefined();
-      expect(result.metadata.platform).toBe('wasm');
-    });
-
-    it('should handle empty bytes gracefully', async () => {
-      await initScanner();
-      
-      const emptyBytes = new Uint8Array(0);
-      const result = await scanAssembly(emptyBytes, 'empty.dll') as ScanResult;
-      
-      expect(result).toBeDefined();
-      expect(result.input.fileName).toBe('empty.dll');
-    });
-
-    it('should track findings count in summary', async () => {
-      await initScanner();
-      
-      const mockDllBytes = new Uint8Array(1024);
-      const result = await scanAssembly(mockDllBytes, 'summary-test.dll') as ScanResult;
-      
-      expect(result.summary).toBeDefined();
-      expect(typeof result.summary.totalFindings).toBe('number');
-      expect(result.summary.countBySeverity).toBeDefined();
-      expect(Array.isArray(result.summary.triggeredRules)).toBe(true);
-    });
-  });
-
-  describe('WASM Integration', () => {
-    it('should have scanner exports available after init', async () => {
-      await initScanner();
-      expect(isScannerReady()).toBe(true);
-    });
-
-    it('should be able to get version after init', async () => {
-      await initScanner();
-      const version = await getScannerVersion();
-      expect(version).toMatch(/^\d+\.\d+\.\d+/);
-    });
+  it('tells the user the file was not scanned', () => {
+    expect(new ScannerUnavailableError().message).toMatch(/not scanned/i);
   });
 });
 
-describe('scanner error handling', () => {
-  beforeEach(async () => {
-    vi.resetModules();
+describe('placeholder result detection', () => {
+  const real = { metadata: { scannerVersion: '1.9.2', coreVersion: '1.9.2' }, analysisCompleteness: { reasons: [] } } as unknown as ScanResult;
+
+  it('accepts a real scanner result', () => {
+    expect(isPlaceholderScanResult(real)).toBe(false);
   });
 
-  it('should handle invalid file data gracefully', async () => {
-    await initScanner();
-    
-    const invalidBytes = new Uint8Array([0x00, 0x01, 0x02, 0x03]);
-    const result = await scanAssembly(invalidBytes, 'invalid.dll') as ScanResult;
-    
-    expect(result).toBeDefined();
-    expect(result.input.fileName).toBe('invalid.dll');
-    expect(result.findings).toBeDefined();
+  it('flags mock versions and the MockScanner completeness reason', () => {
+    expect(isPlaceholderScanResult({ ...real, metadata: { ...real.metadata, scannerVersion: '1.0.0-mock' } } as ScanResult)).toBe(true);
+    expect(isPlaceholderScanResult({ ...real, metadata: { ...real.metadata, coreVersion: '1.0.0-mock' } } as ScanResult)).toBe(true);
+    expect(isPlaceholderScanResult({ ...real, analysisCompleteness: { reasons: [{ reasonId: 'MockScanner' }] } } as unknown as ScanResult)).toBe(true);
+    expect(isPlaceholderScanResult(null)).toBe(true);
   });
 });
 
