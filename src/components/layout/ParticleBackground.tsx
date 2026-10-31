@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react"
+import { startHalloweenScene } from "@/lib/halloween-scene"
+import type { HalloweenVariant } from "@/lib/seasonal-theme"
 
 const PARTICLE_COLORS = [
   "rgba(45, 212, 191, 0.4)",
@@ -45,13 +47,18 @@ class Particle {
 /**
  * Wireframe-style particle background with connecting lines (ported from MLVScan-site).
  * Particles move and bounce; lines connect nearby particles with distance-based opacity.
+ * On Halloween the same canvas hosts the seasonal scene instead.
  */
-const ParticleBackground = () => {
+const ParticleBackground = ({ halloween = null }: { halloween?: HalloweenVariant | null }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+
+    if (halloween) {
+      return startHalloweenScene(canvas)
+    }
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
@@ -96,16 +103,20 @@ const ParticleBackground = () => {
     }
 
     let rafId = 0
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const animate = () => {
       if (!ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update(canvas.width, canvas.height)
+        if (!reducedMotion.matches) particlesArray[i].update(canvas.width, canvas.height)
         particlesArray[i].draw(ctx)
       }
       connect()
-      rafId = requestAnimationFrame(animate)
+      if (!reducedMotion.matches) rafId = requestAnimationFrame(animate)
     }
+    const refresh = () => { cancelAnimationFrame(rafId); animate() }
+    reducedMotion.addEventListener('change', refresh)
+    window.addEventListener('resize', refresh)
 
     init()
     animate()
@@ -113,13 +124,17 @@ const ParticleBackground = () => {
     return () => {
       cancelAnimationFrame(rafId)
       window.removeEventListener("resize", setCanvasDimensions)
+      window.removeEventListener('resize', refresh)
+      reducedMotion.removeEventListener('change', refresh)
     }
-  }, [])
+  }, [halloween])
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full z-0 opacity-20 pointer-events-none" // Reduced overall opacity
+      data-seasonal-particles={halloween ? `halloween-${halloween}` : undefined}
+      // The seasonal scene sets per-sprite alpha itself; the default network stays faint.
+      className={`fixed top-0 left-0 w-full h-full z-0 pointer-events-none ${halloween ? '' : 'opacity-20'}`}
       style={{ zIndex: -10 }}
       aria-hidden="true"
     />

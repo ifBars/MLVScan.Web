@@ -1,40 +1,53 @@
 import { Outlet, useLocation } from "react-router-dom"
 import DocsSidebar from "./DocsSidebar"
 import DocsSearch from "./DocsSearch"
-import { ChevronRight, Menu, X } from "lucide-react"
-import { useEffect, useState } from "react"
-import { getDocBySlug } from "@/docs/registry"
+import { ChevronRight, Menu, PanelLeftOpen, Search, X } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { docSections, getDocBySlug } from "@/docs/registry"
+import { getDocsSlugFromPath } from "./docs-path"
 
-const SCROLL_HIDE_THRESHOLD = 100
-const SCROLL_SHOW_THRESHOLD = 30
+const isTypingTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
 
 const DocsLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [focusDrawerSearch, setFocusDrawerSearch] = useState(false)
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true)
-  const [navOffset, setNavOffset] = useState(true)
+  const desktopSearchRef = useRef<HTMLInputElement>(null)
+  const mobileSearchRef = useRef<HTMLInputElement>(null)
+  const showSidebarButtonRef = useRef<HTMLButtonElement>(null)
+  const sidebarToggledRef = useRef(false)
   const location = useLocation()
-  const docSlug = location.pathname.replace(/^\/docs\/?/, "")
+  const docSlug = getDocsSlugFromPath(location.pathname)
   const activeDoc = getDocBySlug(docSlug)
-  const activeTitle = activeDoc?.title ?? "Documentation"
+  const activeTitle = activeDoc?.title ?? "Overview"
+  const activeSection = docSections.find((section) => section.id === activeDoc?.section)
 
+  const setDesktopSidebar = (open: boolean) => {
+    sidebarToggledRef.current = true
+    setDesktopSidebarOpen(open)
+  }
+
+  // The toggle that was pressed disappears (or turns inert), so hand focus to its counterpart.
   useEffect(() => {
-    const handleScroll = () => {
-      const y = window.scrollY
-      setNavOffset((current) => {
-        if (y <= SCROLL_SHOW_THRESHOLD) {
-          return true
-        }
-        if (y > SCROLL_HIDE_THRESHOLD) {
-          return false
-        }
-        return current
-      })
+    if (!sidebarToggledRef.current) {
+      return
     }
+    sidebarToggledRef.current = false
+    if (desktopSidebarOpen) {
+      document
+        .querySelector<HTMLButtonElement>('#desktop-docs-sidebar button[aria-label="Hide documentation sidebar"]')
+        ?.focus()
+    } else {
+      showSidebarButtonRef.current?.focus()
+    }
+  }, [desktopSidebarOpen])
 
-    handleScroll()
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const openDrawer = (withSearch = false) => {
+    setFocusDrawerSearch(withSearch)
+    setSidebarOpen(true)
+  }
 
   useEffect(() => {
     if (!sidebarOpen) {
@@ -57,14 +70,43 @@ const DocsLayout = () => {
     }
   }, [sidebarOpen])
 
+  useEffect(() => {
+    if (!sidebarOpen || !focusDrawerSearch) {
+      return
+    }
+    const frame = window.requestAnimationFrame(() => mobileSearchRef.current?.focus())
+    return () => window.cancelAnimationFrame(frame)
+  }, [sidebarOpen, focusDrawerSearch])
+
+  // "/" jumps to search, matching the convention used by most documentation sites.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) {
+        return
+      }
+      event.preventDefault()
+      const desktopSearch = desktopSearchRef.current
+      if (desktopSearch && desktopSearch.getClientRects().length > 0) {
+        desktopSearch.focus()
+      } else {
+        setFocusDrawerSearch(true)
+        setSidebarOpen(true)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   const closeSidebar = () => setSidebarOpen(false)
 
   return (
     <div className="min-h-screen bg-gray-900">
+      {/* The site navbar sits in this gap and scrolls away; docs chrome is the only sticky layer. */}
       <div className="pt-16">
         <div
           data-testid="docs-layout-grid"
-          className={`grid transition-[grid-template-columns] duration-300 ease-out motion-reduce:transition-none ${
+          className={`grid min-h-screen border-t border-slate-800 transition-[grid-template-columns] duration-300 ease-out motion-reduce:transition-none ${
             desktopSidebarOpen
               ? "lg:grid-cols-[280px_minmax(0,1fr)]"
               : "lg:grid-cols-[0_minmax(0,1fr)]"
@@ -75,43 +117,66 @@ const DocsLayout = () => {
             id="desktop-docs-sidebar"
             aria-hidden={!desktopSidebarOpen}
             inert={!desktopSidebarOpen}
-            className={`hidden overflow-clip bg-slate-950 transition-opacity duration-200 lg:-mt-16 lg:block ${
+            className={`hidden overflow-clip bg-slate-950 transition-opacity duration-200 lg:block ${
               desktopSidebarOpen ? "border-r border-slate-800 opacity-100" : "pointer-events-none opacity-0"
             }`}
           >
-            <div
-              className={`sticky transition-all duration-300 ${
-                navOffset ? "top-16 h-[calc(100vh-4rem)]" : "top-0 h-screen"
-              }`}
-            >
-              <DocsSidebar onCollapse={() => setDesktopSidebarOpen(false)} />
-            </div>
+            <DocsSidebar onCollapse={() => setDesktopSidebar(false)} />
           </aside>
 
           {/* Main column */}
           <div className="min-w-0">
-            {/* Mobile header */}
+            {/* Shares its height with the sidebar header so both read as one bar. */}
             <div
-              className={`lg:hidden sticky z-30 border-b border-slate-800 bg-slate-950 px-4 py-3 transition-all duration-300 ${
-                navOffset ? "top-16" : "top-0"
-              }`}
+              data-docs-toolbar
+              className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-800 bg-slate-950/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-slate-950/85 lg:px-8"
             >
-              <div className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-400">Documentation</p>
-                  <p className="truncate text-sm font-medium text-white">{activeTitle}</p>
-                </div>
+              <button
+                type="button"
+                aria-label={sidebarOpen ? "Close documentation menu" : "Browse documentation"}
+                aria-expanded={sidebarOpen}
+                aria-controls="mobile-docs-drawer"
+                onClick={() => (sidebarOpen ? closeSidebar() : openDrawer())}
+                className="flex size-9 flex-shrink-0 items-center justify-center rounded-md border border-slate-800 bg-slate-900 text-slate-300 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 lg:hidden"
+              >
+                {sidebarOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+              </button>
+              {!desktopSidebarOpen && (
                 <button
+                  ref={showSidebarButtonRef}
                   type="button"
-                  aria-label={sidebarOpen ? "Close documentation menu" : "Browse documentation"}
-                  aria-expanded={sidebarOpen}
-                  aria-controls="mobile-docs-drawer"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-800 bg-slate-900 px-3 text-sm font-medium text-slate-200 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
+                  aria-label="Show documentation sidebar"
+                  aria-controls="desktop-docs-sidebar"
+                  title="Show navigation"
+                  onClick={() => setDesktopSidebar(true)}
+                  className="hidden size-9 flex-shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 lg:flex"
                 >
-                  {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                  <span>{sidebarOpen ? "Close" : "Browse"}</span>
+                  <PanelLeftOpen className="size-4" />
                 </button>
+              )}
+              <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
+                <ol className="flex min-w-0 items-center gap-1.5 text-sm">
+                  {activeSection && (
+                    <li className="hidden flex-shrink-0 items-center gap-1.5 text-slate-500 sm:flex">
+                      <span>{activeSection.title}</span>
+                      <ChevronRight className="size-3.5" aria-hidden="true" />
+                    </li>
+                  )}
+                  <li aria-current="page" className="truncate font-medium text-white">
+                    {activeTitle}
+                  </li>
+                </ol>
+              </nav>
+              <button
+                type="button"
+                aria-label="Search documentation"
+                onClick={() => openDrawer(true)}
+                className="flex size-9 flex-shrink-0 items-center justify-center rounded-md border border-slate-800 bg-slate-900 text-slate-300 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 lg:hidden"
+              >
+                <Search className="size-4" />
+              </button>
+              <div className="hidden w-72 flex-shrink-0 lg:block xl:w-80">
+                <DocsSearch inputRef={desktopSearchRef} shortcutHint="/" />
               </div>
             </div>
 
@@ -123,25 +188,13 @@ const DocsLayout = () => {
         </div>
       </div>
 
-      {!desktopSidebarOpen && (
-        <button
-          type="button"
-          aria-label="Show documentation sidebar"
-          aria-controls="desktop-docs-sidebar"
-          title="Show navigation"
-          onClick={() => setDesktopSidebarOpen(true)}
-          className="group fixed left-0 top-1/2 z-30 hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-slate-700 bg-slate-950/95 text-slate-300 shadow-md shadow-black/30 transition-[width,background-color,color] duration-200 hover:w-9 hover:border-teal-500/70 hover:bg-slate-900 hover:text-teal-300 focus-visible:w-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 motion-reduce:transition-none lg:flex"
-        >
-          <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transition-none" />
-        </button>
-      )}
-
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <button
           type="button"
           aria-label="Close documentation menu"
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
+          tabIndex={-1}
+          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm lg:hidden"
           onClick={closeSidebar}
         />
       )}
@@ -154,29 +207,24 @@ const DocsLayout = () => {
         aria-label="Browse documentation"
         aria-hidden={!sidebarOpen}
         inert={!sidebarOpen}
-        className={`fixed left-0 bottom-0 right-0 z-50 transform border-r border-slate-800 bg-slate-950 shadow-2xl shadow-black/60 transition-all duration-300 sm:right-auto sm:w-96 lg:hidden ${
-          navOffset ? "top-16" : "top-0"
-        } ${
+        className={`fixed left-0 top-0 bottom-0 right-0 z-[70] transform border-r border-slate-800 bg-slate-950 shadow-2xl shadow-black/60 transition-transform duration-300 motion-reduce:transition-none sm:right-auto sm:w-96 lg:hidden ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col bg-slate-950">
-          <div className="flex items-center justify-between border-b border-slate-800 px-4 py-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-400">MLVScan docs</p>
-              <h2 className="mt-1 text-lg font-semibold text-white">Browse documentation</h2>
-            </div>
+          <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-slate-800 px-4">
+            <h2 className="text-sm font-semibold text-white">MLVScan Docs</h2>
             <button
               type="button"
               aria-label="Close documentation menu"
               onClick={closeSidebar}
-              className="flex size-10 items-center justify-center rounded-md border border-slate-800 bg-slate-900 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+              className="flex size-9 items-center justify-center rounded-md border border-slate-800 bg-slate-900 text-slate-300 transition hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
             >
-              <X className="h-5 w-5" />
+              <X className="size-4" />
             </button>
           </div>
           <div className="border-b border-slate-800 bg-slate-950 px-4 py-3">
-            <DocsSearch onSelect={closeSidebar} />
+            <DocsSearch inputRef={mobileSearchRef} onSelect={closeSidebar} />
           </div>
           <div className="min-h-0 flex-1">
             <DocsSidebar mobile showHeader={false} onNavigate={closeSidebar} />

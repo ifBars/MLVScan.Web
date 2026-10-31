@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import ScanUploader from "@/components/scan/ScanUploader"
 import Seo from "@/components/seo/Seo"
 import { getScanSeoPage } from "@/seo/routes"
@@ -24,10 +25,11 @@ const ScanPage = () => {
             </div>
           </div>
 
+          <p className="mt-6 text-center text-sm text-gray-400">Think a detection is wrong? <Link to="/submit" className="text-teal-300 underline">Submit a sample for private review</Link>.</p>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-teal-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-2">Privacy First</h3>
-              <p className="text-sm text-gray-400">Your files never leave your computer. The scanner runs entirely within your browser&apos;s memory.</p>
+              <p className="text-sm text-gray-400">Scanning stays in your browser. Files leave your device only if you explicitly submit them for private review or a hosted attestation.</p>
             </div>
             <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-teal-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-2">Deep Analysis</h3>

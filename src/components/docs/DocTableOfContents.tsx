@@ -87,13 +87,9 @@ export const DocTableOfContents = ({ contentRef }: DocTableOfContentsProps) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [headings, activeId])
 
-  if (headings.length === 0) {
-    return null
-  }
-
   return (
     <div className="hidden xl:block w-64 flex-shrink-0">
-      <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden">
+      <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overflow-x-hidden" hidden={headings.length === 0}>
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
           In this article
         </h3>

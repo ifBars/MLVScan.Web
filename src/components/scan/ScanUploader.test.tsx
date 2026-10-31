@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 
+import { submitPrivateReview } from "@/lib/private-review"
+import { zipSync } from "fflate"
 import { act } from "react"
 import { fireEvent, screen } from "@testing-library/dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -10,6 +12,8 @@ import type { ScanResult } from "@/types/mlvscan"
 import ScanUploader from "@/components/scan/ScanUploader"
 import { combineScanResults } from "@/lib/scan-result-aggregation"
 import { scanAssemblyInWorker, type ScanProgress } from "@/lib/scanner"
+
+vi.mock("@/lib/private-review", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/private-review")>()), submitPrivateReview: vi.fn() }))
 
 vi.mock("@/lib/scanner", () => ({
   scanAssemblyInWorker: vi.fn(),
@@ -304,6 +308,32 @@ describe("ScanUploader", () => {
     await flushAsyncWork()
 
     expect(screen.getByTestId("scan-report")).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Submit this sample" })).toBeNull()
+  })
+
+  it.each([["Suspicious", "ReviewMe.dll"], ["KnownThreat", "ReviewMe.dll"], ["ManualReviewRequired", "ReviewMe.dll"], ["Suspicious", "ReviewMe.zip"]] as const)("offers explicit private submission for %s in %s without reselecting the file", async (classification, fileName) => {
+    const result = createScanResult("ReviewMe.dll")
+    result.disposition!.classification = classification
+    vi.mocked(scanAssemblyInWorker).mockResolvedValue(result)
+    vi.mocked(submitPrivateReview).mockResolvedValue("12345678-1234-4234-8234-123456789012")
+    renderScanUploader()
+    const bytes = fileName.endsWith(".zip") ? zipSync({ "ReviewMe.dll": new Uint8Array([0x4d, 0x5a]), "unscanned.txt": new TextEncoder().encode("private archive note") }) : new Uint8Array([0x4d, 0x5a])
+    const file = new File([new Uint8Array(bytes)], fileName)
+    Object.defineProperty(file, "arrayBuffer", { value: async () => new Uint8Array(bytes).buffer })
+    await act(async () => { fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [file] } }) })
+    for (let i = 0; i < 8; i++) { await act(async () => { vi.advanceTimersByTime(16) }); await flushAsyncWork() }
+    expect(screen.getByTestId("scan-report")).toBeTruthy()
+    expect(submitPrivateReview).not.toHaveBeenCalled()
+    act(() => { fireEvent.click(screen.getByRole("button", { name: "Submit this sample" })) })
+    expect(document.querySelector('input[type="file"]')).toBeNull()
+    expect(screen.getByText(fileName)).toBeTruthy()
+    if (fileName.endsWith(".zip")) expect(screen.getByText(/The entire archive will be sent/)).toBeTruthy()
+    expect((screen.getByRole("button", { name: "Submit for private review" }) as HTMLButtonElement).disabled).toBe(true)
+    expect(submitPrivateReview).not.toHaveBeenCalled()
+    act(() => { fireEvent.click(screen.getByRole("checkbox")) })
+    await act(async () => { fireEvent.submit(document.querySelector('form')!) })
+    expect(submitPrivateReview).toHaveBeenCalledWith(expect.objectContaining({ file, consent: true, kind: 'unsure' }), expect.any(Function))
+    expect(screen.getByText("Submitted for private review")).toBeTruthy()
   })
 
   it("shows a clear oversized-file indicator instead of starting a scan", async () => {

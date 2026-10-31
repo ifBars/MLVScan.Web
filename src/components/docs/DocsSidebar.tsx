@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom"
 import { ChevronRight, BookOpen, PanelLeftClose } from "lucide-react"
 import { useState } from "react"
 import { docsBySection, type DocSectionId, type DocsBySection } from "@/docs/registry"
+import { normalizeDocsPath } from "./docs-path"
 
 type SidebarSectionProps = {
   section: DocsBySection
@@ -40,7 +41,7 @@ const SidebarSection = ({ section, isExpanded, onToggle, onNavigate, mobile }: S
               )}
               {group.docs.map((doc) => {
                 const docPath = doc.slug ? `/docs/${doc.slug}` : '/docs'
-                const isActive = location.pathname === docPath
+                const isActive = normalizeDocsPath(location.pathname) === docPath
                 return (
                   <Link
                     key={doc.id}
@@ -77,9 +78,10 @@ type DocsSidebarProps = {
 
 const DocsSidebar = ({ mobile = false, onNavigate, onCollapse, showHeader = true }: DocsSidebarProps) => {
   const location = useLocation()
+  const currentPath = normalizeDocsPath(location.pathname)
   const activeSectionId = docsBySection.find((section) =>
     section.groups.some((group) =>
-      group.docs.some((doc) => (doc.slug ? `/docs/${doc.slug}` : "/docs") === location.pathname),
+      group.docs.some((doc) => (doc.slug ? `/docs/${doc.slug}` : "/docs") === currentPath),
     ),
   )?.id
   const [expandedSections, setExpandedSections] = useState<Set<DocSectionId>>(
@@ -101,12 +103,16 @@ const DocsSidebar = ({ mobile = false, onNavigate, onCollapse, showHeader = true
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-slate-950">
+    // Desktop pins the header and page list separately so the header stays level with the
+    // docs toolbar even when the column end pushes the list upward near the footer.
+    <div className={mobile ? "flex h-full w-full flex-col bg-slate-950" : "h-full w-full bg-slate-950"}>
       {showHeader && (
-        <div className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-slate-800 bg-slate-950 p-4">
-          <div className="min-w-0">
-            <h2 className="mb-1 text-lg font-bold text-white">Documentation</h2>
-            <p className="text-xs text-slate-400">MLVScan Ecosystem</p>
+        <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between gap-3 border-b border-slate-800 bg-slate-950 pl-4 pr-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="flex size-7 flex-shrink-0 items-center justify-center rounded-md border border-teal-500/30 bg-teal-500/10 text-teal-300" aria-hidden="true">
+              <BookOpen className="size-3.5" />
+            </span>
+            <h2 className="truncate text-sm font-semibold text-white">MLVScan Docs</h2>
           </div>
           {onCollapse && (
             <button
@@ -121,7 +127,12 @@ const DocsSidebar = ({ mobile = false, onNavigate, onCollapse, showHeader = true
           )}
         </div>
       )}
-      <nav aria-label="Documentation pages" className="flex-1 space-y-2 overflow-y-auto p-4">
+      <nav
+        aria-label="Documentation pages"
+        className={`space-y-2 overflow-y-auto overscroll-contain p-4 ${
+          mobile ? "flex-1" : `sticky ${showHeader ? "top-14 h-[calc(100vh-3.5rem)]" : "top-0 h-screen"}`
+        }`}
+      >
         {docsBySection.map((section) => (
           <SidebarSection
             key={section.id}

@@ -2,7 +2,7 @@ export default function TermsContent() {
   return (
     <>
       <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> September 24, 2026
+        <strong className="text-white">Last Updated:</strong> October 30, 2026
       </p>
 
       <p className="text-lg text-gray-300 mb-6">
@@ -88,9 +88,10 @@ export default function TermsContent() {
 
       <h2 id="hosted-services">Hosted Services and Submitted Content</h2>
       <p className="text-gray-300 mb-4">
-        Some MLVScan workflows are local-only, while others intentionally send files or metadata to hosted MLVScan infrastructure. Hosted workflows include direct API uploads, dashboard draft attestations, CI/SDK submissions, optional runtime report upload, and MLVScan.Bot scan or watch submissions.
+        Some MLVScan workflows are local-only, while others intentionally send files or metadata to hosted MLVScan infrastructure. Hosted workflows include explicitly consented private sample review from the submission form or browser scan results, direct API uploads, dashboard draft attestations, CI/SDK submissions, optional runtime report upload, and MLVScan.Bot scan or watch submissions.
       </p>
       <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
+        <li>Private sample review is optional and separate from local scanning. It requires explicit consent to upload; submitting a ZIP sends the entire archive. Review requests are not an immediate scan result or a guarantee of safety. Private-review evidence is not published or redistributed and follows the separate retention policy in the <a href="/docs/privacy#private-sample-review" className="text-teal-400 hover:underline">Privacy Policy</a>.</li>
         <li>You must have the right to submit any file, package, URL, metadata, or Discord attachment you ask MLVScan to process.</li>
         <li>Direct API reports and dashboard drafts are private by default unless you publish an attestation or public report surface.</li>
         <li>Uploading a file for hosted scanning does not automatically publish a public attestation; public publication requires a separate dashboard, automation, source-linked, platform, or bot workflow.</li>

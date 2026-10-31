@@ -61,9 +61,18 @@ afterEach(() => {
 })
 
 describe("Navbar", () => {
-  it("hides on docs pages after scrolling past the hide threshold", () => {
+  it("scrolls away with docs pages instead of stacking over the docs toolbar", () => {
     const nav = renderNavbar("/docs/ci-attestations")
-    expect(nav).toBeTruthy()
+    expect(nav?.className).toContain("absolute")
+    expect(nav?.className).not.toContain("fixed")
+
+    setScroll(140)
+    expect(nav?.className).not.toContain("navbar-hidden")
+  })
+
+  it("hides outside docs after scrolling past the hide threshold", () => {
+    const nav = renderNavbar("/scan")
+    expect(nav?.className).toContain("fixed")
     expect(nav?.className).toContain("navbar-visible")
 
     setScroll(140)
@@ -74,9 +83,9 @@ describe("Navbar", () => {
     expect(nav?.className).toContain("navbar-visible")
   })
 
-  it("shows docs search only on docs routes", () => {
+  it("leaves documentation search to the dedicated docs toolbar", () => {
     renderNavbar("/docs/ci-attestations")
-    expect(document.querySelector('[data-testid="docs-search"]')).toBeTruthy()
+    expect(document.querySelector('[data-testid="docs-search"]')).toBeNull()
 
     for (const { container, root } of mountedRoots.splice(0)) {
       act(() => {

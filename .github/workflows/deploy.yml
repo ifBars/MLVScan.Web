@@ -56,6 +56,13 @@ jobs:
         run: bun run docs:generate
 
       - name: Build
+        env:
+          VITE_PUBLIC_API_BASE_URL: ${{ github.event_name == 'push' && 'https://api.mlvscan.com' || 'https://mlvscan-api-staging.ifbars.workers.dev' }}
+          VITE_PUBLIC_SITE_URL: ${{ github.event_name == 'push' && 'https://mlvscan.com' || 'https://staging-source-reports.mlvscan-web.pages.dev' }}
+          VITE_TELEMETRY_ENVIRONMENT: ${{ github.event_name == 'push' && 'production' || 'staging' }}
+          VITE_POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}
+          VITE_POSTHOG_REGION: us
+          VITE_HALLOWEEN_MODE: auto
         run: bun run build
 
       - name: Upload build artifact

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Download } from "lucide-react"
-import DocsSearch from "@/components/docs/DocsSearch"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
 const SCROLL_HIDE_THRESHOLD = 100
@@ -25,12 +24,17 @@ const Navbar = () => {
         setNavVisible(false)
       }
     }
+    if (isDocs) {
+      return
+    }
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isDocs])
 
   const navLinks = [
     { name: "Scan", href: "/scan", external: false },
+    { name: "Submit a Sample", href: "/submit", external: false },
     { name: "Inspector", href: "/inspector", external: false },
     { name: "Docs", href: "/docs", external: false },
     { name: "Blog", href: "/blog", external: false },
@@ -40,13 +44,19 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 navbar-slide ${scrolled
-        ? "navbar-glass shadow-md"
-        : "bg-transparent"
-        } ${navVisible ? "navbar-visible" : "navbar-hidden"}`}
+      data-site-navbar
+      className={
+        // Docs pin their own toolbar, so the site bar scrolls away instead of stacking on top of it.
+        isDocs
+          ? "absolute top-0 left-0 right-0 z-50 bg-slate-950"
+          : `fixed top-0 left-0 right-0 z-50 navbar-slide ${scrolled
+            ? "navbar-glass shadow-md"
+            : "bg-transparent"
+            } ${navVisible ? "navbar-visible" : "navbar-hidden"}`
+      }
     >
       <div className="container mx-auto px-4">
-        <div className="grid h-16 grid-cols-[1fr_auto] items-center gap-4 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        <div className="grid h-16 grid-cols-[1fr_auto] items-center gap-4 xl:grid-cols-[auto_minmax(0,1fr)_auto]">
           {/* Logo */}
           <div className="flex min-w-0 items-center gap-4">
             <Link to="/" className="flex shrink-0 items-center gap-2">
@@ -61,15 +71,10 @@ const Navbar = () => {
                 MLVScan
               </span>
             </Link>
-            {isDocs && (
-              <div className="hidden w-52 min-w-0 lg:block 2xl:w-64">
-                <DocsSearch />
-              </div>
-            )}
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center justify-self-center gap-5 whitespace-nowrap xl:flex">
+          <div className="hidden items-center justify-self-center gap-3 whitespace-nowrap text-sm xl:flex 2xl:gap-5 2xl:text-base">
             {navLinks.map((link) => (
               link.external === false ? (
                 <Link

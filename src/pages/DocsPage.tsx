@@ -20,7 +20,10 @@ const DocsPage = ({ doc }: DocsPageProps) => {
 
   useEffect(() => {
     const isSameDocument = lastPathRef.current === location.pathname
-    const frame = window.requestAnimationFrame(() => {
+    let cancelled = false
+    let frame = 0
+    const align = () => { frame = window.requestAnimationFrame(() => {
+      if (cancelled) return
       if (location.hash) {
         scrollToDocsAnchor(location.hash, isSameDocument ? 'smooth' : 'auto')
       } else if (lastPathRef.current !== location.pathname) {
@@ -28,9 +31,12 @@ const DocsPage = ({ doc }: DocsPageProps) => {
       }
 
       lastPathRef.current = location.pathname
-    })
+    }) }
+    // Initial font metrics can move headings on long pages after their first render.
+    if (location.hash && !isSameDocument && document.fonts) void document.fonts.ready.then(() => { if (!cancelled) align() })
+    else align()
 
-    return () => window.cancelAnimationFrame(frame)
+    return () => { cancelled = true; window.cancelAnimationFrame(frame) }
   }, [doc.id, location.hash, location.pathname])
 
   return (

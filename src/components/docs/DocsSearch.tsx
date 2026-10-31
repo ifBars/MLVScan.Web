@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, type Ref } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { allDocs } from "@/docs/registry"
@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom"
 
 interface DocsSearchProps {
   onSelect?: () => void
+  inputRef?: Ref<HTMLInputElement>
+  shortcutHint?: string
 }
 
 interface SearchResultItem {
@@ -19,7 +21,7 @@ interface SearchResultItem {
   type: 'doc' | 'content'
 }
 
-const DocsSearch = ({ onSelect }: DocsSearchProps) => {
+const DocsSearch = ({ onSelect, inputRef, shortcutHint }: DocsSearchProps) => {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const navigate = useNavigate()
@@ -112,7 +114,9 @@ const DocsSearch = ({ onSelect }: DocsSearchProps) => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
-          type="text"
+          ref={inputRef}
+          type="search"
+          aria-label="Search documentation"
           placeholder="Search documentation..."
           value={query}
           onChange={(e) => {
@@ -120,10 +124,25 @@ const DocsSearch = ({ onSelect }: DocsSearchProps) => {
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          className="pl-10 pr-10 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400 focus:border-teal-500"
+          onKeyDown={(e) => {
+            // Clear a pending query first; an empty field lets Escape close the drawer.
+            if (e.key === "Escape" && query) {
+              e.stopPropagation()
+              setQuery("")
+              setIsOpen(false)
+            }
+          }}
+          className="pl-10 pr-10 [&::-webkit-search-cancel-button]:hidden bg-gray-800/50 border-gray-700 text-white placeholder-gray-400 focus:border-teal-500"
         />
+        {!query && shortcutHint && (
+          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-gray-700 bg-gray-900 px-1.5 font-mono text-[11px] text-gray-400" aria-hidden="true">
+            {shortcutHint}
+          </kbd>
+        )}
         {query && (
           <button
+            type="button"
+            aria-label="Clear search"
             onClick={() => {
               setQuery("")
               setIsOpen(false)
@@ -139,6 +158,7 @@ const DocsSearch = ({ onSelect }: DocsSearchProps) => {
         <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
           {results.map((item) => (
             <button
+              type="button"
               key={item.id}
               onClick={() => handleSelect(item)}
               className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors border-b border-gray-700 last:border-b-0"

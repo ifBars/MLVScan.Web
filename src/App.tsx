@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
 import { lazy, Suspense, type ReactNode } from "react"
 import Navbar from "@/components/layout/Navbar"
+import { useHalloweenVariant } from "@/lib/use-halloween"
 import Footer from "@/components/layout/Footer"
+import DiagnosticChoice from "@/components/scan/DiagnosticChoice"
 import { AdvisoriesLayout } from "@/components/advisories/AdvisoriesLayout"
 import ParticleBackground from "@/components/layout/ParticleBackground"
 import { PublicReportSkeleton } from "@/components/reports/PublicReportSkeleton"
@@ -10,6 +12,7 @@ import { allDocs } from "@/docs/registry"
 import { Toaster } from "@/components/ui/sonner"
 
 const HomePage = lazy(() => import("@/pages/HomePage"))
+const SubmitSamplePage = lazy(() => import("@/pages/SubmitSamplePage"))
 const ScanPage = lazy(() => import("@/pages/ScanPage"))
 const AttestationPage = lazy(() => import("@/pages/AttestationPage"))
 const PublicReportPage = lazy(() => import("@/pages/PublicReportPage"))
@@ -36,9 +39,10 @@ function LazyRoute({ children, fallback = <LoadingSpinner /> }: { children: Reac
 }
 
 function MarketingShell() {
+  const halloween = useHalloweenVariant()
   return (
     <div className="min-h-screen bg-transparent">
-      <ParticleBackground />
+      <ParticleBackground halloween={halloween} />
       <Navbar />
       <main>
         <Outlet />
@@ -58,6 +62,7 @@ function App() {
             <Route path="/" element={<LazyRoute><HomePage /></LazyRoute>} />
             <Route path="/blog" element={<LazyRoute><BlogPage /></LazyRoute>} />
             <Route path="/blog/:slug" element={<LazyRoute><BlogPostPage /></LazyRoute>} />
+            <Route path="/submit" element={<LazyRoute><SubmitSamplePage /></LazyRoute>} />
             <Route path="/scan" element={<LazyRoute><ScanPage /></LazyRoute>} />
             <Route path="/status" element={<LazyRoute><StatusPage /></LazyRoute>} />
             <Route path="/attestations/:shareId" element={<LazyRoute><AttestationPage /></LazyRoute>} />
@@ -83,6 +88,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        <DiagnosticChoice />
         <Toaster />
       </>
     </BrowserRouter>

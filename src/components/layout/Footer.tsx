@@ -1,3 +1,6 @@
+import { useState } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import DiagnosticChoice from "@/components/scan/DiagnosticChoice"
 import { Link } from "react-router-dom"
 import { getPartnerDashboardPath } from "@/lib/partner-dashboard-routes"
 
@@ -8,15 +11,16 @@ type FooterLink = {
 }
 
 const Footer = () => {
+  const [privacyOpen, setPrivacyOpen] = useState(false)
   const links: Record<string, FooterLink[]> = {
     product: [
       { name: "Developer Dashboard", href: getPartnerDashboardPath("home"), internal: true },
+      { name: "Submit a Sample", href: "/submit", internal: true },
       { name: "Scan Online", href: "/scan", internal: true },
       { name: "Download", href: "https://www.nexusmods.com/site/mods/1689?tab=files" },
       { name: "GitHub", href: "https://github.com/ifBars/MLVScan" },
     ],
     resources: [
-      { name: "Blog", href: "/blog", internal: true },
       { name: "Documentation", href: "/docs", internal: true },
       { name: "Status", href: "/status", internal: true },
       { name: "Advisories", href: "/advisories", internal: true },
@@ -24,6 +28,7 @@ const Footer = () => {
       { name: "Report Issue", href: "https://github.com/ifBars/MLVScan/issues" },
     ],
     community: [
+      { name: "Blog", href: "/blog", internal: true },
       { name: "Discord", href: "https://discord.gg/UD4K4chKak" },
       { name: "Nexus", href: "https://www.nexusmods.com/site/mods/1689" },
       { name: "Thunderstore", href: "https://thunderstore.io/c/schedule-i/p/ifBars/MLVScan/" },
@@ -153,8 +158,16 @@ const Footer = () => {
             <p className="text-sm text-gray-500">
               © 2026 MLVScan. All rights reserved. Open source under GPL-3.0.
             </p>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
+            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-500">
               <Link to="/docs/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
+                <DialogTrigger asChild><button type="button" className="hover:text-white transition-colors">Privacy settings</button></DialogTrigger>
+                <DialogContent className="border-white/15 bg-[#101820] text-white">
+                  <DialogTitle>Privacy settings</DialogTitle>
+                  <DialogDescription className="text-gray-400">Choose whether to share diagnostic counts. Files require separate, explicit consent.</DialogDescription>
+                  <DiagnosticChoice settings onDecision={() => setPrivacyOpen(false)} />
+                </DialogContent>
+              </Dialog>
               <Link to="/docs/terms" className="hover:text-white transition-colors">Terms</Link>
               <a href="https://github.com/ifBars/MLVScan/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">License</a>
             </div>

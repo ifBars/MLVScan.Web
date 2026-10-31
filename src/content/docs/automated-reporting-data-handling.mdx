@@ -1,90 +1,37 @@
-export default function AutomatedReportingDataHandlingContent() {
-  return (
-    <>
-      <p className="text-sm text-gray-400 mb-4">
-        <strong className="text-white">Last Updated:</strong> September 24, 2026
-      </p>
+import { Link } from "react-router-dom"
 
-      <p className="text-lg text-gray-300 mb-6">
-        The <strong className="text-white">MLVScan runtime plugin</strong> (MelonLoader and BepInEx) offers an <strong className="text-white">optional</strong> feature to send scan reports and assemblies to the MLVScan API. This helps improve detection rules and reduce false positives. <strong className="text-teal-400">This feature is off by default and requires your explicit consent.</strong>
-      </p>
-      <p className="text-gray-300 mb-6">
-        This page is specifically about runtime plugin report upload. Other hosted MLVScan workflows, such as direct API uploads, dashboard draft attestations, SDK/CI submissions, and MLVScan.Bot scans, are intentional server-side submission paths covered by the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a> and related API docs.
-      </p>
-      <p className="text-gray-300 mb-6">
-        A recognized hosted API action may also create a limited server-side product event. These events use bounded categories and exclude raw account identifiers, API keys, IP addresses, filenames, file hashes, uploaded content, scan findings, and dispositions. See the Privacy Policy for the complete analytics fields, purposes, pseudonymization, exclusions, and retention period.
-      </p>
 
-      <h2 id="what-data">What Data May Be Sent (When Enabled)</h2>
-      <p className="text-gray-300 mb-4">
-        If you enable report upload, the following data may be sent to the MLVScan API:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">Assembly file bytes:</strong> The detected mod DLL/plugin file (for deep analysis and false positive verification)</li>
-        <li><strong className="text-white">Mod filename:</strong> Basename only (e.g. <code className="bg-gray-800 px-1 rounded">MyMod.dll</code>), not full paths</li>
-        <li><strong className="text-white">Finding summary:</strong> Rule IDs, severities, descriptions, and locations (paths are redacted before sending)</li>
-        <li><strong className="text-white">Loader metadata:</strong> Mod loader type (MelonLoader/BepInEx), plugin version</li>
-        <li><strong className="text-white">Consent metadata:</strong> Consent version and timestamp</li>
-      </ul>
 
-      <h2 id="when-data-sent">When Is Data Sent?</h2>
-      <p className="text-gray-300 mb-4">
-        Data is sent <strong className="text-white">only</strong> when:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>MLVScan has detected <strong className="text-white">actionable findings</strong> (suspicious or disabled mods)</li>
-        <li>You have <strong className="text-white">explicitly enabled</strong> report upload in configuration</li>
-        <li>You have seen the first-run consent message (shown once when detections occur)</li>
-      </ul>
-      <p className="text-gray-300 mb-6">
-        <strong className="text-teal-400">No data is sent on clean scans or when report upload is disabled.</strong> Local reports are always generated regardless of upload settings.
-      </p>
+export default function AutomatedReportingContent() {
 
-      <h2 id="how-to-disable">How to Disable or Opt Out</h2>
-      <p className="text-gray-300 mb-4">
-        Report upload is <strong className="text-white">disabled by default</strong>. To ensure it stays off:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">MelonLoader:</strong> In <code className="bg-gray-800 px-1 rounded">MelonPreferences.cfg</code>, leave <code className="bg-gray-800 px-1 rounded">EnableReportUpload = false</code> (default)</li>
-        <li><strong className="text-white">BepInEx:</strong> In <code className="bg-gray-800 px-1 rounded">BepInEx/config/MLVScan.cfg</code>, leave <code className="bg-gray-800 px-1 rounded">EnableReportUpload = false</code> (default)</li>
-      </ul>
-      <p className="text-gray-300 mb-6">
-        If you previously enabled it, set the value to <code className="bg-gray-800 px-1 rounded">false</code> and save. No further uploads will occur.
-      </p>
+  return <>
 
-      <h2 id="how-to-enable">How to Enable (Opt In)</h2>
-      <p className="text-gray-300 mb-4">
-        If you want to help improve MLVScan by contributing reports:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li><strong className="text-white">MelonLoader:</strong> Set <code className="bg-gray-800 px-1 rounded">EnableReportUpload = true</code> in <code className="bg-gray-800 px-1 rounded">[MLVScan]</code> in MelonPreferences.cfg</li>
-        <li><strong className="text-white">BepInEx:</strong> Set <code className="bg-gray-800 px-1 rounded">EnableReportUpload = true</code> in BepInEx/config/MLVScan.cfg</li>
-      </ul>
-      <p className="text-gray-300 mb-6">
-        The first time MLVScan detects a suspicious mod, it will show a one-time message explaining the feature. Your choice is persisted and you will not be prompted again.
-      </p>
+    <p className="text-lg text-gray-300">MLVScan scans locally. The current PostHog rollout is limited to the website and its private-submission receipts. Loader telemetry and the updated loader sharing prompt are not released; the loader sections below describe planned behavior. Existing installed versions keep their current reporting behavior.</p>
 
-      <h2 id="web-scanner">Web Scanner and Other Components</h2>
-      <p className="text-gray-300 mb-6">
-        <strong className="text-white">The public web-based MLVScan scanner never uploads your files.</strong> That scanner runs fully in your browser via WebAssembly. The DevCLI, MLVScan.Core library, and MLVScan.WASM also do not send data to any API by default. Hosted submission paths are separate: optional runtime report upload, direct API uploads, dashboard draft attestations, SDK/CI integrations, and MLVScan.Bot scan submissions send selected files or provider artifacts to the MLVScan API for private server-side analysis. Publishing a public attestation is a later, explicit step after that private draft exists.
-      </p>
+    <h2 id="consent">Planned Loader Consent</h2>
 
-      <h2 id="api-retention">API Data Handling and Retention</h2>
-      <p className="text-gray-300 mb-4">
-        Submissions sent to the MLVScan API are:
-      </p>
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-6 ml-4">
-        <li>Stored for triage and false positive analysis when retention is needed for security review, scanner improvement, abuse prevention, or support</li>
-        <li>Used to improve detection rules and reduce false positives</li>
-        <li>Deduplicated by file hash and schema version so identical bytes can reuse existing reports</li>
-        <li>Deleted at the uploaded-file level after a successful clean scan, while report metadata such as hashes, filenames, status, and source records may still be retained</li>
-        <li>Held temporarily at the uploaded-file level when findings, incomplete results, or failed scans require investigation or support; the production R2 lifecycle rule targets deletion of temporary scan objects once they are 30 days old, with asynchronous processing</li>
-        <li>Kept private by default unless a separate dashboard, automation, source-linked, platform, or bot workflow explicitly publishes a public record</li>
-        <li>Subject to the MLVScan API privacy and retention policy, including the broader hosted-service and bot data handling described in the Privacy Policy</li>
-      </ul>
-      <p className="text-gray-300 mb-6">
-        For full details on data storage, retention, public publishing, and removal requests, see the <a href="/docs/privacy" className="text-teal-400 hover:underline">Privacy Policy</a>.
-      </p>
-    </>
-  )
+    <p>The planned runtime prompt offers No thanks or Allow sharing, with an optional file-sharing checkbox. Basic diagnostics go to PostHog without filenames, hashes, code or a lasting user ID. No thanks disables both. The new consent version asks previous users once more before either path sends anything.</p>
+
+    <h2 id="what-is-sent">Optional Files and Reports</h2>
+
+    <p>With file sharing enabled, flagged files up to 64 MiB and available original scan evidence go to MLVScan reviewers through the private-review intake. Evidence can include the original verdict, scanner version, findings and flow details. Some deferred submissions contain only summaries. Samples and reports may contain personal or proprietary data; they are not fully anonymized.</p>
+
+    <h2 id="api-retention">Private Access and Retention</h2>
+
+    <p>Cloudflare stores these submissions in a separate bucket. Only authenticated MLVScan administrators can list or retrieve them. We do not publish or redistribute these submissions, including false positives. There are no public report links, shared content-reuse records, provider indexes or automatic Discord notifications from this intake. A receipt ID does not grant read access.</p>
+
+    <p>Storage uses a 30-day object lifecycle rule, with asynchronous deletion. Reviewing notes updates record age but does not extend the original sample’s age. Administrators can delete the sample and record. If private storage is unavailable, uploads fail closed; there is no fallback to public uploads. This policy applies to the new private-review path, not historical uploads or separate hosted API workflows.</p>
+
+    <h2 id="how-to-enable">Planned Loader Settings</h2>
+
+    <p>The loader settings EnableAnonymousTelemetry and EnableReportUpload control the two choices after current consent is saved. Disabling sharing stops new dispatch; already sent requests cannot be recalled.</p>
+
+    <h2 id="web-scanner">Website Submissions</h2>
+
+    <p>The browser scanner keeps file bytes local. To send a file intentionally, use the review section after a non-clean scan or <Link to="/submit">Submit a Sample</Link> and agree to private review for that submission. Browser diagnostics are an independent, optional choice. You can submit a false positive or suspected malicious sample with diagnostics turned off.</p>
+
+    <p>CLI, Core and other local tools do not acquire telemetry from these settings. Existing enterprise/API analytics remain separate. Read the <Link to="/docs/privacy">Privacy Policy</Link> for the complete data-handling details.</p>
+
+  </>
+
 }

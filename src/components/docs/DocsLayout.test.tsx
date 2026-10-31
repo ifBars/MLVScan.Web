@@ -70,37 +70,51 @@ afterEach(() => {
 })
 
 describe("DocsLayout", () => {
-  it("keeps docs chrome offset below the navbar near the top of the page", () => {
+  it("pins the sidebar header and toolbar together as the only sticky layer", () => {
     const container = renderDocsLayout()
 
-    const desktopSticky = container.querySelector("aside .sticky")
-    const desktopAside = container.querySelector("aside")
-    const mobileHeader = Array.from(container.querySelectorAll("div"))
-      .find((element) => element.className.includes("lg:hidden sticky"))
-    const mobileDrawer = Array.from(container.querySelectorAll("div"))
-      .find((element) => element.className.includes("fixed left-0 bottom-0"))
+    const docsToolbar = container.querySelector("[data-docs-toolbar]")
+    const mobileDrawer = container.querySelector("#mobile-docs-drawer")
 
-    expect(desktopAside?.className).toContain("lg:-mt-16")
-    expect(desktopSticky?.className).toContain("top-16")
-    expect(desktopSticky?.className).toContain("h-[calc(100vh-4rem)]")
-    expect(mobileHeader?.className).toContain("top-16")
-    expect(mobileDrawer?.className).toContain("top-16")
+    expect(container.querySelector('aside [data-testid="docs-sidebar"]')).not.toBeNull()
+    expect(docsToolbar?.className).toContain("top-0")
+    expect(docsToolbar?.className).toContain("h-14")
+    expect(mobileDrawer?.className).toContain("top-0")
+
+    setScroll(140)
+    expect(docsToolbar?.className).toContain("top-0")
   })
 
-  it("slides docs chrome up when the navbar hides", () => {
+  it("names the current section and page once instead of repeating a docs label", () => {
     const container = renderDocsLayout()
-    setScroll(140)
+    const breadcrumb = container.querySelector('nav[aria-label="Breadcrumb"]')
 
-    const desktopSticky = container.querySelector("aside .sticky")
-    const mobileHeader = Array.from(container.querySelectorAll("div"))
-      .find((element) => element.className.includes("lg:hidden sticky"))
-    const mobileDrawer = Array.from(container.querySelectorAll("div"))
-      .find((element) => element.className.includes("fixed left-0 bottom-0"))
+    expect(breadcrumb?.textContent).toContain("Mod Authors & Platforms")
+    expect(breadcrumb?.textContent).toContain("Mod Attestations")
+    expect(breadcrumb?.querySelector('[aria-current="page"]')).not.toBeNull()
+    expect(container.querySelector("[data-docs-toolbar]")?.textContent).not.toContain("Documentation")
+  })
 
-    expect(desktopSticky?.className).toContain("top-0")
-    expect(desktopSticky?.className).toContain("h-screen")
-    expect(mobileHeader?.className).toContain("top-0")
-    expect(mobileDrawer?.className).toContain("top-0")
+  it("focuses the documentation search with the slash shortcut", () => {
+    const container = renderDocsLayout()
+    const desktopSearch = container.querySelector<HTMLInputElement>("[data-docs-toolbar] input")
+    vi.spyOn(desktopSearch as HTMLInputElement, "getClientRects").mockReturnValue([{}] as unknown as DOMRectList)
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "/" }))
+    })
+
+    expect(document.activeElement).toBe(desktopSearch)
+  })
+
+  it("opens the drawer with search when the slash shortcut fires on small screens", () => {
+    const container = renderDocsLayout()
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "/" }))
+    })
+
+    expect(container.querySelector("#mobile-docs-drawer")?.getAttribute("aria-hidden")).toBe("false")
   })
 
   it("opens a solid mobile navigation drawer with an accessible control", () => {
