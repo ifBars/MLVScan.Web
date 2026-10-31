@@ -32,7 +32,7 @@ export function subscribeDiagnosticChoice(callback: () => void): () => void {
 
 /** Pure projection: nothing from input identity, evidence text, URLs or account context is copied. */
 export function summarizeScanDiagnostics(results: ScanResult[]): Record<string, number> {
-  const counts: Record<string, number> = { telemetry_schema_version: 2, result_count: results.length }
+  const counts: Record<string, number> = { telemetry_schema_version: 3, result_count: results.length }
   const add = (key: string) => {
     if (!(key in counts) && Object.keys(counts).length >= 192) key = 'diagnostic_overflow_count'
     counts[key] = Math.min(2147483647, (counts[key] ?? 0) + 1)
@@ -56,6 +56,9 @@ export function summarizeScanDiagnostics(results: ScanResult[]): Record<string, 
     add(families.some(f => f.exactHashMatch) ? 'exact_match_result_count' : families.length ? 'family_match_result_count' : 'no_family_match_result_count')
     for (const id of new Set(families.map(f => categories.families.includes(f.familyId) ? f.familyId : 'other'))) add(`family_${id}_${verdict}_count`)
     for (const flow of result.dataFlows ?? []) add(`flow_${categories.patterns.includes(flow.pattern) ? flow.pattern : 'Unknown'}_${verdict}_count`)
+    // Matches Core ScanDiagnosticSummary: one count per result and finding ID that limited analysis.
+    const limiting = new Set((result.analysisCompleteness?.reasons ?? []).map(r => categories.rules.includes(r.ruleId ?? '') ? r.ruleId! : 'other'))
+    for (const id of limiting) add(`incomplete_${id}_count`)
   }
   return counts
 }

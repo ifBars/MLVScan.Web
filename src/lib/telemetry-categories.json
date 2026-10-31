@@ -1,10 +1,12 @@
 {
   "rules": [
     "AssemblyDynamicLoadRule",
+    "AssemblyScanner",
     "Base64Rule",
     "ByteArrayManipulationRule",
     "COMReflectionAttackRule",
     "CoordinatedPayloadDeliveryRule",
+    "CrossAssemblyDependency",
     "DataExfiltrationRule",
     "DataFlowAnalysis",
     "DataFlowScanWarning",
@@ -15,16 +17,20 @@
     "EncodedBlobSplittingRule",
     "EncodedStringLiteralRule",
     "EncodedStringPipelineRule",
+    "ExceptionHandlerScanWarning",
     "HexStringRule",
+    "MethodScanWarning",
     "MultiSignalDetection",
     "ObfuscatedReflectiveExecutionRule",
     "PersistenceRule",
     "ProcessStartRule",
     "ReflectionRule",
     "RegistryRule",
-    "ScanWarning",
+    "StaticRvaScanWarning",
     "SuspiciousAssemblyNameRule",
-    "SuspiciousLocalVariableRule"
+    "SuspiciousLocalVariableRule",
+    "TypeScanWarning",
+    "ValueResolutionBudget"
   ],
   "families": [
     "family-blockchain-java-stager-v1",

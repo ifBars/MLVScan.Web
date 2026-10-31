@@ -31,6 +31,23 @@ describe('browser diagnostics', () => {
     expect(summary.rule_ReflectionRule_High_Advanced_Clean_findings).toBe(1)
     expect(JSON.stringify(summary)).not.toMatch(/private-canary|secret-hash/)
   })
+  it('names scanner incompleteness findings instead of counting them as other', () => {
+    const incomplete = { ...fixture,
+      disposition: { classification: 'ManualReviewRequired' },
+      analysisCompleteness: { isComplete: false, reasons: [
+        { reasonId: 'scanner-incomplete', ruleId: 'AssemblyScanner' },
+        { reasonId: 'scanner-incomplete', ruleId: 'AssemblyScanner' },
+        { reasonId: 'scanner-incomplete', ruleId: 'private-canary' }] },
+      findings: [{ ruleId: 'AssemblyScanner', severity: 'Medium', visibility: 'Default' }],
+    } as unknown as ScanResult
+    const summary = summarizeScanDiagnostics([incomplete])
+    expect(summary.telemetry_schema_version).toBe(3)
+    expect(summary.rule_AssemblyScanner_Medium_Default_ManualReviewRequired_findings).toBe(1)
+    expect(summary.incomplete_AssemblyScanner_count).toBe(1)
+    expect(summary.incomplete_other_count).toBe(1)
+    expect(summary.incomplete_result_count).toBe(1)
+    expect(JSON.stringify(summary)).not.toContain('private-canary')
+  })
   it('maps hostile identifiers to bounded categories', () => {
     const hostile = { ...fixture, findings: Array.from({ length: 1000 }, (_, i) => ({ ruleId: `private-canary-${i}`, severity: 'private-canary', visibility: 'private-canary' })) } as unknown as ScanResult
     const summary = summarizeScanDiagnostics([hostile])
