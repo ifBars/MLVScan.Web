@@ -16,3 +16,8 @@ After changing a build-time setting, rebuild and deploy. Automatic mode also upd
 open tab at local midnight and when returning to a background tab; no manual switch is needed
 on November 1. Development and staging builds support `?halloween=preview` to inspect it on
 other dates. Production ignores that preview parameter. The dashboard is not themed.
+
+The Happy Halloween pill toggles seasonal effects back to the regular particle background.
+It remains visible during Halloween so effects can be restored. The browser saves this preference
+in localStorage (`mlvscan:halloween-effects`, `on`/`off`), independently of diagnostics consent.
+The preference is never sent to a server and survives deployments.

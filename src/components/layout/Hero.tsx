@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { Shield, ExternalLink, ChevronDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { useHalloween } from "@/lib/use-halloween"
+import { useHalloweenSettings } from "@/lib/use-halloween"
 
 const PumpkinMark = () => (
   <svg viewBox="0 0 24 24" className="size-3.5" aria-hidden="true">
@@ -14,16 +14,20 @@ const PumpkinMark = () => (
 )
 
 const Hero = () => {
-  const halloween = useHalloween()
+  const halloween = useHalloweenSettings()
   return (
     <section className="relative min-h-[64vh] flex flex-col justify-center pt-32 pb-4 px-4 overflow-hidden">
       <div className="container mx-auto max-w-6xl relative z-10 md:-translate-y-6">
         <div className="flex flex-col items-center text-center">
-          {halloween && (
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-muted-foreground backdrop-blur-sm animate-in fade-in duration-500">
+          {halloween.available && (
+            <button type="button" onClick={halloween.toggle} aria-pressed={halloween.enabled}
+              aria-label="Halloween effects" title="Click to toggle Halloween effects"
+              className="group relative mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-muted-foreground backdrop-blur-sm cursor-pointer hover:border-teal-400/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 animate-in fade-in duration-500">
               <PumpkinMark />
               Happy Halloween
-            </p>
+              <span className="sr-only">{halloween.enabled ? 'On' : 'Off'}</span>
+              <span aria-hidden="true" className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">Click to toggle  /  {halloween.enabled ? 'On' : 'Off'}</span>
+            </button>
           )}
           <h1 className="font-display text-4xl sm:text-5xl md:text-[3.35rem] lg:text-6xl font-bold leading-[1.08] text-foreground text-balance max-w-4xl mb-4 animate-in fade-in slide-in-from-bottom-5 duration-200 delay-100">
             <span className="block text-3xl sm:text-4xl md:text-5xl font-medium text-muted-foreground mb-2">
