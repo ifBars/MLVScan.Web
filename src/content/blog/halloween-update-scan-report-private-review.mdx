@@ -1,0 +1,117 @@
+Happy Halloween! If you've visited the site today, you've probably met the
+pumpkins, bats, and ghosts drifting in the margins. They're the least important
+change from the last day, but they're the most fun, so they get mentioned first.
+
+The rest of this post covers what changed on the website over the past
+24 hours, and where optional telemetry goes next.
+
+## A scan report built around the verdict
+
+The browser scanner's result page has been rebuilt. The old layout stacked
+cards, stat tiles, and two scrolling panes. That held up for a clean file, but a
+flagged menu mod with dozens of findings turned into a wall of near-identical
+cards.
+
+The new report reads top to bottom:
+
+- **The verdict comes first.** A short headline, the summary from the
+  disposition, and the file details you need to identify exactly what was
+  scanned, including a copyable SHA-256 hash.
+- **Recommended actions are numbered** under the verdict, so the next step is
+  never buried.
+- **Threat family matches are a table** with each family's confidence and how
+  many findings support it. Selecting that count filters the findings to just
+  that family's evidence.
+- **Findings are grouped by behavior.** Fifteen calls that open `github.com` are
+  one row with a count, not fifteen cards. Each group shows its targets, and the
+  evidence opens inline under the row you select.
+- **Each group is marked Used or Context.** Used means those findings directly
+  back the verdict. Context means the behavior was observed but isn't what the
+  verdict rests on. Advanced diagnostics stay in their own tab.
+
+On one sample from our quarantine set, a menu mod with a hidden downloader, the
+report went from around 40 findings shown one by one to about a dozen rows. The
+three findings behind the malware verdict sit at the top.
+
+This needed a small addition to the scan result itself, so it shipped with
+[MLVScan.Core 1.9.2](https://github.com/ifBars/MLVScan.Core/releases/tag/v1.9.2).
+Findings can now carry structured attributes, such as the launched target and
+whether it ran in a hidden window, and each family match lists the findings that
+back it. If you consume the result schema directly, the
+[scan result schema reference](/docs/libraries/core/scan-result-schema) covers
+both fields. They're optional additions, so the schema version is unchanged.
+
+## Private sample review
+
+Think a result is wrong, or found something that should be flagged? You can now
+send the file to MLVScan reviewers privately:
+
+- From the review section that appears after a non-clean scan, which reuses the
+  file you already selected.
+- From the [Submit a Sample](/submit) page at any time.
+
+Nothing is uploaded until you agree to share that specific file. Submissions go
+to a private store that only MLVScan administrators can read. They aren't
+published, don't create public reports, and expire after 30 days. Submitting
+works whether or not you've allowed diagnostics.
+
+## Optional diagnostics on the website
+
+The website now asks once whether you want to share basic scan diagnostics. It's
+off until you choose **Allow diagnostics**, and you can change your answer at
+any time from **Privacy settings** in the footer.
+
+When allowed, a completed scan sends bounded counts, such as the outcome and how
+many findings of each severity were retained. It never sends filenames, hashes,
+paths, code, or anything that identifies you. Each scan uses a fresh random ID,
+so scans can't be tied back to a person or a browser.
+
+## Smaller changes
+
+- **This blog** launched yesterday, with release notes and engineering posts
+  alongside the docs.
+- **The docs** have tidier navigation, search, and a better mobile menu.
+- **The Halloween theme** turns itself off at midnight in your local time. Until
+  then, the Happy Halloween label above the homepage hero toggles the effects,
+  and your choice is saved in your browser.
+
+## What's next for telemetry
+
+Website diagnostics are the first step. We're also planning optional diagnostics
+for the MelonLoader and BepInEx plugin. They aren't released, and installed
+versions don't send anything new.
+
+When they arrive, the plan is:
+
+- **Off by default.** Nothing is sent until you choose to share, and the plugin
+  asks again even if you agreed to the old upload prompt.
+- **Separate from file sharing.** Diagnostics and sending flagged files for
+  review are two independent choices. Saying yes to one doesn't turn on the
+  other.
+- **Counts, not content.** One event per completed scan run, with how many
+  files came out clean, suspicious, a known threat, needing manual review, or
+  failed. No filenames, hashes, paths, findings, game names, or user and
+  installation IDs.
+- **No lasting identity.** Every run gets a fresh random ID. That means we can
+  see how often scans happen, but not who ran them or how many people did.
+
+These counts help us see whether detections behave the way we expect across
+real installs. They don't feed into any blocking decision.
+
+The DevCLI, Core, and other local tools aren't part of this plan. The hosted
+API's existing operational analytics stay separate and unchanged.
+
+## Where to read more
+
+If you have questions or concerns about what's collected, these pages have the
+full details:
+
+- [Privacy Policy](/docs/privacy), including
+  [optional scan diagnostics](/docs/privacy#optional-diagnostics) and
+  [private sample review](/docs/privacy#private-sample-review)
+- [Automated Reporting & Data Handling](/docs/automated-reporting-data-handling),
+  which describes the planned plugin settings
+- [Terms of Service](/docs/terms)
+
+Questions are welcome on [Discord](https://discord.gg/UD4K4chKak) or as a
+[GitHub issue](https://github.com/ifBars/MLVScan/issues).

@@ -15,6 +15,15 @@ export type BlogPost = {
 // Only register posts that are ready to publish. Keep unfinished MDX in _drafts/.
 const posts: BlogPost[] = [
   {
+    slug: 'halloween-update-scan-report-private-review',
+    title: 'Happy Halloween: a clearer scan report, private review, and what comes next',
+    description: 'A rebuilt browser scan report, private sample review, optional website diagnostics, and the plan for opt-in plugin diagnostics.',
+    publishedDate: '2026-10-31',
+    author: 'Bars',
+    category: 'Updates',
+    tags: ['Website', 'Scanner', 'Privacy', 'Telemetry', 'Core'],
+  },
+  {
     slug: 'welcome-to-the-mlvscan-blog',
     title: 'Why MLVScan has a blog',
     description: 'A home for library updates, engineering notes, and upcoming ideas, with room to explain the thinking behind them.',
