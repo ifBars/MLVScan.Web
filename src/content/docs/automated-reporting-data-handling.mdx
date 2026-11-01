@@ -6,15 +6,17 @@ export default function AutomatedReportingContent() {
 
   return <>
 
-    <p className="text-lg text-gray-300">MLVScan scans locally. The current PostHog rollout is limited to the website and its private-submission receipts. Loader telemetry and the updated loader sharing prompt are not released; the loader sections below describe planned behavior. Existing installed versions keep their current reporting behavior.</p>
+    <p className="text-lg text-gray-300">MLVScan scans locally. Optional diagnostics are available on the website and in MelonLoader and BepInEx plugins starting with MLVScan 2.2.0. Older installed versions keep their previous reporting behavior until updated.</p>
 
-    <h2 id="consent">Planned Loader Consent</h2>
+    <h2 id="consent">Loader Consent</h2>
 
-    <p>The planned runtime prompt offers No thanks or Allow sharing, with an optional file-sharing checkbox. Basic diagnostics go to PostHog without filenames, hashes, code or a lasting user ID. No thanks disables both. The new consent version asks previous users once more before either path sends anything.</p>
+    <p>The runtime prompt offers No thanks or Allow sharing, with an optional file-sharing checkbox. Basic diagnostics go to PostHog without filenames, hashes, code or a lasting user ID. No thanks disables both. The new consent version asks previous users once more before either path sends anything.</p>
 
     <h2 id="what-is-sent">Optional Files and Reports</h2>
 
-    <p>With file sharing enabled, flagged files up to 64 MiB and available original scan evidence go to MLVScan reviewers through the private-review intake. Evidence can include the original verdict, scanner version, findings and flow details. Some deferred submissions contain only summaries. Samples and reports may contain personal or proprietary data; they are not fully anonymized.</p>
+    <p>With file sharing enabled, flagged or incomplete-scan files up to 64 MiB and available original scan evidence go to MLVScan reviewers through the private-review intake. Evidence can include the original verdict, scanner version, findings and flow details. Some deferred submissions contain only summaries. Samples and reports may contain personal or proprietary data; they are not fully anonymized.</p>
+
+    <p>When a private upload succeeds and both sharing choices remain enabled, the loader sends its random submission reference, original verdict, completeness status and component versions to PostHog. This links the event to the private review record without sending a filename, hash or lasting user ID. Local scans have no file-size cutoff; optional uploads have a separate size limit. Internal analysis budgets still apply.</p>
 
     <h2 id="api-retention">Private Access and Retention</h2>
 
@@ -22,7 +24,7 @@ export default function AutomatedReportingContent() {
 
     <p>Storage uses a 30-day object lifecycle rule, with asynchronous deletion. Reviewing notes updates record age but does not extend the original sample’s age. Administrators can delete the sample and record. If private storage is unavailable, uploads fail closed; there is no fallback to public uploads. This policy applies to the new private-review path, not historical uploads or separate hosted API workflows.</p>
 
-    <h2 id="how-to-enable">Planned Loader Settings</h2>
+    <h2 id="how-to-enable">Loader Settings</h2>
 
     <p>The loader settings EnableAnonymousTelemetry and EnableReportUpload control the two choices after current consent is saved. Disabling sharing stops new dispatch; already sent requests cannot be recalled.</p>
 
