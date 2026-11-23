@@ -104,6 +104,8 @@ export const getActionItems = (result: ScanResult): string[] => {
         "Confirm the file is a valid Unity mod and rescan a trusted copy if possible.",
         "Open the advanced diagnostics if you need the raw warning details for triage.",
       ]
+    case "NotApplicable":
+      return []
     case "Clean":
     default:
       return [

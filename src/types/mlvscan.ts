@@ -13,7 +13,6 @@ export type {
   FindingVisibility,
   ScanInput,
   ScanMetadata,
-  ScanResult,
   ScanSummary,
   Severity,
   ThreatDisposition,
@@ -23,4 +22,9 @@ export type {
   ThreatMatchKind,
 } from '@mlvscan/wasm-core'
 
+import type { ScanResult as PublishedResult } from '@mlvscan/wasm-core'
+
 export type ScanStatus = 'idle' | 'uploading' | 'scanning' | 'complete' | 'error'
+export type ScanResult = Omit<PublishedResult, 'schemaVersion'> & {
+  schemaVersion: '1.4.0' | PublishedResult['schemaVersion']
+}

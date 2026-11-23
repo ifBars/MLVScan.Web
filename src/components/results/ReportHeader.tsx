@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/results/report-primitives"
 import { cn, formatBytes, formatDate } from "@/lib/utils"
 
 const verdictCopy: Record<ResultPresentationClassification, { headline: string; outcome: string; mark: string }> = {
+  NotApplicable: { headline: "Managed scan does not apply", outcome: "Outside scan coverage", mark: "bg-slate-400" },
   KnownThreat: { headline: "Likely malware", outcome: "Known threat", mark: "bg-red-400" },
   Suspicious: { headline: "Suspicious behavior", outcome: "Suspicious", mark: "bg-amber-400" },
   ManualReviewRequired: { headline: "Manual review required", outcome: "Incomplete analysis", mark: "bg-yellow-300" },

@@ -26,6 +26,20 @@ type PageState =
   | { status: "ready"; payload: PublicReportPayload }
 
 const tonePresets = {
+  NotApplicable: {
+    label: "Managed scan does not apply",
+    icon: ShieldQuestion,
+    shell: "border-slate-500/25 bg-slate-500/10",
+    text: "text-slate-200",
+    badge: "border-slate-400/30 bg-slate-500/10 text-slate-200",
+  },
+  ManualReviewRequired: {
+    label: "Manual review required",
+    icon: FileWarning,
+    shell: "border-amber-400/25 bg-amber-500/10",
+    text: "text-amber-200",
+    badge: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+  },
   Clean: {
     label: "No known threats detected",
     icon: ShieldCheck,
@@ -472,6 +486,8 @@ function classificationClass(classification: PublicReportPayload["classification
       return "border-red-400/30 bg-red-500/10 text-red-200"
     case "Suspicious":
       return "border-amber-400/30 bg-amber-500/10 text-amber-200"
+    case "NotApplicable": return tonePresets.NotApplicable.badge
+    case "ManualReviewRequired": return tonePresets.ManualReviewRequired.badge
     case "Clean":
     default:
       return "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"

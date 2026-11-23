@@ -22,6 +22,7 @@ interface ScanReportProps {
 }
 
 const fallbackSummaries = {
+  NotApplicable: "MLVScan did not assess the safety of this file.",
   Clean: "No known malware families or correlated suspicious behavior were retained.",
   Suspicious: "This file was flagged as suspicious. It may be malicious, but it may also be a false positive.",
   KnownThreat: "This file matched a known malicious sample or malware family pattern.",
@@ -87,7 +88,7 @@ const ScanReport = ({ result, onReset, onCreateAttestation }: ScanReportProps) =
         onReset={onReset}
       />
 
-      <ActionList items={getActionItems(result)} />
+      {classification !== "NotApplicable" && <ActionList items={getActionItems(result)} />}
 
       {isManualReview && (
         <section aria-label="Incomplete analysis" className="border-b border-slate-800/80 py-4">
