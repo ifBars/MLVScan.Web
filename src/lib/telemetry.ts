@@ -39,10 +39,10 @@ export function summarizeScanDiagnostics(results: ScanResult[]): Record<string, 
   }
   for (const result of results) {
     const raw = result.disposition?.classification
-    const verdict = ['Clean', 'Suspicious', 'KnownThreat', 'ManualReviewRequired'].includes(raw ?? '') ? raw! : 'Unknown'
-    const outcome = ({ Clean: 'clean', Suspicious: 'suspicious', KnownThreat: 'known_threat', ManualReviewRequired: 'manual_review_required', Unknown: 'unknown' } as Record<string, string>)[verdict]
+    const verdict = ['Clean', 'Suspicious', 'KnownThreat', 'ManualReviewRequired', 'NotApplicable'].includes(raw ?? '') ? raw! : 'Unknown'
+    const outcome = ({ NotApplicable: 'not_applicable', Clean: 'clean', Suspicious: 'suspicious', KnownThreat: 'known_threat', ManualReviewRequired: 'manual_review_required', Unknown: 'unknown' } as Record<string, string>)[verdict]
     add(`${outcome}_count`)
-    add(result.analysisCompleteness?.isComplete === true ? 'complete_result_count' : 'incomplete_result_count')
+    add(result.analysisCompleteness?.status === 'NotApplicable' ? 'not_applicable_result_count' : result.analysisCompleteness?.isComplete === true ? 'complete_result_count' : 'incomplete_result_count')
     const seen = new Set<string>()
     for (const finding of result.findings ?? []) {
       const rule = categories.rules.includes(finding.ruleId ?? '') ? finding.ruleId : 'other'
@@ -57,6 +57,7 @@ export function summarizeScanDiagnostics(results: ScanResult[]): Record<string, 
     for (const id of new Set(families.map(f => categories.families.includes(f.familyId) ? f.familyId : 'other'))) add(`family_${id}_${verdict}_count`)
     for (const flow of result.dataFlows ?? []) add(`flow_${categories.patterns.includes(flow.pattern) ? flow.pattern : 'Unknown'}_${verdict}_count`)
     // Matches Core ScanDiagnosticSummary: one count per result and finding ID that limited analysis.
+    if (result.analysisCompleteness?.status === "NotApplicable") continue
     const limiting = new Set((result.analysisCompleteness?.reasons ?? []).map(r => categories.rules.includes(r.ruleId ?? '') ? r.ruleId! : 'other'))
     for (const id of limiting) add(`incomplete_${id}_count`)
   }

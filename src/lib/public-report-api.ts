@@ -138,5 +138,5 @@ function isReportStatus(value: unknown): boolean {
 }
 
 function isClassification(value: unknown): boolean {
-  return value === "Clean" || value === "Suspicious" || value === "KnownThreat"
+  return value === "Clean" || value === "Suspicious" || value === "KnownThreat" || value === "ManualReviewRequired" || value === "NotApplicable"
 }

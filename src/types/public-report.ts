@@ -1,4 +1,4 @@
-export type PublicReportClassification = "Clean" | "Suspicious" | "KnownThreat"
+export type PublicReportClassification = "Clean" | "Suspicious" | "KnownThreat" | "ManualReviewRequired" | "NotApplicable"
 
 export interface PublicReportFinding {
   id: string | null

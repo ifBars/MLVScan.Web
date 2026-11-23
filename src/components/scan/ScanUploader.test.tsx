@@ -153,6 +153,24 @@ afterEach(() => {
 })
 
 describe("ScanUploader", () => {
+  it("separates managed and native coverage in either package order", () => {
+    const managed = createScanResult("Mod.dll")
+    const native: ScanResult = {
+      ...createScanResult("Library.dll"),
+      analysisCompleteness: { status: "NotApplicable", isComplete: false, reviewRecommended: false, reasons: [] },
+      disposition: { ...managed.disposition!, classification: "NotApplicable", blockingRecommended: false },
+    }
+    for (const entries of [[managed, native], [native, managed]]) {
+      const result = combineScanResults("Mod.zip", entries)
+      expect(result.disposition?.classification).toBe("Clean")
+      expect(result.disposition?.summary).toContain("Library.dll")
+      expect(result.analysisCompleteness.isComplete).toBe(true)
+    }
+    const outside = combineScanResults("Native.zip", [native, native])
+    expect(outside.disposition?.classification).toBe("NotApplicable")
+    expect(outside.analysisCompleteness.reviewRecommended).toBe(false)
+  })
+
   it("keeps package scans clean when child findings are advanced diagnostics only", () => {
     const packageResult = combineScanResults("ModLib.zip", [
       createScanResult("ModLib.Definitions.dll"),

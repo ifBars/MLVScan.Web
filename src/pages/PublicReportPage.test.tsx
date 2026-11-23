@@ -109,6 +109,16 @@ afterEach(() => {
 })
 
 describe("PublicReportPage", () => {
+  it("shows a neutral result for files outside managed analysis", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      ...publicReportPayload, classification: "NotApplicable", headline: "",
+      summary: "This is a native PE file.", blockingRecommended: false, findings: [],
+    }))))
+    await renderPublicReportPage()
+    expect(await screen.findByText("Managed scan does not apply")).toBeTruthy()
+    expect(screen.queryByText("Suspicious behavior detected")).toBeNull()
+  })
+
   it("shows advanced diagnostics only after opting in", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
       new Response(JSON.stringify(publicReportPayload), {

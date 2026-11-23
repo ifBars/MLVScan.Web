@@ -431,7 +431,7 @@ const ScanUploader = () => {
               onReset={resetScan}
               onCreateAttestation={attestationFile ? handleCreateAttestation : undefined}
             />
-            {reviewFile && getResultPresentationClassification(result) !== "Clean" && <section aria-label="Private sample review" className="mt-6 border-t border-slate-800/80 pt-4">
+            {reviewFile && ["Suspicious", "KnownThreat", "ManualReviewRequired"].includes(getResultPresentationClassification(result)) && <section aria-label="Private sample review" className="mt-6 border-t border-slate-800/80 pt-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="max-w-xl">
                   <h3 className="text-sm font-medium text-white">Want us to take a closer look?</h3>
