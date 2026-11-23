@@ -165,6 +165,8 @@ describe("ScanUploader", () => {
       expect(result.disposition?.classification).toBe("Clean")
       expect(result.disposition?.summary).toContain("Library.dll")
       expect(result.analysisCompleteness.isComplete).toBe(true)
+      expect(result.input.sha256Hash).toBeUndefined()
+      expect(result.assembly).toBeNull()
     }
     const outside = combineScanResults("Native.zip", [native, native])
     expect(outside.disposition?.classification).toBe("NotApplicable")

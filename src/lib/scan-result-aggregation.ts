@@ -34,8 +34,8 @@ export function combineScanResults(packageFileName: string, results: ScanResult[
 
   return {
     ...first,
+    assembly: null,
     input: {
-      ...first.input,
       fileName: packageFileName,
       sizeBytes,
     },
